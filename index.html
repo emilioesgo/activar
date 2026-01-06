@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Activar Placa | Huellitas Digitales</title>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f0f2f5; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; }
+        .card { background: white; padding: 30px; border-radius: 15px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); width: 100%; max-width: 400px; box-sizing: border-box; }
+        h2 { text-align: center; color: #333; margin-top: 0; }
+        .id-badge { background: #e8f5e9; color: #2bb673; padding: 5px 10px; border-radius: 5px; font-weight: bold; text-align: center; margin-bottom: 20px; font-size: 14px; }
+        input, textarea { width: 100%; padding: 12px; margin-bottom: 15px; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; font-size: 16px; }
+        button { width: 100%; padding: 15px; background: #2bb673; color: white; border: none; border-radius: 8px; font-size: 16px; font-weight: bold; cursor: pointer; transition: background 0.3s; }
+        button:hover { background: #23945d; }
+        button:disabled { background: #ccc; cursor: not-allowed; }
+        #estado { text-align: center; font-weight: bold; margin-top: 15px; font-size: 14px; }
+    </style>
+</head>
+<body>
+
+<div class="card">
+    <h2>Activar Placa</h2>
+    <div id="id-display" class="id-badge">Detectando ID...</div>
+
+    <input id="pin" type="password" placeholder="PIN de seguridad">
+    <input id="mascota" type="text" placeholder="Nombre de la mascota">
+    <input id="dueno" type="text" placeholder="Nombre del dueño">
+    <input id="telefono" type="tel" placeholder="Teléfono de contacto">
+    <textarea id="mensaje" placeholder="Información médica o mensaje opcional"></textarea>
+
+    <button id="btnActivar">Confirmar Activación</button>
+    <p id="estado"></p>
+</div>
+
+<script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+    import { getFirestore, doc, setDoc, getDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+    const firebaseConfig = {
+        apiKey: "AIzaSyCqROIzmp2guo2XLbdYrSW3ujlUBc7ngOc",
+        authDomain: "huellitas-digitales.firebaseapp.com",
+        projectId: "huellitas-digitales",
+        storageBucket: "huellitas-digitales.firebasestorage.app",
+        messagingSenderId: "523935942496",
+        appId: "1:523935942496:web:0bb3ad3b28c189345fc005"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+
+    // Obtener ID directamente de la URL actual
+    const urlParams = new URLSearchParams(window.location.search);
+    const placaId = urlParams.get('id');
+    const estado = document.getElementById("estado");
+    const idDisplay = document.getElementById("id-display");
+
+    if (placaId) {
+        idDisplay.innerText = "ID de Placa: " + placaId;
+    } else {
+        idDisplay.innerText = "❌ ID no encontrado en la URL";
+        idDisplay.style.color = "red";
+        document.getElementById("btnActivar").disabled = true;
+    }
+
+    document.getElementById("btnActivar").addEventListener("click", async () => {
+        const pin = document.getElementById("pin").value.trim();
+        const mascota = document.getElementById("mascota").value.trim();
+        const telefono = document.getElementById("telefono").value.trim();
+
+        if (!pin || !mascota || !telefono) {
+            estado.innerText = "⚠️ Completa los campos obligatorios";
+            estado.style.color = "orange";
+            return;
+        }
+
+        try {
+            estado.innerText = "Procesando...";
+            const ref = doc(db, "placas", placaId);
+            const snap = await getDoc(ref);
+
+            if (snap.exists()) {
+                estado.innerText = "🚫 Esta placa ya está activa.";
+                estado.style.color = "red";
+                return;
+            }
+
+            await setDoc(ref, {
+                mascota,
+                dueno: document.getElementById("dueno").value.trim(),
+                telefono,
+                mensaje: document.getElementById("mensaje").value.trim(),
+                pin,
+                activa: true,
+                fechaActivacion: serverTimestamp()
+            });
+
+            estado.innerText = "✅ ¡Activación exitosa!";
+            estado.style.color = "#2bb673";
+            document.getElementById("btnActivar").disabled = true;
+
+        } catch (e) {
+            console.error(e);
+            estado.innerText = "❌ Error al guardar en Firebase.";
+        }
+    });
+</script>
+
+</body>
+</html>
