@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Perfil de Mascota | Huellitas Digitales</title>
+    <style>
+        body { font-family: 'Segoe UI', sans-serif; background-color: #f0f2f5; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; padding: 20px; }
+        .card { background: white; padding: 30px; border-radius: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); width: 100%; max-width: 400px; text-align: center; }
+        .pet-icon { font-size: 50px; margin-bottom: 10px; }
+        h1 { color: #2bb673; margin: 10px 0; font-size: 28px; }
+        .info-box { background: #f9f9f9; padding: 15px; border-radius: 12px; margin-bottom: 20px; border-left: 5px solid #2bb673; text-align: left; }
+        .btn { display: flex; align-items: center; justify-content: center; width: 100%; padding: 15px; margin-bottom: 12px; border: none; border-radius: 10px; font-size: 16px; font-weight: bold; cursor: pointer; text-decoration: none; transition: 0.3s; color: white; }
+        .btn-call { background-color: #007bff; }
+        .btn-whatsapp { background-color: #25d366; }
+        .btn:hover { opacity: 0.9; transform: scale(1.02); }
+        #mensaje-ayuda { font-style: italic; color: #666; }
+        .loader { border: 4px solid #f3f3f3; border-top: 4px solid #2bb673; border-radius: 50%; width: 30px; height: 30px; animation: spin 1s linear infinite; margin: 20px auto; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+    </style>
+</head>
+<body>
+
+<div class="card" id="perfil-card">
+    <div id="loading">
+        <div class="loader"></div>
+        <p>Buscando información...</p>
+    </div>
+    
+    <div id="contenido" style="display: none;">
+        <div class="pet-icon">🐾</div>
+        <h1 id="nombre-mascota">Nombre</h1>
+        
+        <div class="info-box">
+            <strong style="color: #333;">Mensaje del dueño:</strong><br>
+            <p id="mensaje-ayuda">Cargando mensaje...</p>
+        </div>
+
+        <a href="#" id="link-llamada" class="btn btn-call">📞 Llamar al Dueño</a>
+        <a href="#" id="link-whatsapp" target="_blank" class="btn btn-whatsapp">💬 Enviar WhatsApp</a>
+        
+        <p style="font-size: 12px; color: #999; margin-top: 20px;">Gracias por ayudar a que regrese a casa ❤️</p>
+    </div>
+
+    <div id="error-msg" style="display: none;">
+        <div class="pet-icon">⚠️</div>
+        <h2>Placa no encontrada</h2>
+        <p>Esta placa aún no ha sido activada o el ID es incorrecto.</p>
+    </div>
+</div>
+
+<script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+    import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+    const firebaseConfig = {
+        apiKey: "AIzaSyCqROIzmp2guo2XLbdYrSW3ujlUBc7ngOc",
+        authDomain: "huellitas-digitales.firebaseapp.com",
+        projectId: "huellitas-digitales",
+        storageBucket: "huellitas-digitales.firebasestorage.app",
+        messagingSenderId: "523935942496",
+        appId: "1:523935942496:web:0bb3ad3b28c189345fc005"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+
+    const urlParams = new URLSearchParams(window.location.search);
+    const placaId = urlParams.get('id');
+
+    async function cargarPerfil() {
+        if (!placaId) {
+            mostrarError();
+            return;
+        }
+
+        try {
+            const ref = doc(db, "placas", placaId);
+            const snap = await getDoc(ref);
+
+            if (snap.exists() && snap.data().activa) {
+                const datos = snap.data();
+                
+                // Llenar datos en la página
+                document.getElementById("nombre-mascota").innerText = datos.mascota;
+                document.getElementById("mensaje-ayuda").innerText = datos.mensaje || "Sin mensaje adicional.";
+                
+                // Configurar botones de contacto
+                const tel = datos.telefono.replace(/\s+/g, ''); // Limpiar espacios
+                document.getElementById("link-llamada").href = `tel:${tel}`;
+                document.getElementById("link-whatsapp").href = `https://wa.me/${tel}?text=Hola, encontré a tu mascota ${datos.mascota}!`;
+
+                document.getElementById("loading").style.display = "none";
+                document.getElementById("contenido").style.display = "block";
+            } else {
+                mostrarError();
+            }
+        } catch (e) {
+            console.error(e);
+            mostrarError();
+        }
+    }
+
+    function mostrarError() {
+        document.getElementById("loading").style.display = "none";
+        document.getElementById("error-msg").style.display = "block";
+    }
+
+    cargarPerfil();
+</script>
+
+</body>
+</html>
