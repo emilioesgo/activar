@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Activar mi Huellita | Huellitas Digitales</title>
+    <style>
+        :root { --primary: #2bb673; --bg: #f4f7f6; --text: #333; }
+        body { font-family: 'Segoe UI', sans-serif; background: var(--bg); margin: 0; display: flex; align-items: center; justify-content: center; height: 100vh; padding: 20px; box-sizing: border-box; }
+        .card { background: white; padding: 40px 30px; border-radius: 24px; box-shadow: 0 15px 35px rgba(0,0,0,0.1); width: 100%; max-width: 400px; text-align: center; position: relative; }
+        
+        .logo { font-size: 50px; margin-bottom: 10px; cursor: pointer; transition: 0.3s; }
+        .logo:hover { transform: scale(1.2) rotate(10deg); }
+        
+        h1 { font-size: 22px; color: var(--text); margin-bottom: 10px; }
+        p { color: #666; font-size: 14px; margin-bottom: 30px; }
+
+        input { width: 100%; padding: 15px; border: 2px solid #eee; border-radius: 12px; font-size: 18px; text-align: center; text-transform: uppercase; font-weight: bold; letter-spacing: 2px; box-sizing: border-box; transition: 0.3s; margin-bottom: 20px; }
+        input:focus { border-color: var(--primary); outline: none; background: #f9fffb; box-shadow: 0 0 10px rgba(43, 182, 115, 0.1); }
+
+        button { width: 100%; padding: 16px; background: var(--primary); color: white; border: none; border-radius: 12px; font-size: 16px; font-weight: bold; cursor: pointer; transition: 0.3s; }
+        button:hover { transform: translateY(-2px); box-shadow: 0 5px 15px rgba(43, 182, 115, 0.3); }
+        
+        .footer-text { margin-top: 25px; font-size: 12px; color: #aaa; }
+    </style>
+</head>
+<body>
+
+<div class="card">
+    <div class="logo" onclick="reproducirSonido()">🐾</div>
+    <h1>¡Hola, humano!</h1>
+    <p>Ingresa el código de 6 dígitos que viene en tu empaque para comenzar la activación.</p>
+
+    <input type="text" id="id-input" placeholder="ABC123" maxlength="6" autocomplete="off">
+
+    <button id="btn-continuar">Siguiente: Datos de mascota</button>
+
+    <div id="error-msg" style="color: #e74c3c; font-size: 13px; margin-top: 15px; display: none;">
+        ⚠️ Por favor, ingresa un ID válido.
+    </div>
+
+    <div class="footer-text">
+        ¿Necesitas ayuda? <br> Soporte: hola@huellitasdigitales.com
+    </div>
+</div>
+
+<audio id="audio-perro" src="https://assets.mixkit.co/active_storage/sfx/1101/1101-preview.mp3"></audio>
+<audio id="audio-gato" src="https://assets.mixkit.co/active_storage/sfx/1110/1110-preview.mp3"></audio>
+
+<script>
+    const input = document.getElementById('id-input');
+    const btn = document.getElementById('btn-continuar');
+    const error = document.getElementById('error-msg');
+    const dogSound = document.getElementById('audio-perro');
+    const catSound = document.getElementById('audio-gato');
+
+    function reproducirSonido() {
+        // Elige aleatoriamente entre perro (0) o gato (1)
+        const random = Math.floor(Math.random() * 2);
+        if (random === 0) {
+            dogSound.currentTime = 0; // Reinicia el audio
+            dogSound.play();
+        } else {
+            catSound.currentTime = 0;
+            catSound.play();
+        }
+    }
+
+    btn.onclick = () => {
+        const id = input.value.trim().toUpperCase();
+
+        if (id.length < 5) {
+            error.style.display = 'block';
+            input.style.borderColor = '#e74c3c';
+        } else {
+            // Reproducir sonido antes de irse
+            reproducirSonido();
+            
+            // Esperar medio segundo para que se escuche el sonido y luego redirigir
+            setTimeout(() => {
+                window.location.href = `index.html?id=${id}`;
+            }, 600);
+        }
+    };
+
+    // También permitir "Enter"
+    input.addEventListener("keypress", (event) => {
+        if (event.key === "Enter") btn.click();
+    });
+</script>
+
+</body>
+</html>
