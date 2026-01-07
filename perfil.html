@@ -142,3 +142,26 @@
 
                 document.getElementById("foto-mascota").src = data.foto || "https://via.placeholder.com/400x400?text=Mascota+Feliz";
                 document.getElementById("nombre-mascota").innerText = data.mascota;
+                document.getElementById("placa-id-txt").innerText = "ID: " + placaId;
+                document.getElementById("mensaje-mascota").innerText = data.mensaje || "Hola, soy una mascota muy querida. Si me encuentras solo, por favor contacta a mi familia mediante los botones de abajo.";
+
+                // Enlaces de contacto
+                document.getElementById("btn-llamar").href = "tel:+" + data.telefono;
+                document.getElementById("btn-whatsapp").href = `https://wa.me/${data.telefono}?text=Hola! Acabo de escanear la placa de ${data.mascota} y me gustaría avisarte que lo he encontrado.`;
+                document.getElementById("btn-editar").href = "editar.html?id=" + placaId;
+
+            } else {
+                statusMsg.innerHTML = "❌ Placa no encontrada en el sistema oficial.<br><br><a href='https://tu-tienda.com' style='color:var(--primary); font-weight:bold; text-decoration:none;'>🛒 Comprar una placa original</a>";
+                document.getElementById("loader").style.display = "none";
+            }
+        } catch (e) {
+            statusMsg.innerText = "Error al conectar con la base de datos.";
+            console.error(e);
+        }
+    }
+
+    cargarPerfil();
+</script>
+
+</body>
+</html>
