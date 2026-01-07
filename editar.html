@@ -3,54 +3,34 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Editar Mascota | Huellitas Digitales</title>
+    <title>Configuración | Huellitas Digitales</title>
     <style>
-        :root { --primary: #2bb673; --bg: #f0f2f5; }
-        body { font-family: 'Segoe UI', sans-serif; background: var(--bg); display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; padding: 20px; }
-        .card { background: white; padding: 30px; border-radius: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); width: 100%; max-width: 400px; box-sizing: border-box; }
-        h2 { text-align: center; color: #333; margin-top: 0; }
-        .preview-container { text-align: center; margin-bottom: 20px; }
-        #foto-preview { width: 100px; height: 100px; border-radius: 50%; object-fit: cover; border: 3px solid var(--primary); display: none; margin: 0 auto; }
-        label { display: block; margin-bottom: 5px; font-size: 14px; color: #666; font-weight: bold; }
-        input, textarea { width: 100%; padding: 12px; margin-bottom: 15px; border: 1px solid #ddd; border-radius: 10px; box-sizing: border-box; font-size: 16px; }
-        button { width: 100%; padding: 15px; background: var(--primary); color: white; border: none; border-radius: 10px; font-size: 16px; font-weight: bold; cursor: pointer; transition: 0.3s; }
-        button:hover { opacity: 0.9; }
-        #seccion-editor { display: none; }
-        #status { text-align: center; font-weight: bold; margin-top: 15px; font-size: 14px; }
+        :root { --primary: #2bb673; --bg: #f4f7f6; }
+        body { font-family: 'Segoe UI', sans-serif; background: var(--bg); display: flex; justify-content: center; padding: 20px; }
+        .card { background: white; padding: 30px; border-radius: 20px; width: 100%; max-width: 400px; box-sizing: border-box; }
+        input, textarea { width: 100%; padding: 12px; margin-bottom: 15px; border: 1px solid #ddd; border-radius: 10px; box-sizing: border-box; }
+        button { width: 100%; padding: 15px; background: var(--primary); color: white; border: none; border-radius: 10px; font-weight: bold; cursor: pointer; }
+        #editor { display: none; }
     </style>
 </head>
 <body>
-
 <div class="card">
-    <h2>Panel de Edición</h2>
-    
-    <div id="seccion-login">
-        <label>Introduce el PIN de la placa:</label>
-        <input id="pin-input" type="password" placeholder="PIN de seguridad">
-        <button id="btn-verificar">Entrar al Editor</button>
+    <div id="login">
+        <h2>Acceso Propietario</h2>
+        <input id="pin-check" type="password" placeholder="Introduce tu PIN">
+        <button id="btn-login">Entrar</button>
     </div>
 
-    <div id="seccion-editor">
-        <div class="preview-container">
-            <img id="foto-preview" src="">
-        </div>
-        
-        <label>Nombre de la Mascota:</label>
-        <input id="nombre" type="text">
-        
-        <label>Teléfono de Contacto:</label>
-        <input id="telefono" type="tel">
-
-        <label>Cambiar Foto (Opcional):</label>
+    <div id="editor">
+        <h2>Editar Datos</h2>
+        <input id="nombre" type="text" placeholder="Nombre">
+        <input id="telefono" type="tel" placeholder="Teléfono">
+        <label style="font-size: 12px;">Cambiar foto:</label>
         <input id="nueva-foto" type="file" accept="image/*">
-        
-        <label>Mensaje de Emergencia:</label>
-        <textarea id="mensaje"></textarea>
-
-        <button id="btn-guardar">Guardar Cambios</button>
+        <textarea id="mensaje" placeholder="Mensaje"></textarea>
+        <button id="btn-save">Guardar Cambios</button>
     </div>
-
-    <p id="status"></p>
+    <p id="msg" style="text-align:center; margin-top:10px;"></p>
 </div>
 
 <script type="module">
@@ -62,7 +42,7 @@
         apiKey: "AIzaSyCqROIzmp2guo2XLbdYrSW3ujlUBc7ngOc",
         authDomain: "huellitas-digitales.firebaseapp.com",
         projectId: "huellitas-digitales",
-        storageBucket: "huellitas-digitales.firebasestorage.app", // Asegúrate que coincida con tu consola
+        storageBucket: "huellitas-digitales.firebasestorage.app",
         messagingSenderId: "523935942496",
         appId: "1:523935942496:web:0bb3ad3b28c189345fc005"
     };
@@ -70,68 +50,45 @@
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
     const storage = getStorage(app);
-
     const placaId = new URLSearchParams(window.location.search).get('id');
-    const status = document.getElementById("status");
 
-    // 1. VERIFICAR PIN
-    document.getElementById("btn-verificar").onclick = async () => {
-        const pin = document.getElementById("pin-input").value;
-        if (!placaId) { status.innerText = "❌ ID no válido"; return; }
-
-        try {
-            const snap = await getDoc(doc(db, "placas", placaId));
-            if (snap.exists() && snap.data().pin === pin) {
-                const data = snap.data();
-                // Cargar datos actuales
-                document.getElementById("nombre").value = data.mascota;
-                document.getElementById("telefono").value = data.telefono;
-                document.getElementById("mensaje").value = data.mensaje;
-                
-                if(data.foto) {
-                    const img = document.getElementById("foto-preview");
-                    img.src = data.foto;
-                    img.style.display = "block";
-                }
-
-                document.getElementById("seccion-login").style.display = "none";
-                document.getElementById("seccion-editor").style.display = "block";
-                status.innerText = "";
-            } else {
-                status.innerText = "❌ PIN incorrecto o placa no activa";
-            }
-        } catch (e) {
-            status.innerText = "❌ Error de conexión";
+    document.getElementById("btn-login").onclick = async () => {
+        const snap = await getDoc(doc(db, "placas", placaId));
+        if(snap.exists() && snap.data().pin === document.getElementById("pin-check").value) {
+            const d = snap.data();
+            document.getElementById("nombre").value = d.mascota;
+            document.getElementById("telefono").value = d.telefono;
+            document.getElementById("mensaje").value = d.mensaje;
+            document.getElementById("login").style.display = "none";
+            document.getElementById("editor").style.display = "block";
+        } else {
+            document.getElementById("msg").innerText = "❌ PIN incorrecto";
         }
     };
 
-    // 2. GUARDAR CAMBIOS
-    document.getElementById("btn-guardar").onclick = async () => {
-        status.innerText = "Actualizando...";
-        const nuevaFoto = document.getElementById("nueva-foto").files[0];
-        
-        try {
-            const ref = doc(db, "placas", placaId);
-            let fotoUrl = document.getElementById("foto-preview").src;
+    document.getElementById("btn-save").onclick = async () => {
+        document.getElementById("msg").innerText = "Guardando...";
+        const file = document.getElementById("nueva-foto").files[0];
+        let url = "";
 
-            // Si subió una foto nueva, la reemplazamos en Storage
-            if (nuevaFoto) {
+        try {
+            if(file) {
                 const storageRef = sRef(storage, `fotos/${placaId}`);
-                await uploadBytes(storageRef, nuevaFoto);
-                fotoUrl = await getDownloadURL(storageRef);
+                await uploadBytes(storageRef, file);
+                url = await getDownloadURL(storageRef);
             }
 
-            await updateDoc(ref, {
+            const updateData = {
                 mascota: document.getElementById("nombre").value,
                 telefono: document.getElementById("telefono").value,
-                mensaje: document.getElementById("mensaje").value,
-                foto: fotoUrl
-            });
+                mensaje: document.getElementById("mensaje").value
+            };
+            if(url) updateData.foto = url;
 
-            status.style.color = "green";
-            status.innerText = "✅ ¡Datos actualizados!";
+            await updateDoc(doc(db, "placas", placaId), updateData);
+            document.getElementById("msg").innerText = "✅ ¡Actualizado!";
         } catch (e) {
-            status.innerText = "❌ Error al actualizar";
+            document.getElementById("msg").innerText = "❌ Error";
         }
     };
 </script>
