@@ -5,62 +5,71 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Perfil de Mascota | Huellitas Digitales</title>
     <style>
-        :root { --primary: #2bb673; --whatsapp: #25D366; --bg: #f4f7f6; --text: #333; }
-        body { font-family: 'Segoe UI', sans-serif; background: var(--bg); margin: 0; display: flex; justify-content: center; padding: 20px; }
-        .card { background: white; padding: 0; border-radius: 24px; box-shadow: 0 15px 35px rgba(0,0,0,0.1); width: 100%; max-width: 450px; overflow: hidden; text-align: center; }
+        :root { --primary: #2bb673; --bg: #f4f7f6; --text: #333; }
+        body { font-family: 'Segoe UI', sans-serif; background: var(--bg); margin: 0; display: flex; justify-content: center; min-height: 100vh; }
         
-        .foto-container { width: 100%; height: 300px; background: #eee; overflow: hidden; display: flex; align-items: center; justify-content: center; }
-        .foto-container img { width: 100%; height: 100%; object-fit: cover; }
-        
-        .info-content { padding: 30px; }
-        h1 { color: var(--primary); margin: 0 0 10px 0; font-size: 28px; }
-        .badge-id { display: inline-block; background: #f0f0f0; padding: 5px 15px; border-radius: 20px; font-size: 12px; font-weight: bold; color: #888; margin-bottom: 20px; }
-        
-        .mensaje-box { background: #fffde7; padding: 15px; border-radius: 15px; margin-bottom: 25px; border: 1px dashed #ffd54f; font-style: italic; color: #555; text-align: left; }
-        .label { font-size: 12px; color: #999; text-transform: uppercase; font-weight: bold; }
+        /* Contenedor Principal */
+        .container { width: 100%; max-width: 450px; background: white; min-height: 100vh; position: relative; display: none; /* Se muestra al cargar datos */ }
 
-        /* Botones de acción */
-        .btn-action { text-decoration: none; padding: 16px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-weight: bold; margin-bottom: 12px; transition: 0.3s; font-size: 16px; border: none; width: 100%; cursor: pointer; }
+        /* Cabecera con Foto */
+        .header { width: 100%; height: 300px; position: relative; background: #ddd; }
+        .header img { width: 100%; height: 100%; object-fit: cover; }
+        .header::after { content: ''; position: absolute; bottom: 0; left: 0; width: 100%; height: 50%; background: linear-gradient(transparent, white); }
+
+        /* Información */
+        .content { padding: 20px; text-align: center; margin-top: -50px; position: relative; z-index: 10; }
+        .nombre-mascota { font-size: 32px; font-weight: bold; color: var(--text); margin: 10px 0; }
+        .id-label { background: #e8f5e9; color: var(--primary); padding: 5px 15px; border-radius: 20px; font-size: 12px; font-weight: bold; }
         
+        .info-box { background: #f9f9f9; padding: 20px; border-radius: 20px; margin: 20px 0; text-align: left; border-left: 5px solid var(--primary); }
+        .info-box h3 { margin-top: 0; font-size: 16px; color: #666; }
+        .info-box p { margin: 0; color: #444; line-height: 1.4; }
+
+        /* Botones de Acción */
+        .actions { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; padding: 0 20px; }
+        .btn { padding: 15px; border-radius: 15px; text-decoration: none; font-weight: bold; display: flex; align-items: center; justify-content: center; gap: 10px; transition: 0.3s; }
         .btn-call { background: var(--primary); color: white; }
-        .btn-whatsapp { background: var(--whatsapp); color: white; }
+        .btn-wa { background: #25D366; color: white; }
+        .btn-edit { background: #f0f0f0; color: #666; grid-column: span 2; margin-top: 10px; }
         
-        .btn-edit { background: transparent; color: #aaa; border: 1px solid #ddd; padding: 10px 20px; border-radius: 20px; cursor: pointer; font-size: 13px; margin-top: 30px; }
-        
-        #loading { padding: 50px; color: #999; }
-        .hidden { display: none; }
-        .icon { margin-right: 10px; font-size: 20px; }
+        .btn:active { transform: scale(0.95); }
+
+        /* Estilos Pantalla de Carga y Errores */
+        .status-screen { text-align: center; padding: 50px 20px; width: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+        .loader { border: 4px solid #f3f3f3; border-top: 4px solid var(--primary); border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
     </style>
 </head>
 <body>
 
-<div class="card">
-    <div id="loading">⌛ Cargando perfil del peludo...</div>
+<div id="status-screen" class="status-screen">
+    <div id="loader" class="loader"></div>
+    <div id="status-msg" style="margin-top: 20px; color: #666;">Cargando perfil...</div>
+</div>
 
-    <div id="perfil-content" class="hidden">
-        <div class="foto-container">
-            <img id="mascota-foto" src="" alt="Foto de la mascota">
+<div class="container" id="perfil-container">
+    <div class="header">
+        <img id="foto-mascota" src="" alt="Foto de mascota">
+    </div>
+
+    <div class="content">
+        <span class="id-label" id="placa-id-txt">ID: --</span>
+        <h1 class="nombre-mascota" id="nombre-mascota">Nombre</h1>
+        
+        <div class="info-box">
+            <h3>Información Importante:</h3>
+            <p id="mensaje-mascota">Sin notas adicionales.</p>
         </div>
 
-        <div class="info-content">
-            <span id="placa-id" class="badge-id">ID: ----</span>
-            <h1 id="mascota-nombre">Nombre</h1>
-            
-            <div id="mensaje-container" class="mensaje-box">
-                <span class="label">Mensaje del dueño:</span>
-                <p id="mascota-msj" style="margin: 5px 0 0 0;">Cargando notas...</p>
-            </div>
-
-            <a id="btn-llamar" href="#" class="btn-action btn-call">
-                <span class="icon">📞</span> LLAMAR AL DUEÑO
-            </a>
-
-            <a id="btn-whatsapp" href="#" target="_blank" class="btn-action btn-whatsapp">
-                <span class="icon">💬</span> ENVIAR WHATSAPP
-            </a>
-
-            <button id="btn-ir-editar" class="btn-edit">⚙️ Soy el dueño, editar datos</button>
+        <div class="actions">
+            <a href="#" id="btn-llamar" class="btn btn-call">📞 Llamar Dueño</a>
+            <a href="#" id="btn-whatsapp" class="btn btn-wa">💬 WhatsApp</a>
+            <a href="#" id="btn-editar" class="btn btn-edit">⚙️ Editar mi información</a>
         </div>
+
+        <footer style="margin-top: 40px; color: #ccc; font-size: 11px;">
+            &copy; 2026 Huellitas Digitales <br> Protegiendo a los que no tienen voz.
+        </footer>
     </div>
 </div>
 
@@ -81,57 +90,63 @@
     const db = getFirestore(app);
 
     const urlParams = new URLSearchParams(window.location.search);
-    const placaId = urlParams.get('id') ? urlParams.get('id').toUpperCase() : null;
+    const placaId = urlParams.get('id')?.toUpperCase();
+
+    const statusScreen = document.getElementById("status-screen");
+    const statusMsg = document.getElementById("status-msg");
+    const perfilContainer = document.getElementById("perfil-container");
 
     async function cargarPerfil() {
         if (!placaId) {
-            document.getElementById("loading").innerText = "❌ ID de placa no válido.";
+            statusMsg.innerText = "ID de placa no válido.";
+            document.getElementById("loader").style.display = "none";
             return;
         }
 
         try {
-            const docRef = doc(db, "placas", placaId);
-            const docSnap = await getDoc(docRef);
+            const docSnap = await getDoc(doc(db, "placas", placaId));
 
-            if (docSnap.exists() && docSnap.data().activa === true) {
-                const datos = docSnap.data();
+            if (docSnap.exists()) {
+                const data = docSnap.data();
 
-                // Llenar datos
-                document.getElementById("placa-id").innerText = "ID: " + placaId;
-                document.getElementById("mascota-nombre").innerText = datos.mascota;
-                document.getElementById("mascota-msj").innerText = datos.mensaje || "Sin notas adicionales.";
-                document.getElementById("mascota-foto").src = datos.foto || "https://via.placeholder.com/300?text=Sin+Foto";
-                
-                // Configurar Llamada
-                document.getElementById("btn-llamar").href = "tel:" + datos.telefono;
+                // --- MEJORA: SI LA PLACA NO ESTÁ ACTIVA ---
+                if (data.activa === false) {
+                    statusScreen.innerHTML = `
+                        <div style="background:white; padding:35px; border-radius:30px; box-shadow:0 15px 35px rgba(0,0,0,0.1); max-width:350px;">
+                            <div style="font-size:60px;">✨</div>
+                            <h2 style="color:#333;">¡Placa nueva!</h2>
+                            <p style="color:#666; font-size:14px;">Esta placa inteligente de <b>Huellitas Digitales</b> aún no tiene dueño registrado.</p>
+                            <a href="index.html?id=${placaId}" style="display:block; background:var(--primary); color:white; text-decoration:none; padding:15px; border-radius:12px; font-weight:bold; margin-bottom:10px;">🚀 Activar ahora</a>
+                            <a href="https://tu-tienda.com" style="display:block; background:#f0f0f0; color:#666; text-decoration:none; padding:12px; border-radius:12px; font-size:14px;">🛍️ Comprar otra</a>
+                        </div>`;
+                    return;
+                }
 
-                // Configurar WhatsApp con mensaje personalizado
-                // Formato: https://wa.me/NUMERO?text=MENSAJE_CODIFICADO
-                const nombreMascota = datos.mascota;
-                const mensajeWa = `Hola, encontré a ${nombreMascota} 🐶🐱, contáctame pronto.`;
-                const mensajeEncoded = encodeURIComponent(mensajeWa);
-                
-                // Quitamos espacios o símbolos del teléfono para el link de WhatsApp
-                const telLimpio = datos.telefono.replace(/\D/g,''); 
-                document.getElementById("btn-whatsapp").href = `https://wa.me/${telLimpio}?text=${mensajeEncoded}`;
+                // --- SI ESTÁ ACTIVA: MOSTRAR PERFIL ---
+                statusScreen.style.display = "none";
+                perfilContainer.style.display = "block";
 
-                // Mostrar contenido
-                document.getElementById("loading").classList.add("hidden");
-                document.getElementById("perfil-content").classList.remove("hidden");
+                document.getElementById("foto-mascota").src = data.foto || "https://via.placeholder.com/400x300?text=Sin+Foto";
+                document.getElementById("nombre-mascota").innerText = data.mascota;
+                document.getElementById("placa-id-txt").innerText = "ID PLACA: " + placaId;
+                document.getElementById("mensaje-mascota").innerText = data.mensaje || "Soy una mascota muy amada, por favor ayúdame a volver a casa.";
+
+                // Configurar Botones
+                document.getElementById("btn-llamar").href = "tel:+" + data.telefono;
+                document.getElementById("btn-whatsapp").href = `https://wa.me/${data.telefono}?text=Hola, encontré a ${data.mascota}. Me gustaría ayudarte a que regrese a casa.`;
+                document.getElementById("btn-editar").href = "editar.html?id=" + placaId;
+
             } else {
-                document.getElementById("loading").innerText = "🐾 Esta placa aún no ha sido activada.";
+                statusMsg.innerHTML = "❌ Esta placa no existe en nuestro inventario.<br><br><a href='https://tu-tienda.com' style='color:var(--primary)'>Comprar placa oficial</a>";
+                document.getElementById("loader").style.display = "none";
             }
-        } catch (error) {
-            console.error(error);
-            document.getElementById("loading").innerText = "❌ Error al cargar los datos.";
+        } catch (e) {
+            statusMsg.innerText = "Error de conexión: " + e.message;
         }
     }
 
-    document.getElementById("btn-ir-editar").onclick = () => {
-        window.location.href = `editar.html?id=${placaId}`;
-    };
-
     cargarPerfil();
 </script>
+
 </body>
 </html>
