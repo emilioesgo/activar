@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Editar Placa | Huellitas Digitales</title>
+    <style>
+        body { font-family: 'Segoe UI', sans-serif; background-color: #f0f2f5; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; padding: 20px; }
+        .card { background: white; padding: 30px; border-radius: 15px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); width: 100%; max-width: 400px; box-sizing: border-box; }
+        h2 { text-align: center; color: #333; }
+        label { display: block; margin-bottom: 5px; font-size: 14px; color: #666; }
+        input, textarea { width: 100%; padding: 12px; margin-bottom: 15px; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; font-size: 16px; }
+        button { width: 100%; padding: 15px; background: #2bb673; color: white; border: none; border-radius: 8px; font-size: 16px; font-weight: bold; cursor: pointer; }
+        #seccion-edicion { display: none; }
+        #estado { text-align: center; font-weight: bold; margin-top: 15px; font-size: 14px; }
+        .badge { background: #eee; padding: 5px; border-radius: 4px; font-family: monospace; }
+    </style>
+</head>
+<body>
+
+<div class="card">
+    <h2>Editar Información</h2>
+    <p style="text-align:center; font-size: 13px;">ID: <span id="display-id" class="badge">...</span></p>
+
+    <div id="seccion-login">
+        <label>Introduce el PIN de la placa:</label>
+        <input id="pin-login" type="password" placeholder="PIN de 4 o más dígitos">
+        <button id="btnVerificar">Verificar PIN</button>
+    </div>
+
+    <div id="seccion-edicion">
+        <label>Nombre de la Mascota:</label>
+        <input id="mascota" type="text">
+        
+        <label>Nombre del Dueño:</label>
+        <input id="dueno" type="text">
+        
+        <label>Teléfono de Contacto:</label>
+        <input id="telefono" type="tel">
+        
+        <label>Mensaje de Emergencia:</label>
+        <textarea id="mensaje"></textarea>
+
+        <button id="btnGuardar">Guardar Cambios</button>
+    </div>
+
+    <p id="estado"></p>
+</div>
+
+<script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+    import { getFirestore, doc, getDoc, updateDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+    const firebaseConfig = {
+        apiKey: "AIzaSyCqROIzmp2guo2XLbdYrSW3ujlUBc7ngOc",
+        authDomain: "huellitas-digitales.firebaseapp.com",
+        projectId: "huellitas-digitales",
+        storageBucket: "huellitas-digitales.firebasestorage.app",
+        messagingSenderId: "523935942496",
+        appId: "1:523935942496:web:0bb3ad3b28c189345fc005"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+
+    const urlParams = new URLSearchParams(window.location.search);
+    const placaId = urlParams.get('id');
+    const estado = document.getElementById("estado");
+
+    if (placaId) document.getElementById("display-id").innerText = placaId;
+
+    let datosOriginales = {};
+
+    // VERIFICAR PIN
+    document.getElementById("btnVerificar").addEventListener("click", async () => {
+        const pinIngresado = document.getElementById("pin-login").value;
+        
+        if (!placaId) {
+            estado.innerText = "❌ Error: ID no encontrado.";
+            return;
+        }
+
+        try {
+            const ref = doc(db, "placas", placaId);
+            const snap = await getDoc(ref);
+
+            if (snap.exists()) {
+                const datos = snap.data();
+                if (datos.pin === pinIngresado) {
+                    datosOriginales = datos;
+                    // Cargar datos en el formulario
+                    document.getElementById("mascota").value = datos.mascota;
+                    document.getElementById("dueno").value = datos.dueno;
+                    document.getElementById("telefono").value = datos.telefono;
+                    document.getElementById("mensaje").value = datos.mensaje;
+
+                    // Cambiar secciones
+                    document.getElementById("seccion-login").style.display = "none";
+                    document.getElementById("seccion-edicion").style.display = "block";
+                    estado.innerText = "✅ PIN correcto";
+                    estado.style.color = "green";
+                } else {
+                    estado.innerText = "❌ PIN incorrecto";
+                    estado.style.color = "red";
+                }
+            } else {
+                estado.innerText = "❌ Esta placa no ha sido activada.";
+            }
+        } catch (e) {
+            estado.innerText = "❌ Error al conectar.";
+        }
+    });
+
+    // GUARDAR CAMBIOS
+    document.getElementById("btnGuardar").addEventListener("click", async () => {
+        estado.innerText = "Guardando...";
+        try {
+            const ref = doc(db, "placas", placaId);
+            await updateDoc(ref, {
+                mascota: document.getElementById("mascota").value,
+                dueno: document.getElementById("dueno").value,
+                telefono: document.getElementById("telefono").value,
+                mensaje: document.getElementById("mensaje").value
+            });
+            estado.innerText = "✅ ¡Datos actualizados correctamente!";
+            estado.style.color = "green";
+        } catch (e) {
+            estado.innerText = "❌ Error al actualizar.";
+        }
+    });
+</script>
+
+</body>
+</html>
