@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cargador de Inventario | Huellitas Digitales</title>
+    <style>
+        :root { --primary: #2bb673; --bg: #f4f7f6; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: var(--bg); display: flex; justify-content: center; padding: 40px; }
+        .container { background: white; padding: 30px; border-radius: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); width: 100%; max-width: 500px; }
+        h2 { color: #333; margin-top: 0; border-bottom: 2px solid var(--primary); padding-bottom: 10px; }
+        p { color: #666; font-size: 14px; }
+        textarea { width: 100%; height: 180px; margin: 15px 0; border-radius: 12px; border: 1.5px solid #ddd; padding: 15px; box-sizing: border-box; font-family: monospace; font-size: 16px; resize: none; }
+        textarea:focus { border-color: var(--primary); outline: none; box-shadow: 0 0 5px rgba(43, 182, 115, 0.3); }
+        button { background: var(--primary); color: white; border: none; padding: 15px; border-radius: 12px; cursor: pointer; width: 100%; font-weight: bold; font-size: 16px; transition: 0.3s; }
+        button:hover { background: #23945d; transform: translateY(-2px); }
+        button:disabled { background: #ccc; cursor: not-allowed; }
+        #log { margin-top: 20px; font-size: 13px; color: #444; max-height: 250px; overflow-y: auto; padding: 10px; background: #fafafa; border-radius: 8px; border: 1px solid #eee; }
+        .success { color: #2bb673; font-weight: bold; }
+        .error { color: #e74c3c; }
+        .progress-container { width: 100%; background-color: #eee; border-radius: 10px; margin: 10px 0; display: none; }
+        .progress-bar { width: 0%; height: 10px; background-color: var(--primary); border-radius: 10px; transition: width 0.3s; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h2>📦 Cargar Inventario</h2>
+    <p>Copia los IDs de tu Google Sheets y pégalos aquí (uno por línea o separados por comas).</p>
+    
+    <textarea id="lista-ids" placeholder="ID001&#10;ID002&#10;ID003..."></textarea>
+    
+    <div class="progress-container" id="p-container">
+        <div class="progress-bar" id="p-bar"></div>
+    </div>
+
+    <button id="btn-cargar">Subir a Firebase</button>
+    <div id="log"></div>
+</div>
+
+<script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+    import { getFirestore, doc, setDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+    const firebaseConfig = {
+        apiKey: "AIzaSyCqROIzmp2guo2XLbdYrSW3ujlUBc7ngOc",
+        authDomain: "huellitas-digitales.firebaseapp.com",
+        projectId: "huellitas-digitales",
+        storageBucket: "huellitas-digitales.firebasestorage.app",
+        messagingSenderId: "523935942496",
+        appId: "1:523935942496:web:0bb3ad3b28c189345fc005"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+
+    const btn = document.getElementById("btn-cargar");
+    const log = document.getElementById("log");
+    const bar = document.getElementById("p-bar");
+    const container = document.getElementById("p-container");
+
+    btn.onclick = async () => {
+        const texto = document.getElementById("lista-ids").value;
+        const ids = texto.split(/[\n,]+/).map(id => id.trim().toUpperCase()).filter(id => id !== "");
+        
+        if (ids.length === 0) return alert("Pega algunos códigos primero.");
+
+        btn.disabled = true;
+        log.innerHTML = "<b>Iniciando carga...</b><br>";
+        container.style.display = "block";
+        
+        let procesados = 0;
+
+        for (const id of ids) {
+            try {
+                // Registramos el ID en el inventario como disponible (activa: false)
+                await setDoc(doc(db, "placas", id), {
+                    activa: false,
+                    fechaCreacion: new Date(),
+                    mensajeOriginal: "Placa lista para activar"
+                });
+                
+                procesados++;
+                let porcentaje = (procesados / ids.length) * 100;
+                bar.style.width = porcentaje + "%";
+                log.innerHTML += `<span class="success">✅ ID ${id}</span> registrado correctamente.<br>`;
+                log.scrollTop = log.scrollHeight;
+            } catch (e) {
+                log.innerHTML += `<span class="error">❌ Error en ID ${id}: ${e.message}</span><br>`;
+            }
+        }
+        
+        log.innerHTML += "<br><b>✨ Proceso terminado con éxito.</b>";
+        btn.disabled = false;
+        alert("¡Inventario cargado!");
+    };
+</script>
+
+</body>
+</html>
