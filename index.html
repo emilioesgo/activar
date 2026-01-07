@@ -113,3 +113,37 @@
             await setDoc(doc(db, "placas", placaId), {
                 mascota: nombre,
                 correo: correo,
+                telefono: tel,
+                pin: pin,
+                mensaje: document.getElementById("mensaje").value,
+                foto: fotoUrl,
+                activa: true,
+                fechaCreacion: serverTimestamp()
+            });
+
+            // 3. Enviar Correo de confirmación con EmailJS
+            const emailParams = {
+                to_email: correo,
+                nombre_mascota: nombre,
+                telefono: tel,
+                pin: pin,
+                placa_id: placaId
+            };
+
+            await emailjs.send("service_xwx9czt", "template_zgl2oii", emailParams);
+
+            statusDiv.style.color = "green";
+            statusDiv.innerHTML = "✅ ¡Activación exitosa! Revisa tu correo electrónico.";
+            document.getElementById("btnActivar").disabled = true;
+            document.getElementById("btnActivar").style.background = "#ccc";
+
+        } catch (error) {
+            console.error(error);
+            statusDiv.style.color = "red";
+            statusDiv.innerHTML = "❌ Hubo un problema: " + error.message;
+        }
+    });
+</script>
+
+</body>
+</html>
