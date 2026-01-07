@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Centro de Ayuda | Huellitas Digitales</title>
+    <style>
+        :root { --primary: #2bb673; --bg: #fdfdfd; --text: #444; }
+        body { font-family: 'Segoe UI', Tahoma, sans-serif; background: var(--bg); color: var(--text); margin: 0; line-height: 1.6; }
+        
+        .header { background: white; padding: 30px 20px; text-align: center; border-bottom: 1px solid #eee; }
+        .logo { font-weight: bold; color: var(--primary); font-size: 24px; display: flex; align-items: center; justify-content: center; gap: 10px; }
+        
+        .container { max-width: 500px; margin: 0 auto; padding: 20px; }
+        
+        h1 { font-size: 22px; text-align: center; margin-bottom: 30px; color: #222; }
+        
+        /* Estilo de Pasos Visuales */
+        .step { position: relative; background: white; padding: 20px; border-radius: 15px; margin-bottom: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); border: 1px solid #f0f0f0; }
+        .step-num { position: absolute; top: -15px; left: 20px; background: var(--primary); color: white; width: 30px; height: 30px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 14px; box-shadow: 0 4px 10px rgba(43,182,115,0.4); }
+        .step h3 { margin-top: 5px; color: #333; font-size: 18px; }
+        .step p { font-size: 14px; color: #666; margin-bottom: 0; }
+        
+        /* Acordeón para FAQs */
+        .faq-section { margin-top: 40px; }
+        .faq-item { background: #f1f3f2; border-radius: 10px; margin-bottom: 10px; overflow: hidden; }
+        .faq-question { padding: 15px; font-weight: bold; font-size: 14px; cursor: pointer; display: flex; justify-content: space-between; align-items: center; }
+        .faq-answer { padding: 0 15px 15px 15px; font-size: 13px; color: #555; display: none; }
+
+        .btn-contacto { display: block; text-align: center; background: #25D366; color: white; text-decoration: none; padding: 15px; border-radius: 12px; font-weight: bold; margin-top: 30px; }
+        
+        footer { text-align: center; padding: 40px 0; font-size: 12px; color: #aaa; }
+    </style>
+</head>
+<body>
+
+<div class="header">
+    <div class="logo">🐾 Huellitas Digitales</div>
+</div>
+
+<div class="container">
+    <h1>¿Cómo activar tu placa?</h1>
+
+    <div class="step">
+        <div class="step-num">1</div>
+        <h3>Escanea el QR</h3>
+        <p>Abre la cámara de tu celular y enfoca el código de la placa. Toca el enlace que aparece en pantalla.</p>
+    </div>
+
+    <div class="step">
+        <div class="step-num">2</div>
+        <h3>Crea el Perfil</h3>
+        <p>Presiona <b>"Activar ahora"</b>. Sube una foto de tu mascota y llena tus datos de contacto.</p>
+    </div>
+
+    <div class="step">
+        <div class="step-num">3</div>
+        <h3>Elige tu PIN</h3>
+        <p>Crea un código de 4 números. Lo necesitarás si después quieres cambiar tu teléfono o dirección.</p>
+    </div>
+
+    <div class="step">
+        <div class="step-num">4</div>
+        <h3>¡Listo y Seguro!</h3>
+        <p>Ahora, si alguien escanea la placa, podrá llamarte o enviarte un WhatsApp al instante.</p>
+    </div>
+
+    <div class="faq-section">
+        <h3>Preguntas Frecuentes</h3>
+        
+        <div class="faq-item" onclick="toggleFaq(this)">
+            <div class="faq-question">¿Tiene costo mensual? <span>+</span></div>
+            <div class="faq-answer">No. El servicio es gratuito de por vida una vez adquirida la placa física.</div>
+        </div>
+
+        <div class="faq-item" onclick="toggleFaq(this)">
+            <div class="faq-question">¿Dice "Placa no habilitada"? <span>+</span></div>
+            <div class="faq-answer">Esto ocurre si la placa no se activó en caja al comprarla. Contacta a soporte con tu ticket de compra.</div>
+        </div>
+
+        <div class="faq-item" onclick="toggleFaq(this)">
+            <div class="faq-question">¿Cómo edito la información? <span>+</span></div>
+            <div class="faq-answer">Escanea la placa y busca el botón "Gestionar perfil". Deberás ingresar el PIN de 4 dígitos que elegiste al activar.</div>
+        </div>
+    </div>
+
+    <a href="https://wa.me/tu-numero" class="btn-contacto">💬 Hablar con Soporte Técnico</a>
+
+    <footer>
+        &copy; 2026 Huellitas Digitales<br>
+        Tecnología para volver a casa.
+    </footer>
+</div>
+
+<script>
+    function toggleFaq(element) {
+        const answer = element.querySelector('.faq-answer');
+        const span = element.querySelector('span');
+        if (answer.style.display === "block") {
+            answer.style.display = "none";
+            span.innerText = "+";
+        } else {
+            answer.style.display = "block";
+            span.innerText = "-";
+        }
+    }
+</script>
+
+</body>
+</html>
