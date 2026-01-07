@@ -16,14 +16,19 @@
         .content { padding: 25px; }
         .hidden { display: none; }
 
-        /* Estilo de Previsualización de Foto */
+        /* Foto de Perfil */
         .photo-edit-section { text-align: center; margin-bottom: 20px; }
         .current-photo-preview { width: 120px; height: 120px; border-radius: 60px; object-fit: cover; border: 3px solid var(--primary); margin-bottom: 10px; background: #eee; }
         
         label { display: block; margin-bottom: 6px; font-size: 13px; color: #666; font-weight: 600; }
-        input, textarea { width: 100%; padding: 12px; margin-bottom: 18px; border: 1.5px solid #eee; border-radius: 12px; box-sizing: border-box; font-size: 15px; transition: 0.3s; }
-        input:focus, textarea:focus { border-color: var(--primary); outline: none; background: #f9fffb; }
+        input, select, textarea { width: 100%; padding: 12px; margin-bottom: 18px; border: 1.5px solid #eee; border-radius: 12px; box-sizing: border-box; font-size: 15px; transition: 0.3s; }
+        input:focus, select:focus, textarea:focus { border-color: var(--primary); outline: none; background: #f9fffb; }
         
+        /* Flex para Teléfono */
+        .phone-group { display: flex; gap: 8px; margin-bottom: 18px; }
+        .phone-group select { width: 45%; margin-bottom: 0; }
+        .phone-group input { width: 55%; margin-bottom: 0; }
+
         button { width: 100%; padding: 16px; background: var(--primary); color: white; border: none; border-radius: 12px; font-size: 16px; font-weight: bold; cursor: pointer; transition: 0.3s; }
         button:hover { filter: brightness(0.9); transform: translateY(-1px); }
         button:disabled { background: #ccc; }
@@ -45,27 +50,41 @@
 
     <div class="content">
         <div id="seccion-login">
-            <label>PIN de Seguridad:</label>
-            <input id="login-pin" type="password" placeholder="Ingresa tu PIN">
+            <label>PIN de Seguridad (4 dígitos):</label>
+            <input id="login-pin" type="password" maxlength="4" placeholder="Ingresa tu PIN">
             <button id="btn-verificar">Acceder al Editor</button>
-            <p style="font-size: 12px; color: #999; text-align: center;">Este PIN fue creado al activar la placa por primera vez.</p>
         </div>
 
         <div id="seccion-editor" class="hidden">
             <div class="photo-edit-section">
                 <img id="current-photo" class="current-photo-preview" src="" alt="Foto Mascota">
-                <label for="new-photo" style="color: var(--primary); cursor: pointer;">Cambiar Foto de Perfil</label>
+                <label for="new-photo" style="color: var(--primary); cursor: pointer;">📸 Cambiar Foto</label>
                 <input id="new-photo" type="file" accept="image/*" style="display: none;">
             </div>
 
             <label>Nombre de la Mascota:</label>
             <input id="edit-nombre" type="text" placeholder="Nombre">
 
-            <label>Teléfono de Contacto:</label>
-            <input id="edit-tel" type="tel" placeholder="Número con clave lada">
+            <label>Teléfono (WhatsApp):</label>
+            <div class="phone-group">
+                <select id="edit-codigo">
+                    <option value="52">🇲🇽 +52</option>
+                    <option value="1">🇺🇸 +1</option>
+                    <option value="34">🇪🇸 +34</option>
+                    <option value="57">🇨🇴 +57</option>
+                    <option value="54">🇦🇷 +54</option>
+                    <option value="56">🇨🇱 +56</option>
+                    <option value="51">🇵🇪 +51</option>
+                    <option value="593">🇪🇨 +593</option>
+                    <option value="502">🇬🇹 +502</option>
+                    <option value="58">🇻🇪 +58</option>
+                    <option value="506">🇨🇷 +506</option>
+                </select>
+                <input id="edit-num-local" type="tel" placeholder="Número local">
+            </div>
 
             <label>Información Médica o Notas:</label>
-            <textarea id="edit-msj" rows="4" placeholder="Alergias, medicamentos, señas particulares..."></textarea>
+            <textarea id="edit-msj" rows="4" placeholder="Alergias, medicamentos..."></textarea>
 
             <button id="btn-guardar">Guardar Cambios</button>
             <button onclick="window.location.reload()" class="btn-secondary">Cancelar</button>
@@ -99,7 +118,6 @@
 
     if(placaId) document.getElementById("placa-id-display").innerText = "ID: " + placaId;
 
-    // --- PASO 1: VALIDAR PIN ---
     document.getElementById("btn-verificar").onclick = async () => {
         const pin = document.getElementById("login-pin").value;
         status.innerHTML = '<div class="loader"></div> Verificando...';
@@ -115,54 +133,65 @@
                 document.getElementById("seccion-editor").classList.remove("hidden");
                 document.getElementById("main-title").innerText = "📝 Editar Mascota";
 
-                // Pre-cargar datos
                 document.getElementById("edit-nombre").value = d.mascota || "";
-                document.getElementById("edit-tel").value = d.telefono || "";
                 document.getElementById("edit-msj").value = d.mensaje || "";
                 document.getElementById("current-photo").src = d.foto || "https://via.placeholder.com/150";
+
+                // Separar código de país y número (Lógica inteligente)
+                // Buscamos cuál de los prefijos coincide al inicio del string
+                const telFull = d.telefono || "";
+                const selects = document.getElementById("edit-codigo").options;
+                let prefijoEncontrado = "52"; // Default
+                
+                for(let opt of selects) {
+                    if(telFull.startsWith(opt.value)) {
+                        prefijoEncontrado = opt.value;
+                        break;
+                    }
+                }
+                document.getElementById("edit-codigo").value = prefijoEncontrado;
+                document.getElementById("edit-num-local").value = telFull.substring(prefijoEncontrado.length);
+
             } else {
                 status.innerText = "❌ PIN incorrecto.";
                 status.style.color = "var(--error)";
             }
-        } catch (e) { status.innerText = "Error: " + e.message; }
+        } catch (e) { status.innerText = "Error de conexión."; }
     };
 
-    // Previsualizar nueva foto antes de subir
     document.getElementById("new-photo").onchange = (e) => {
         const reader = new FileReader();
         reader.onload = () => document.getElementById("current-photo").src = reader.result;
         reader.readAsDataURL(e.target.files[0]);
     };
 
-    // --- PASO 2: GUARDAR CAMBIOS ---
     document.getElementById("btn-guardar").onclick = async () => {
         const btn = document.getElementById("btn-guardar");
         const file = document.getElementById("new-photo").files[0];
+        const numLocal = document.getElementById("edit-num-local").value.replace(/\D/g,'');
+        const codigo = document.getElementById("edit-codigo").value;
+        
         btn.disabled = true;
-        status.innerHTML = '<div class="loader"></div> Actualizando perfil...';
+        status.innerHTML = '<div class="loader"></div> Guardando cambios...';
 
         try {
             let fotoUrl = document.getElementById("current-photo").src;
-
-            // Si hay una foto nueva, subirla
             if(file) {
                 const sRef = ref(storage, `fotos/${placaId}`);
                 await uploadBytes(sRef, file);
                 fotoUrl = await getDownloadURL(sRef);
             }
 
-            const docRef = doc(db, "placas", placaId);
-            await updateDoc(docRef, {
+            await updateDoc(doc(db, "placas", placaId), {
                 mascota: document.getElementById("edit-nombre").value,
-                telefono: document.getElementById("edit-tel").value,
+                telefono: codigo + numLocal,
                 mensaje: document.getElementById("edit-msj").value,
                 foto: fotoUrl
             });
 
-            status.innerHTML = "✨ ¡Cambios guardados con éxito!";
+            status.innerHTML = "✨ ¡Actualizado con éxito!";
             status.style.color = "var(--primary)";
             setTimeout(() => window.location.href = `perfil.html?id=${placaId}`, 1500);
-
         } catch (e) {
             status.innerText = "❌ Error al guardar.";
             btn.disabled = false;
