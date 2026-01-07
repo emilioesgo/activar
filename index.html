@@ -10,13 +10,24 @@
         .card { background: white; padding: 30px; border-radius: 24px; box-shadow: 0 15px 35px rgba(0,0,0,0.1); width: 100%; max-width: 400px; }
         h2 { text-align: center; color: var(--text); margin-bottom: 20px; }
         .id-badge { background: #e8f5e9; color: var(--primary); padding: 8px; text-align: center; border-radius: 12px; font-weight: bold; margin-bottom: 20px; border: 1px dashed var(--primary); }
-        label { display: block; margin-bottom: 5px; font-size: 14px; color: #666; font-weight: 600; }
+        
+        /* Previsualización de Foto */
+        .photo-upload-container { text-align: center; margin-bottom: 20px; }
+        #preview-img { width: 120px; height: 120px; border-radius: 50%; object-fit: cover; border: 3px solid var(--primary); display: none; margin: 0 auto 10px; background: #eee; }
+        .custom-file-upload { display: inline-block; padding: 10px 20px; cursor: pointer; background: #f0f0f0; border-radius: 10px; font-size: 14px; color: #666; font-weight: bold; border: 1px solid #ddd; }
+        
+        label { display: block; margin-bottom: 5px; font-size: 13px; color: #666; font-weight: 600; }
         input, textarea { width: 100%; padding: 12px; margin-bottom: 15px; border: 1.5px solid #eee; border-radius: 10px; box-sizing: border-box; font-size: 16px; }
+        input:focus { border-color: var(--primary); outline: none; }
+        
+        .pin-hint { font-size: 11px; color: #888; margin-top: -12px; margin-bottom: 15px; display: block; }
+
         button { width: 100%; padding: 16px; background: var(--primary); color: white; border: none; border-radius: 12px; font-size: 16px; font-weight: bold; cursor: pointer; transition: 0.3s; }
         button:hover { opacity: 0.9; transform: translateY(-1px); }
         button:disabled { background: #ccc; cursor: not-allowed; }
-        #status { text-align: center; font-weight: bold; margin-top: 15px; font-size: 14px; line-height: 1.5; }
-        .loader { border: 3px solid #f3f3f3; border-top: 3px solid var(--primary); border-radius: 50%; width: 18px; height: 18px; animation: spin 1s linear infinite; display: inline-block; margin-right: 8px; vertical-align: middle; }
+        
+        #status { text-align: center; font-weight: bold; margin-top: 15px; font-size: 14px; }
+        .loader { border: 3px solid #f3f3f3; border-top: 3px solid var(--primary); border-radius: 50%; width: 18px; height: 18px; animation: spin 1s linear infinite; display: inline-block; vertical-align: middle; margin-right: 8px; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
     </style>
 </head>
@@ -26,26 +37,29 @@
     <div id="placa-id-display" class="id-badge">ID: Cargando...</div>
     <h2>Activar Mascota</h2>
     
+    <div class="photo-upload-container">
+        <img id="preview-img" src="#" alt="Vista previa">
+        <label for="foto-input" class="custom-file-upload">📸 Seleccionar Foto</label>
+        <input id="foto-input" type="file" accept="image/*" style="display: none;">
+    </div>
+
+    <label>Nombre de la Mascota:</label>
+    <input id="mascota" type="text" placeholder="Ej: Max" required>
+
+    <label>PIN de Seguridad (4 dígitos):</label>
+    <input id="pin" type="tel" maxlength="4" placeholder="Ej: 1234" pattern="[0-9]*" inputmode="numeric" required>
+    <span class="pin-hint">Úsalo para editar el perfil después.</span>
+
     <label>Correo Electrónico:</label>
     <input id="correo" type="email" placeholder="ejemplo@correo.com" required>
 
-    <label>Crea un PIN de Seguridad:</label>
-    <input id="pin" type="password" placeholder="Mínimo 4 dígitos" required>
-    
-    <label>Nombre de la Mascota:</label>
-    <input id="mascota" type="text" placeholder="Nombre de tu peludo" required>
-    
     <label>Teléfono de Contacto:</label>
-    <input id="telefono" type="tel" placeholder="Ej: 9991234567" required>
+    <input id="telefono" type="tel" placeholder="WhatsApp o Celular" required>
     
-    <label>Foto de la Mascota:</label>
-    <input id="foto-input" type="file" accept="image/*">
-    
-    <label>Información Médica o Notas:</label>
-    <textarea id="mensaje" rows="2" placeholder="Opcional: alergias, señas..."></textarea>
+    <label>Notas Importantes:</label>
+    <textarea id="mensaje" rows="2" placeholder="Alergias o señas (opcional)"></textarea>
     
     <button id="btnActivar">Activar Ahora</button>
-    
     <div id="status"></div>
 </div>
 
@@ -54,7 +68,7 @@
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
     import { getFirestore, doc, getDoc, updateDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
-    import { getStorage, ref as sRef, uploadBytesResumable, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-storage.js";
+    import { getStorage, ref as sRef, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-storage.js";
 
     const firebaseConfig = {
         apiKey: "AIzaSyCqROIzmp2guo2XLbdYrSW3ujlUBc7ngOc",
@@ -72,94 +86,91 @@
     emailjs.init("TWeQlV3AV77UPCLZ6");
 
     const urlParams = new URLSearchParams(window.location.search);
-    const placaId = urlParams.get('id') ? urlParams.get('id').toUpperCase() : null;
+    const placaId = urlParams.get('id')?.toUpperCase();
 
     if(placaId) {
         document.getElementById("placa-id-display").innerText = "ID PLACA: " + placaId;
-    } else {
-        document.getElementById("placa-id-display").innerText = "⚠️ ERROR: FALTA ID";
-        document.getElementById("placa-id-display").style.color = "red";
     }
 
-    document.getElementById("btnActivar").addEventListener("click", async () => {
-        const correo = document.getElementById("correo").value;
+    // Lógica de Previsualización de Foto
+    document.getElementById("foto-input").onchange = (e) => {
+        const file = e.target.files[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = (event) => {
+                const img = document.getElementById("preview-img");
+                img.src = event.target.result;
+                img.style.display = "block";
+            };
+            reader.readAsDataURL(file);
+        }
+    };
+
+    document.getElementById("btnActivar").onclick = async () => {
         const pin = document.getElementById("pin").value;
         const nombre = document.getElementById("mascota").value;
-        const tel = document.getElementById("telefono").value;
-        const fotoFile = document.getElementById("foto-input").files[0];
         const statusDiv = document.getElementById("status");
-
-        if(!placaId || !correo || !pin || !nombre || !tel) {
-            statusDiv.innerHTML = "⚠️ Por favor, llena todos los campos.";
+        
+        // Validación de PIN
+        if (pin.length !== 4 || isNaN(pin)) {
+            statusDiv.innerHTML = "❌ El PIN debe ser de 4 números.";
             statusDiv.style.color = "red";
             return;
         }
 
-        try {
-            statusDiv.innerHTML = '<div class="loader"></div> Verificando placa...';
-            statusDiv.style.color = "#555";
+        if(!placaId || !nombre || !document.getElementById("correo").value) {
+            statusDiv.innerHTML = "⚠️ Llena los campos obligatorios.";
+            return;
+        }
 
-            // --- 1. VALIDACIÓN DE SEGURIDAD ---
+        try {
+            statusDiv.innerHTML = '<div class="loader"></div> Validando...';
             const docRef = doc(db, "placas", placaId);
             const docSnap = await getDoc(docRef);
 
-            if (!docSnap.exists()) {
-                statusDiv.innerHTML = "❌ Este código de placa no existe en el sistema.";
-                statusDiv.style.color = "red";
+            if (!docSnap.exists() || docSnap.data().activa === true) {
+                statusDiv.innerHTML = "⚠️ ID no disponible o ya activado.";
                 return;
             }
 
-            if (docSnap.data().activa === true) {
-                statusDiv.innerHTML = "⚠️ Esta placa ya está activa. No se puede registrar dos veces.";
-                statusDiv.style.color = "orange";
-                return;
-            }
-
-            // --- 2. PROCESO DE SUBIDA ---
-            statusDiv.innerHTML = '<div class="loader"></div> Subiendo información...';
+            // Subida de Foto
             let fotoUrl = "";
-
-            if(fotoFile) {
-                const storageRef = sRef(storage, `fotos/${placaId}`);
-                const uploadTask = uploadBytesResumable(storageRef, fotoFile);
-                await new Promise((resolve, reject) => {
-                    uploadTask.on('state_changed', null, (err) => reject(err), () => resolve());
-                });
-                fotoUrl = await getDownloadURL(uploadTask.snapshot.ref);
+            const file = document.getElementById("foto-input").files[0];
+            if(file) {
+                statusDiv.innerHTML = '<div class="loader"></div> Subiendo foto...';
+                const stoRef = sRef(storage, `fotos/${placaId}`);
+                await uploadBytes(stoRef, file);
+                fotoUrl = await getDownloadURL(stoRef);
             }
 
-            // --- 3. ACTUALIZACIÓN EN FIRESTORE ---
+            // Guardar en Firestore
             await updateDoc(docRef, {
                 mascota: nombre,
-                correo: correo,
-                telefono: tel,
+                correo: document.getElementById("correo").value,
+                telefono: document.getElementById("telefono").value,
                 pin: pin,
                 mensaje: document.getElementById("mensaje").value,
                 foto: fotoUrl,
-                activa: true, // Aquí se bloquea para siempre
+                activa: true,
                 fechaActivacion: serverTimestamp()
             });
 
-            // --- 4. ENVÍO DE EMAIL ---
-            const emailParams = {
-                to_email: correo,
+            // Enviar Email
+            emailjs.send("service_xwx9czt", "template_zgl2oii", {
+                to_email: document.getElementById("correo").value,
                 nombre_mascota: nombre,
-                telefono: tel,
                 pin: pin,
                 placa_id: placaId
-            };
-            await emailjs.send("service_xwx9czt", "template_zgl2oii", emailParams);
+            });
 
+            statusDiv.innerHTML = "✅ ¡Activada con éxito!";
             statusDiv.style.color = "green";
-            statusDiv.innerHTML = "✅ ¡Activación exitosa! Tu peludo ya está protegido.";
-            document.getElementById("btnActivar").disabled = true;
+            setTimeout(() => window.location.href = `perfil.html?id=${placaId}`, 1500);
 
-        } catch (error) {
-            console.error(error);
-            statusDiv.style.color = "red";
-            statusDiv.innerHTML = "❌ Error: " + error.message;
+        } catch (e) {
+            statusDiv.innerHTML = "❌ Error: " + e.message;
         }
-    });
+    };
 </script>
 
 </body>
