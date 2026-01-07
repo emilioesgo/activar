@@ -11,19 +11,19 @@
         h2 { text-align: center; color: var(--text); margin-bottom: 20px; }
         .id-badge { background: #e8f5e9; color: var(--primary); padding: 8px; text-align: center; border-radius: 12px; font-weight: bold; margin-bottom: 20px; border: 1px dashed var(--primary); }
         
-        /* Previsualización de Foto */
         .photo-upload-container { text-align: center; margin-bottom: 20px; }
-        #preview-img { width: 120px; height: 120px; border-radius: 50%; object-fit: cover; border: 3px solid var(--primary); display: none; margin: 0 auto 10px; background: #eee; }
-        .custom-file-upload { display: inline-block; padding: 10px 20px; cursor: pointer; background: #f0f0f0; border-radius: 10px; font-size: 14px; color: #666; font-weight: bold; border: 1px solid #ddd; }
+        #preview-img { width: 100px; height: 100px; border-radius: 50%; object-fit: cover; border: 3px solid var(--primary); display: none; margin: 0 auto 10px; }
+        .custom-file-upload { display: inline-block; padding: 8px 16px; cursor: pointer; background: #f0f0f0; border-radius: 10px; font-size: 13px; font-weight: bold; border: 1px solid #ddd; }
         
         label { display: block; margin-bottom: 5px; font-size: 13px; color: #666; font-weight: 600; }
-        input, textarea { width: 100%; padding: 12px; margin-bottom: 15px; border: 1.5px solid #eee; border-radius: 10px; box-sizing: border-box; font-size: 16px; }
-        input:focus { border-color: var(--primary); outline: none; }
+        input { width: 100%; padding: 12px; margin-bottom: 15px; border: 1.5px solid #eee; border-radius: 10px; box-sizing: border-box; font-size: 16px; }
         
-        .pin-hint { font-size: 11px; color: #888; margin-top: -12px; margin-bottom: 15px; display: block; }
+        /* Estilos Captcha */
+        .captcha-container { background: #f9f9f9; padding: 15px; border-radius: 12px; border: 1px solid #eee; margin-bottom: 15px; text-align: center; }
+        #captcha-code { font-family: 'Courier New', Courier, monospace; font-size: 24px; font-weight: bold; letter-spacing: 5px; background: #333; color: #fff; padding: 5px 15px; border-radius: 5px; user-select: none; display: inline-block; margin-bottom: 10px; font-style: italic; text-decoration: line-through; }
+        #btn-refresh-captcha { background: none; border: none; color: var(--primary); cursor: pointer; font-size: 12px; text-decoration: underline; }
 
-        button { width: 100%; padding: 16px; background: var(--primary); color: white; border: none; border-radius: 12px; font-size: 16px; font-weight: bold; cursor: pointer; transition: 0.3s; }
-        button:hover { opacity: 0.9; transform: translateY(-1px); }
+        button#btnActivar { width: 100%; padding: 16px; background: var(--primary); color: white; border: none; border-radius: 12px; font-size: 16px; font-weight: bold; cursor: pointer; transition: 0.3s; }
         button:disabled { background: #ccc; cursor: not-allowed; }
         
         #status { text-align: center; font-weight: bold; margin-top: 15px; font-size: 14px; }
@@ -39,25 +39,31 @@
     
     <div class="photo-upload-container">
         <img id="preview-img" src="#" alt="Vista previa">
-        <label for="foto-input" class="custom-file-upload">📸 Seleccionar Foto</label>
+        <label for="foto-input" class="custom-file-upload">📸 Foto de la Mascota</label>
         <input id="foto-input" type="file" accept="image/*" style="display: none;">
     </div>
 
     <label>Nombre de la Mascota:</label>
-    <input id="mascota" type="text" placeholder="Ej: Max" required>
+    <input id="mascota" type="text" placeholder="Ej: Max">
 
-    <label>PIN de Seguridad (4 dígitos):</label>
-    <input id="pin" type="tel" maxlength="4" placeholder="Ej: 1234" pattern="[0-9]*" inputmode="numeric" required>
-    <span class="pin-hint">Úsalo para editar el perfil después.</span>
+    <label>PIN de Seguridad (4 números):</label>
+    <input id="pin" type="tel" maxlength="4" placeholder="Ej: 1234">
+
+    <label>Confirmar PIN:</label>
+    <input id="pin-confirm" type="tel" maxlength="4" placeholder="Repite tu PIN">
 
     <label>Correo Electrónico:</label>
-    <input id="correo" type="email" placeholder="ejemplo@correo.com" required>
+    <input id="correo" type="email" placeholder="tu@correo.com">
 
-    <label>Teléfono de Contacto:</label>
-    <input id="telefono" type="tel" placeholder="WhatsApp o Celular" required>
-    
-    <label>Notas Importantes:</label>
-    <textarea id="mensaje" rows="2" placeholder="Alergias o señas (opcional)"></textarea>
+    <label>Teléfono Celular:</label>
+    <input id="telefono" type="tel" placeholder="10 dígitos">
+
+    <div class="captcha-container">
+        <label>Verificación de seguridad:</label>
+        <div id="captcha-code"></div> <br>
+        <button id="btn-refresh-captcha" type="button">Cambiar código</button>
+        <input id="captcha-input" type="text" placeholder="Escribe el código de arriba" style="margin-top:10px;">
+    </div>
     
     <button id="btnActivar">Activar Ahora</button>
     <div id="status"></div>
@@ -68,7 +74,7 @@
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
     import { getFirestore, doc, getDoc, updateDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
-    import { getStorage, ref as sRef, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-storage.js";
+    import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-storage.js";
 
     const firebaseConfig = {
         apiKey: "AIzaSyCqROIzmp2guo2XLbdYrSW3ujlUBc7ngOc",
@@ -82,89 +88,95 @@
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
     const storage = getStorage(app);
-
     emailjs.init("TWeQlV3AV77UPCLZ6");
+
+    let currentCaptcha = "";
+
+    // Función para generar Captcha
+    function generateCaptcha() {
+        const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789"; // Sin O o 0 para evitar confusión
+        let result = "";
+        for (let i = 0; i < 6; i++) {
+            result += chars.charAt(Math.floor(Math.random() * chars.length));
+        }
+        currentCaptcha = result;
+        document.getElementById("captcha-code").innerText = result;
+    }
+
+    // Inicializar Captcha y eventos
+    generateCaptcha();
+    document.getElementById("btn-refresh-captcha").onclick = generateCaptcha;
 
     const urlParams = new URLSearchParams(window.location.search);
     const placaId = urlParams.get('id')?.toUpperCase();
+    if(placaId) document.getElementById("placa-id-display").innerText = "ID PLACA: " + placaId;
 
-    if(placaId) {
-        document.getElementById("placa-id-display").innerText = "ID PLACA: " + placaId;
-    }
-
-    // Lógica de Previsualización de Foto
+    // Vista previa de imagen
     document.getElementById("foto-input").onchange = (e) => {
         const file = e.target.files[0];
         if (file) {
             const reader = new FileReader();
-            reader.onload = (event) => {
+            reader.onload = (ev) => {
                 const img = document.getElementById("preview-img");
-                img.src = event.target.result;
+                img.src = ev.target.result;
                 img.style.display = "block";
-            };
+            }
             reader.readAsDataURL(file);
         }
     };
 
     document.getElementById("btnActivar").onclick = async () => {
-        const pin = document.getElementById("pin").value;
-        const nombre = document.getElementById("mascota").value;
         const statusDiv = document.getElementById("status");
-        
-        // Validación de PIN
+        const pin = document.getElementById("pin").value;
+        const pinConfirm = document.getElementById("pin-confirm").value;
+        const captchaInput = document.getElementById("captcha-input").value.toUpperCase();
+
+        // 1. VALIDACIONES LOCALES
         if (pin.length !== 4 || isNaN(pin)) {
             statusDiv.innerHTML = "❌ El PIN debe ser de 4 números.";
-            statusDiv.style.color = "red";
             return;
         }
-
-        if(!placaId || !nombre || !document.getElementById("correo").value) {
-            statusDiv.innerHTML = "⚠️ Llena los campos obligatorios.";
+        if (pin !== pinConfirm) {
+            statusDiv.innerHTML = "❌ Los PIN no coinciden.";
+            return;
+        }
+        if (captchaInput !== currentCaptcha) {
+            statusDiv.innerHTML = "❌ Código de seguridad incorrecto.";
+            generateCaptcha(); // Cambiar captcha si falla
             return;
         }
 
         try {
-            statusDiv.innerHTML = '<div class="loader"></div> Validando...';
+            statusDiv.innerHTML = '<div class="loader"></div> Verificando ID...';
             const docRef = doc(db, "placas", placaId);
             const docSnap = await getDoc(docRef);
 
             if (!docSnap.exists() || docSnap.data().activa === true) {
-                statusDiv.innerHTML = "⚠️ ID no disponible o ya activado.";
+                statusDiv.innerHTML = "⚠️ Placa no válida o ya activada.";
                 return;
             }
 
-            // Subida de Foto
+            statusDiv.innerHTML = '<div class="loader"></div> Subiendo información...';
+            
             let fotoUrl = "";
             const file = document.getElementById("foto-input").files[0];
             if(file) {
-                statusDiv.innerHTML = '<div class="loader"></div> Subiendo foto...';
-                const stoRef = sRef(storage, `fotos/${placaId}`);
-                await uploadBytes(stoRef, file);
-                fotoUrl = await getDownloadURL(stoRef);
+                const sRef = ref(storage, `fotos/${placaId}`);
+                await uploadBytes(sRef, file);
+                fotoUrl = await getDownloadURL(sRef);
             }
 
-            // Guardar en Firestore
             await updateDoc(docRef, {
-                mascota: nombre,
+                mascota: document.getElementById("mascota").value,
                 correo: document.getElementById("correo").value,
                 telefono: document.getElementById("telefono").value,
                 pin: pin,
-                mensaje: document.getElementById("mensaje").value,
                 foto: fotoUrl,
                 activa: true,
                 fechaActivacion: serverTimestamp()
             });
 
-            // Enviar Email
-            emailjs.send("service_xwx9czt", "template_zgl2oii", {
-                to_email: document.getElementById("correo").value,
-                nombre_mascota: nombre,
-                pin: pin,
-                placa_id: placaId
-            });
-
-            statusDiv.innerHTML = "✅ ¡Activada con éxito!";
-            statusDiv.style.color = "green";
+            statusDiv.innerHTML = "✅ ¡Activación exitosa!";
             setTimeout(() => window.location.href = `perfil.html?id=${placaId}`, 1500);
 
         } catch (e) {
