@@ -1,189 +1,62 @@
-<!DOCTYPE html>
-<html lang="es">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Activar Placa | Huellitas Digitales</title>
-    <style>
-        :root { --primary: #2bb673; --bg: #f4f7f6; --text: #333; }
-        body { font-family: 'Segoe UI', sans-serif; background: var(--bg); margin: 0; display: flex; justify-content: center; padding: 20px; }
-        .card { background: white; padding: 30px; border-radius: 24px; box-shadow: 0 15px 35px rgba(0,0,0,0.1); width: 100%; max-width: 400px; }
-        h2 { text-align: center; color: var(--text); margin-bottom: 20px; }
-        .id-badge { background: #e8f5e9; color: var(--primary); padding: 8px; text-align: center; border-radius: 12px; font-weight: bold; margin-bottom: 20px; border: 1px dashed var(--primary); }
-        
-        .photo-upload-container { text-align: center; margin-bottom: 20px; }
-        #preview-img { width: 100px; height: 100px; border-radius: 50%; object-fit: cover; border: 3px solid var(--primary); display: none; margin: 0 auto 10px; }
-        .custom-file-upload { display: inline-block; padding: 8px 16px; cursor: pointer; background: #f0f0f0; border-radius: 10px; font-size: 13px; font-weight: bold; border: 1px solid #ddd; }
-        
-        label { display: block; margin-bottom: 5px; font-size: 13px; color: #666; font-weight: 600; }
-        input { width: 100%; padding: 12px; margin-bottom: 15px; border: 1.5px solid #eee; border-radius: 10px; box-sizing: border-box; font-size: 16px; }
-        
-        /* Estilos Captcha */
-        .captcha-container { background: #f9f9f9; padding: 15px; border-radius: 12px; border: 1px solid #eee; margin-bottom: 15px; text-align: center; }
-        #captcha-code { font-family: 'Courier New', Courier, monospace; font-size: 24px; font-weight: bold; letter-spacing: 5px; background: #333; color: #fff; padding: 5px 15px; border-radius: 5px; user-select: none; display: inline-block; margin-bottom: 10px; font-style: italic; text-decoration: line-through; }
-        #btn-refresh-captcha { background: none; border: none; color: var(--primary); cursor: pointer; font-size: 12px; text-decoration: underline; }
-
-        button#btnActivar { width: 100%; padding: 16px; background: var(--primary); color: white; border: none; border-radius: 12px; font-size: 16px; font-weight: bold; cursor: pointer; transition: 0.3s; }
-        button:disabled { background: #ccc; cursor: not-allowed; }
-        
-        #status { text-align: center; font-weight: bold; margin-top: 15px; font-size: 14px; }
-        .loader { border: 3px solid #f3f3f3; border-top: 3px solid var(--primary); border-radius: 50%; width: 18px; height: 18px; animation: spin 1s linear infinite; display: inline-block; vertical-align: middle; margin-right: 8px; }
-        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-    </style>
-</head>
-<body>
-
-<div class="card">
-    <div id="placa-id-display" class="id-badge">ID: Cargando...</div>
-    <h2>Activar Mascota</h2>
-    
-    <div class="photo-upload-container">
-        <img id="preview-img" src="#" alt="Vista previa">
-        <label for="foto-input" class="custom-file-upload">📸 Foto de la Mascota</label>
-        <input id="foto-input" type="file" accept="image/*" style="display: none;">
-    </div>
-
-    <label>Nombre de la Mascota:</label>
-    <input id="mascota" type="text" placeholder="Ej: Max">
-
-    <label>PIN de Seguridad (4 números):</label>
-    <input id="pin" type="tel" maxlength="4" placeholder="Ej: 1234">
-
-    <label>Confirmar PIN:</label>
-    <input id="pin-confirm" type="tel" maxlength="4" placeholder="Repite tu PIN">
-
-    <label>Correo Electrónico:</label>
-    <input id="correo" type="email" placeholder="tu@correo.com">
-
-    <label>Teléfono Celular:</label>
-    <input id="telefono" type="tel" placeholder="10 dígitos">
-
-    <div class="captcha-container">
-        <label>Verificación de seguridad:</label>
-        <div id="captcha-code"></div> <br>
-        <button id="btn-refresh-captcha" type="button">Cambiar código</button>
-        <input id="captcha-input" type="text" placeholder="Escribe el código de arriba" style="margin-top:10px;">
-    </div>
-    
-    <button id="btnActivar">Activar Ahora</button>
-    <div id="status"></div>
+<label>Teléfono Celular (WhatsApp):</label>
+<div style="display: flex; gap: 10px; margin-bottom: 15px;">
+    <select id="codigo-pais" style="width: 35%; padding: 12px; border: 1.5px solid #eee; border-radius: 10px; background: white; font-size: 14px;">
+        <option value="52">🇲🇽 +52 (MX)</option>
+        <option value="1">🇺🇸 +1 (US/CA)</option>
+        <option value="34">🇪🇸 +34 (ES)</option>
+        <option value="57">🇨🇴 +57 (CO)</option>
+        <option value="54">🇦🇷 +54 (AR)</option>
+        <option value="56">🇨🇱 +56 (CL)</option>
+        <option value="51">🇵🇪 +51 (PE)</option>
+        <option value="593">🇪🇨 +593 (EC)</option>
+        <option value="502">🇬🇹 +502 (GT)</option>
+        <option value="506">🇨🇷 +506 (CR)</option>
+        <option value="58">🇻🇪 +58 (VE)</option>
+        <option value="591">🇧🇴 +591 (BO)</option>
+        <option value="507">🇵🇦 +507 (PA)</option>
+        <option value="503">🇸🇻 +503 (SV)</option>
+        <option value="504">🇭🇳 +504 (HN)</option>
+        <option value="505">🇳🇮 +505 (NI)</option>
+        <option value="595">🇵🇾 +595 (PY)</option>
+        <option value="598">🇺🇾 +598 (UY)</option>
+        <option value="1809">🇩🇴 +1 (DO)</option>
+    </select>
+    <input id="telefono" type="tel" placeholder="Número local" style="width: 65%; margin-bottom: 0;">
 </div>
 
-<script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
-
 <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-    import { getFirestore, doc, getDoc, updateDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
-    import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-storage.js";
-
-    const firebaseConfig = {
-        apiKey: "AIzaSyCqROIzmp2guo2XLbdYrSW3ujlUBc7ngOc",
-        authDomain: "huellitas-digitales.firebaseapp.com",
-        projectId: "huellitas-digitales",
-        storageBucket: "huellitas-digitales.firebasestorage.app", 
-        messagingSenderId: "523935942496",
-        appId: "1:523935942496:web:0bb3ad3b28c189345fc005"
-    };
-
-    const app = initializeApp(firebaseConfig);
-    const db = getFirestore(app);
-    const storage = getStorage(app);
-    emailjs.init("TWeQlV3AV77UPCLZ6");
-
-    let currentCaptcha = "";
-
-    // Función para generar Captcha
-    function generateCaptcha() {
-        const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789"; // Sin O o 0 para evitar confusión
-        let result = "";
-        for (let i = 0; i < 6; i++) {
-            result += chars.charAt(Math.floor(Math.random() * chars.length));
-        }
-        currentCaptcha = result;
-        document.getElementById("captcha-code").innerText = result;
-    }
-
-    // Inicializar Captcha y eventos
-    generateCaptcha();
-    document.getElementById("btn-refresh-captcha").onclick = generateCaptcha;
-
-    const urlParams = new URLSearchParams(window.location.search);
-    const placaId = urlParams.get('id')?.toUpperCase();
-    if(placaId) document.getElementById("placa-id-display").innerText = "ID PLACA: " + placaId;
-
-    // Vista previa de imagen
-    document.getElementById("foto-input").onchange = (e) => {
-        const file = e.target.files[0];
-        if (file) {
-            const reader = new FileReader();
-            reader.onload = (ev) => {
-                const img = document.getElementById("preview-img");
-                img.src = ev.target.result;
-                img.style.display = "block";
-            }
-            reader.readAsDataURL(file);
-        }
-    };
+    // ... (Mantén tus imports y configuración de Firebase igual)
 
     document.getElementById("btnActivar").onclick = async () => {
-        const statusDiv = document.getElementById("status");
-        const pin = document.getElementById("pin").value;
-        const pinConfirm = document.getElementById("pin-confirm").value;
-        const captchaInput = document.getElementById("captcha-input").value.toUpperCase();
+        // ... (Mantén tus validaciones de PIN y Captcha)
 
-        // 1. VALIDACIONES LOCALES
-        if (pin.length !== 4 || isNaN(pin)) {
-            statusDiv.innerHTML = "❌ El PIN debe ser de 4 números.";
+        const codigoPais = document.getElementById("codigo-pais").value;
+        const numLocal = document.getElementById("telefono").value.replace(/\D/g,''); // Limpia espacios/guiones
+        
+        if(numLocal.length < 7) {
+            statusDiv.innerHTML = "❌ El número de teléfono es muy corto.";
             return;
         }
-        if (pin !== pinConfirm) {
-            statusDiv.innerHTML = "❌ Los PIN no coinciden.";
-            return;
-        }
-        if (captchaInput !== currentCaptcha) {
-            statusDiv.innerHTML = "❌ Código de seguridad incorrecto.";
-            generateCaptcha(); // Cambiar captcha si falla
-            return;
-        }
+
+        // UNIMOS AMBOS PARA FORMAR EL NÚMERO INTERNACIONAL COMPLETO
+        const telefonoCompleto = codigoPais + numLocal;
 
         try {
-            statusDiv.innerHTML = '<div class="loader"></div> Verificando ID...';
-            const docRef = doc(db, "placas", placaId);
-            const docSnap = await getDoc(docRef);
-
-            if (!docSnap.exists() || docSnap.data().activa === true) {
-                statusDiv.innerHTML = "⚠️ Placa no válida o ya activada.";
-                return;
-            }
-
-            statusDiv.innerHTML = '<div class="loader"></div> Subiendo información...';
-            
-            let fotoUrl = "";
-            const file = document.getElementById("foto-input").files[0];
-            if(file) {
-                const sRef = ref(storage, `fotos/${placaId}`);
-                await uploadBytes(sRef, file);
-                fotoUrl = await getDownloadURL(sRef);
-            }
+            // ... (Lógica de verificación de placa y subida de foto)
 
             await updateDoc(docRef, {
                 mascota: document.getElementById("mascota").value,
                 correo: document.getElementById("correo").value,
-                telefono: document.getElementById("telefono").value,
+                telefono: telefonoCompleto, // Guardamos el número ya listo para WhatsApp
                 pin: pin,
                 foto: fotoUrl,
                 activa: true,
                 fechaActivacion: serverTimestamp()
             });
 
-            statusDiv.innerHTML = "✅ ¡Activación exitosa!";
-            setTimeout(() => window.location.href = `perfil.html?id=${placaId}`, 1500);
-
+            // ... (Resto del código de éxito)
         } catch (e) {
             statusDiv.innerHTML = "❌ Error: " + e.message;
         }
     };
 </script>
-
-</body>
-</html>
