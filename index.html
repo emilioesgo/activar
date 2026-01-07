@@ -14,6 +14,7 @@
         input, textarea { width: 100%; padding: 12px; margin-bottom: 15px; border: 1.5px solid #eee; border-radius: 10px; box-sizing: border-box; font-size: 16px; }
         button { width: 100%; padding: 16px; background: var(--primary); color: white; border: none; border-radius: 12px; font-size: 16px; font-weight: bold; cursor: pointer; transition: 0.3s; }
         button:hover { opacity: 0.9; transform: translateY(-1px); }
+        button:disabled { background: #ccc; cursor: not-allowed; }
         #status { text-align: center; font-weight: bold; margin-top: 15px; font-size: 14px; line-height: 1.5; }
         .loader { border: 3px solid #f3f3f3; border-top: 3px solid var(--primary); border-radius: 50%; width: 18px; height: 18px; animation: spin 1s linear infinite; display: inline-block; margin-right: 8px; vertical-align: middle; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
@@ -35,13 +36,13 @@
     <input id="mascota" type="text" placeholder="Nombre de tu peludo" required>
     
     <label>Teléfono de Contacto:</label>
-    <input id="telefono" type="tel" placeholder="Ej: +52..." required>
+    <input id="telefono" type="tel" placeholder="Ej: 9991234567" required>
     
     <label>Foto de la Mascota:</label>
     <input id="foto-input" type="file" accept="image/*">
     
     <label>Información Médica o Notas:</label>
-    <textarea id="mensaje" rows="2" placeholder="Opcional: alergias, señas particulares..."></textarea>
+    <textarea id="mensaje" rows="2" placeholder="Opcional: alergias, señas..."></textarea>
     
     <button id="btnActivar">Activar Ahora</button>
     
@@ -52,10 +53,9 @@
 
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-    import { getFirestore, doc, setDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+    import { getFirestore, doc, getDoc, updateDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
     import { getStorage, ref as sRef, uploadBytesResumable, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-storage.js";
 
-    // Configuración de Firebase
     const firebaseConfig = {
         apiKey: "AIzaSyCqROIzmp2guo2XLbdYrSW3ujlUBc7ngOc",
         authDomain: "huellitas-digitales.firebaseapp.com",
@@ -69,10 +69,11 @@
     const db = getFirestore(app);
     const storage = getStorage(app);
 
-    // INICIALIZACIÓN DE EMAILJS CON TU PUBLIC KEY
     emailjs.init("TWeQlV3AV77UPCLZ6");
 
-    const placaId = new URLSearchParams(window.location.search).get('id');
+    const urlParams = new URLSearchParams(window.location.search);
+    const placaId = urlParams.get('id') ? urlParams.get('id').toUpperCase() : null;
+
     if(placaId) {
         document.getElementById("placa-id-display").innerText = "ID PLACA: " + placaId;
     } else {
@@ -95,11 +96,29 @@
         }
 
         try {
-            statusDiv.innerHTML = '<div class="loader"></div> Procesando registro...';
+            statusDiv.innerHTML = '<div class="loader"></div> Verificando placa...';
             statusDiv.style.color = "#555";
+
+            // --- 1. VALIDACIÓN DE SEGURIDAD ---
+            const docRef = doc(db, "placas", placaId);
+            const docSnap = await getDoc(docRef);
+
+            if (!docSnap.exists()) {
+                statusDiv.innerHTML = "❌ Este código de placa no existe en el sistema.";
+                statusDiv.style.color = "red";
+                return;
+            }
+
+            if (docSnap.data().activa === true) {
+                statusDiv.innerHTML = "⚠️ Esta placa ya está activa. No se puede registrar dos veces.";
+                statusDiv.style.color = "orange";
+                return;
+            }
+
+            // --- 2. PROCESO DE SUBIDA ---
+            statusDiv.innerHTML = '<div class="loader"></div> Subiendo información...';
             let fotoUrl = "";
 
-            // 1. Subir Foto a Storage (si el usuario eligió una)
             if(fotoFile) {
                 const storageRef = sRef(storage, `fotos/${placaId}`);
                 const uploadTask = uploadBytesResumable(storageRef, fotoFile);
@@ -109,19 +128,19 @@
                 fotoUrl = await getDownloadURL(uploadTask.snapshot.ref);
             }
 
-            // 2. Guardar datos en Firestore
-            await setDoc(doc(db, "placas", placaId), {
+            // --- 3. ACTUALIZACIÓN EN FIRESTORE ---
+            await updateDoc(docRef, {
                 mascota: nombre,
                 correo: correo,
                 telefono: tel,
                 pin: pin,
                 mensaje: document.getElementById("mensaje").value,
                 foto: fotoUrl,
-                activa: true,
-                fechaCreacion: serverTimestamp()
+                activa: true, // Aquí se bloquea para siempre
+                fechaActivacion: serverTimestamp()
             });
 
-            // 3. Enviar Correo de confirmación con EmailJS
+            // --- 4. ENVÍO DE EMAIL ---
             const emailParams = {
                 to_email: correo,
                 nombre_mascota: nombre,
@@ -129,18 +148,16 @@
                 pin: pin,
                 placa_id: placaId
             };
-
             await emailjs.send("service_xwx9czt", "template_zgl2oii", emailParams);
 
             statusDiv.style.color = "green";
-            statusDiv.innerHTML = "✅ ¡Activación exitosa! Revisa tu correo electrónico.";
+            statusDiv.innerHTML = "✅ ¡Activación exitosa! Tu peludo ya está protegido.";
             document.getElementById("btnActivar").disabled = true;
-            document.getElementById("btnActivar").style.background = "#ccc";
 
         } catch (error) {
             console.error(error);
             statusDiv.style.color = "red";
-            statusDiv.innerHTML = "❌ Hubo un problema: " + error.message;
+            statusDiv.innerHTML = "❌ Error: " + error.message;
         }
     });
 </script>
