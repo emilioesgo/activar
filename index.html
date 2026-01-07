@@ -3,107 +3,137 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Activar Placa | Huellitas Digitales</title>
+    <title>Editar Mascota | Huellitas Digitales</title>
     <style>
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f0f2f5; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; }
-        .card { background: white; padding: 30px; border-radius: 15px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); width: 100%; max-width: 400px; box-sizing: border-box; }
+        :root { --primary: #2bb673; --bg: #f0f2f5; }
+        body { font-family: 'Segoe UI', sans-serif; background: var(--bg); display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; padding: 20px; }
+        .card { background: white; padding: 30px; border-radius: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); width: 100%; max-width: 400px; box-sizing: border-box; }
         h2 { text-align: center; color: #333; margin-top: 0; }
-        .id-badge { background: #e8f5e9; color: #2bb673; padding: 5px 10px; border-radius: 5px; font-weight: bold; text-align: center; margin-bottom: 20px; font-size: 14px; }
-        input, textarea { width: 100%; padding: 12px; margin-bottom: 15px; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; font-size: 16px; }
-        button { width: 100%; padding: 15px; background: #2bb673; color: white; border: none; border-radius: 8px; font-size: 16px; font-weight: bold; cursor: pointer; transition: background 0.3s; }
-        button:hover { background: #23945d; }
-        button:disabled { background: #ccc; cursor: not-allowed; }
-        #estado { text-align: center; font-weight: bold; margin-top: 15px; font-size: 14px; }
+        .preview-container { text-align: center; margin-bottom: 20px; }
+        #foto-preview { width: 100px; height: 100px; border-radius: 50%; object-fit: cover; border: 3px solid var(--primary); display: none; margin: 0 auto; }
+        label { display: block; margin-bottom: 5px; font-size: 14px; color: #666; font-weight: bold; }
+        input, textarea { width: 100%; padding: 12px; margin-bottom: 15px; border: 1px solid #ddd; border-radius: 10px; box-sizing: border-box; font-size: 16px; }
+        button { width: 100%; padding: 15px; background: var(--primary); color: white; border: none; border-radius: 10px; font-size: 16px; font-weight: bold; cursor: pointer; transition: 0.3s; }
+        button:hover { opacity: 0.9; }
+        #seccion-editor { display: none; }
+        #status { text-align: center; font-weight: bold; margin-top: 15px; font-size: 14px; }
     </style>
 </head>
 <body>
 
 <div class="card">
-    <h2>Activar Placa</h2>
-    <div id="id-display" class="id-badge">Detectando ID...</div>
+    <h2>Panel de Edición</h2>
+    
+    <div id="seccion-login">
+        <label>Introduce el PIN de la placa:</label>
+        <input id="pin-input" type="password" placeholder="PIN de seguridad">
+        <button id="btn-verificar">Entrar al Editor</button>
+    </div>
 
-    <input id="pin" type="password" placeholder="PIN de seguridad">
-    <input id="mascota" type="text" placeholder="Nombre de la mascota">
-    <input id="dueno" type="text" placeholder="Nombre del dueño">
-    <input id="telefono" type="tel" placeholder="Teléfono de contacto">
-    <textarea id="mensaje" placeholder="Información médica o mensaje opcional"></textarea>
+    <div id="seccion-editor">
+        <div class="preview-container">
+            <img id="foto-preview" src="">
+        </div>
+        
+        <label>Nombre de la Mascota:</label>
+        <input id="nombre" type="text">
+        
+        <label>Teléfono de Contacto:</label>
+        <input id="telefono" type="tel">
 
-    <button id="btnActivar">Confirmar Activación</button>
-    <p id="estado"></p>
+        <label>Cambiar Foto (Opcional):</label>
+        <input id="nueva-foto" type="file" accept="image/*">
+        
+        <label>Mensaje de Emergencia:</label>
+        <textarea id="mensaje"></textarea>
+
+        <button id="btn-guardar">Guardar Cambios</button>
+    </div>
+
+    <p id="status"></p>
 </div>
 
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-    import { getFirestore, doc, setDoc, getDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+    import { getFirestore, doc, getDoc, updateDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+    import { getStorage, ref as sRef, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-storage.js";
 
     const firebaseConfig = {
         apiKey: "AIzaSyCqROIzmp2guo2XLbdYrSW3ujlUBc7ngOc",
         authDomain: "huellitas-digitales.firebaseapp.com",
         projectId: "huellitas-digitales",
-        storageBucket: "huellitas-digitales.firebasestorage.app",
+        storageBucket: "huellitas-digitales.firebasestorage.app", // Asegúrate que coincida con tu consola
         messagingSenderId: "523935942496",
         appId: "1:523935942496:web:0bb3ad3b28c189345fc005"
     };
 
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
+    const storage = getStorage(app);
 
-    // Obtener ID directamente de la URL actual
-    const urlParams = new URLSearchParams(window.location.search);
-    const placaId = urlParams.get('id');
-    const estado = document.getElementById("estado");
-    const idDisplay = document.getElementById("id-display");
+    const placaId = new URLSearchParams(window.location.search).get('id');
+    const status = document.getElementById("status");
 
-    if (placaId) {
-        idDisplay.innerText = "ID de Placa: " + placaId;
-    } else {
-        idDisplay.innerText = "❌ ID no encontrado en la URL";
-        idDisplay.style.color = "red";
-        document.getElementById("btnActivar").disabled = true;
-    }
-
-    document.getElementById("btnActivar").addEventListener("click", async () => {
-        const pin = document.getElementById("pin").value.trim();
-        const mascota = document.getElementById("mascota").value.trim();
-        const telefono = document.getElementById("telefono").value.trim();
-
-        if (!pin || !mascota || !telefono) {
-            estado.innerText = "⚠️ Completa los campos obligatorios";
-            estado.style.color = "orange";
-            return;
-        }
+    // 1. VERIFICAR PIN
+    document.getElementById("btn-verificar").onclick = async () => {
+        const pin = document.getElementById("pin-input").value;
+        if (!placaId) { status.innerText = "❌ ID no válido"; return; }
 
         try {
-            estado.innerText = "Procesando...";
-            const ref = doc(db, "placas", placaId);
-            const snap = await getDoc(ref);
+            const snap = await getDoc(doc(db, "placas", placaId));
+            if (snap.exists() && snap.data().pin === pin) {
+                const data = snap.data();
+                // Cargar datos actuales
+                document.getElementById("nombre").value = data.mascota;
+                document.getElementById("telefono").value = data.telefono;
+                document.getElementById("mensaje").value = data.mensaje;
+                
+                if(data.foto) {
+                    const img = document.getElementById("foto-preview");
+                    img.src = data.foto;
+                    img.style.display = "block";
+                }
 
-            if (snap.exists()) {
-                estado.innerText = "🚫 Esta placa ya está activa.";
-                estado.style.color = "red";
-                return;
+                document.getElementById("seccion-login").style.display = "none";
+                document.getElementById("seccion-editor").style.display = "block";
+                status.innerText = "";
+            } else {
+                status.innerText = "❌ PIN incorrecto o placa no activa";
+            }
+        } catch (e) {
+            status.innerText = "❌ Error de conexión";
+        }
+    };
+
+    // 2. GUARDAR CAMBIOS
+    document.getElementById("btn-guardar").onclick = async () => {
+        status.innerText = "Actualizando...";
+        const nuevaFoto = document.getElementById("nueva-foto").files[0];
+        
+        try {
+            const ref = doc(db, "placas", placaId);
+            let fotoUrl = document.getElementById("foto-preview").src;
+
+            // Si subió una foto nueva, la reemplazamos en Storage
+            if (nuevaFoto) {
+                const storageRef = sRef(storage, `fotos/${placaId}`);
+                await uploadBytes(storageRef, nuevaFoto);
+                fotoUrl = await getDownloadURL(storageRef);
             }
 
-            await setDoc(ref, {
-                mascota,
-                dueno: document.getElementById("dueno").value.trim(),
-                telefono,
-                mensaje: document.getElementById("mensaje").value.trim(),
-                pin,
-                activa: true,
-                fechaActivacion: serverTimestamp()
+            await updateDoc(ref, {
+                mascota: document.getElementById("nombre").value,
+                telefono: document.getElementById("telefono").value,
+                mensaje: document.getElementById("mensaje").value,
+                foto: fotoUrl
             });
 
-            estado.innerText = "✅ ¡Activación exitosa!";
-            estado.style.color = "#2bb673";
-            document.getElementById("btnActivar").disabled = true;
-
+            status.style.color = "green";
+            status.innerText = "✅ ¡Datos actualizados!";
         } catch (e) {
-            console.error(e);
-            estado.innerText = "❌ Error al guardar en Firebase.";
+            status.innerText = "❌ Error al actualizar";
         }
-    });
+    };
 </script>
-
 </body>
 </html>
