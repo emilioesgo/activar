@@ -3,33 +3,62 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Perfil Mascota | Huellitas Digitales</title>
+    <title>Perfil de Mascota | Huellitas Digitales</title>
     <style>
         :root { --primary: #2bb673; --bg: #f4f7f6; --text: #333; }
-        body { font-family: 'Segoe UI', sans-serif; background: var(--bg); margin: 0; display: flex; justify-content: center; align-items: center; min-height: 100vh; padding: 20px; }
-        .card { background: white; padding: 30px; border-radius: 24px; box-shadow: 0 15px 35px rgba(0,0,0,0.1); width: 100%; max-width: 380px; text-align: center; }
-        .pet-photo { width: 150px; height: 150px; border-radius: 50%; object-fit: cover; border: 5px solid var(--primary); margin: 0 auto 15px; display: none; cursor: pointer; }
-        .pet-emoji { font-size: 70px; cursor: pointer; margin-bottom: 15px; display: block; }
-        h1 { margin: 10px 0; color: var(--text); font-size: 28px; }
-        .info-box { background: #fffbe6; border-left: 4px solid #ffe58f; padding: 15px; border-radius: 12px; text-align: left; margin-bottom: 25px; }
-        .btn { display: block; width: 100%; padding: 16px; margin-bottom: 12px; border-radius: 12px; font-size: 17px; font-weight: bold; text-decoration: none; color: white; box-sizing: border-box; }
-        .btn-call { background: #007bff; }
-        .btn-wa { background: #25d366; }
+        body { font-family: 'Segoe UI', sans-serif; background: var(--bg); margin: 0; display: flex; justify-content: center; padding: 20px; }
+        .card { background: white; padding: 0; border-radius: 24px; box-shadow: 0 15px 35px rgba(0,0,0,0.1); width: 100%; max-width: 450px; overflow: hidden; text-align: center; }
+        
+        .foto-container { width: 100%; height: 300px; background: #eee; overflow: hidden; display: flex; align-items: center; justify-content: center; }
+        .foto-container img { width: 100%; height: 100%; object-fit: cover; }
+        
+        .info-content { padding: 30px; }
+        h1 { color: var(--primary); margin: 0 0 10px 0; font-size: 28px; }
+        .badge-id { display: inline-block; background: #f0f0f0; padding: 5px 15px; border-radius: 20px; font-size: 12px; font-weight: bold; color: #888; margin-bottom: 20px; }
+        
+        .dato-contacto { background: #f9f9f9; padding: 15px; border-radius: 15px; margin-bottom: 15px; border-left: 5px solid var(--primary); text-align: left; }
+        .label { font-size: 12px; color: #999; text-transform: uppercase; font-weight: bold; }
+        .valor { font-size: 18px; color: var(--text); display: block; margin-top: 5px; text-decoration: none; }
+        
+        .mensaje-box { background: #fffde7; padding: 15px; border-radius: 15px; margin-top: 20px; border: 1px dashed #ffd54f; font-style: italic; color: #555; }
+        
+        /* Botones de acción */
+        .btn-call { background: var(--primary); color: white; text-decoration: none; padding: 15px; border-radius: 12px; display: block; font-weight: bold; margin-top: 20px; transition: 0.3s; }
+        .btn-edit { background: transparent; color: #aaa; border: 1px solid #ddd; padding: 10px 20px; border-radius: 20px; cursor: pointer; font-size: 13px; margin-top: 40px; transition: 0.3s; }
+        .btn-edit:hover { background: #f0f0f0; color: #666; }
+
+        #loading { padding: 50px; color: #999; }
+        .hidden { display: none; }
     </style>
 </head>
 <body>
 
 <div class="card">
-    <div id="loading">Cargando perfil...</div>
-    <div id="contenido" style="display: none;">
-        <img id="foto-display" class="pet-photo" src="">
-        <div id="emoji-display" class="pet-emoji">🐾</div>
-        <h1 id="nombre-display">Nombre</h1>
-        <div class="info-box">
-            <p id="mensaje-display" style="margin:0; color: #555;"></p>
+    <div id="loading">⌛ Cargando perfil del peludo...</div>
+
+    <div id="perfil-content" class="hidden">
+        <div class="foto-container">
+            <img id="mascota-foto" src="" alt="Foto de la mascota">
         </div>
-        <a id="btn-llamar" href="#" class="btn btn-call">📞 Llamar al Dueño</a>
-        <a id="btn-wa" href="#" target="_blank" class="btn btn-wa">💬 Enviar WhatsApp</a>
+
+        <div class="info-content">
+            <span id="placa-id" class="badge-id">ID: ----</span>
+            <h1 id="mascota-nombre">Nombre</h1>
+            
+            <div class="dato-contacto">
+                <span class="label">Contacto del Dueño</span>
+                <a id="mascota-tel-link" href="" class="valor">📞 <span id="mascota-tel">---</span></a>
+            </div>
+
+            <div id="mensaje-container" class="mensaje-box">
+                <span class="label">Nota importante:</span>
+                <p id="mascota-msj" style="margin: 5px 0 0 0;">Sin mensajes adicionales.</p>
+            </div>
+
+            <a id="btn-llamar" href="" class="btn-call">LLAMAR AL DUEÑO</a>
+
+            <button id="btn-ir-editar" class="btn-edit">⚙️ Soy el dueño, editar datos</button>
+        </div>
     </div>
 </div>
 
@@ -48,37 +77,52 @@
 
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
-    const placaId = new URLSearchParams(window.location.search).get('id');
 
-    async function cargar() {
-        if(!placaId) return;
-        const snap = await getDoc(doc(db, "placas", placaId));
-        if(snap.exists()) {
-            const data = snap.data();
-            document.getElementById("nombre-display").innerText = data.mascota;
-            document.getElementById("mensaje-display").innerText = data.mensaje || "Sin avisos médicos.";
-            document.getElementById("btn-llamar").href = "tel:" + data.telefono;
-            document.getElementById("btn-wa").href = `https://wa.me/${data.telefono.replace(/\+/g,'')}?text=Hola, encontré a ${data.mascota}`;
-            
-            if(data.foto) {
-                document.getElementById("foto-display").src = data.foto;
-                document.getElementById("foto-display").style.display = "block";
-                document.getElementById("emoji-display").style.display = "none";
+    const urlParams = new URLSearchParams(window.location.search);
+    const placaId = urlParams.get('id') ? urlParams.get('id').toUpperCase() : null;
+
+    async function cargarPerfil() {
+        if (!placaId) {
+            document.getElementById("loading").innerText = "❌ ID de placa no válido.";
+            return;
+        }
+
+        try {
+            const docRef = doc(db, "placas", placaId);
+            const docSnap = await getDoc(docRef);
+
+            if (docSnap.exists() && docSnap.data().activa === true) {
+                const datos = docSnap.data();
+
+                // Llenar datos en el HTML
+                document.getElementById("placa-id").innerText = "ID: " + placaId;
+                document.getElementById("mascota-nombre").innerText = datos.mascota;
+                document.getElementById("mascota-tel").innerText = datos.telefono;
+                document.getElementById("mascota-msj").innerText = datos.mensaje || "Sin notas adicionales.";
+                document.getElementById("mascota-foto").src = datos.foto || "https://via.placeholder.com/300?text=Sin+Foto";
+                
+                // Configurar enlaces de llamada
+                document.getElementById("mascota-tel-link").href = "tel:" + datos.telefono;
+                document.getElementById("btn-llamar").href = "tel:" + datos.telefono;
+
+                // Mostrar contenido y ocultar loading
+                document.getElementById("loading").classList.add("hidden");
+                document.getElementById("perfil-content").classList.remove("hidden");
+            } else {
+                document.getElementById("loading").innerText = "🐾 Esta placa aún no ha sido activada.";
             }
-
-            // Atajo de 3 clics para editar
-            let taps = 0;
-            const target = data.foto ? document.getElementById("foto-display") : document.getElementById("emoji-display");
-            target.onclick = () => {
-                taps++;
-                if(taps === 3) window.location.href = `editar.html?id=${placaId}`;
-            };
-
-            document.getElementById("loading").style.display = "none";
-            document.getElementById("contenido").style.display = "block";
+        } catch (error) {
+            console.error(error);
+            document.getElementById("loading").innerText = "❌ Error al cargar los datos.";
         }
     }
-    cargar();
+
+    // LÓGICA DEL BOTÓN EDITAR
+    document.getElementById("btn-ir-editar").onclick = () => {
+        window.location.href = `editar.html?id=${placaId}`;
+    };
+
+    cargarPerfil();
 </script>
 </body>
 </html>
