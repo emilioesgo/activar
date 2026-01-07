@@ -2,49 +2,36 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Editar Perfil | Huellitas Digitales</title>
     <style>
-        :root { --primary: #2bb673; --bg: #f4f7f6; --text: #333; }
-        body { font-family: 'Segoe UI', sans-serif; background: var(--bg); margin: 0; display: flex; justify-content: center; padding: 20px; }
-        .card { background: white; padding: 30px; border-radius: 24px; box-shadow: 0 15px 35px rgba(0,0,0,0.1); width: 100%; max-width: 400px; }
-        h2 { text-align: center; color: var(--text); margin-bottom: 20px; }
-        .id-badge { background: #e8f5e9; color: var(--primary); padding: 8px; text-align: center; border-radius: 12px; font-weight: bold; margin-bottom: 20px; border: 1px dashed var(--primary); }
-        
+        :root { --primary: #2bb673; --bg: #f4f7f6; }
+        body { font-family: 'Segoe UI', sans-serif; background: var(--bg); display: flex; justify-content: center; padding: 20px; }
+        .card { background: white; padding: 30px; border-radius: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); width: 100%; max-width: 400px; }
         .hidden { display: none; }
-        label { display: block; margin-bottom: 5px; font-size: 14px; color: #666; font-weight: 600; }
-        input, textarea { width: 100%; padding: 12px; margin-bottom: 15px; border: 1.5px solid #eee; border-radius: 10px; box-sizing: border-box; font-size: 16px; }
-        
-        button { width: 100%; padding: 16px; background: var(--primary); color: white; border: none; border-radius: 12px; font-size: 16px; font-weight: bold; cursor: pointer; transition: 0.3s; margin-top: 10px; }
-        button:hover { opacity: 0.9; transform: translateY(-1px); }
-        
-        #mensaje-status { text-align: center; font-weight: bold; margin-top: 15px; font-size: 14px; }
-        .loader { border: 3px solid #f3f3f3; border-top: 3px solid var(--primary); border-radius: 50%; width: 18px; height: 18px; animation: spin 1s linear infinite; display: inline-block; vertical-align: middle; margin-right: 8px; }
-        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        input, textarea { width: 100%; padding: 12px; margin: 10px 0; border: 1px solid #ddd; border-radius: 10px; box-sizing: border-box; }
+        button { width: 100%; padding: 15px; background: var(--primary); color: white; border: none; border-radius: 10px; cursor: pointer; font-weight: bold; }
+        #mensaje-status { text-align: center; margin-top: 10px; font-weight: bold; }
     </style>
 </head>
 <body>
 
 <div class="card">
-    <div id="placa-id-display" class="id-badge">ID PLACA: Cargando...</div>
-    <h2 id="titulo-pagina">🔒 Acceso Privado</h2>
-
+    <h2 id="titulo">🔒 Acceso al Perfil</h2>
+    
     <div id="seccion-login">
-        <p style="text-align: center; color: #666; font-size: 14px;">Ingresa el PIN de seguridad que creaste al activar la placa.</p>
-        <label>PIN de Seguridad:</label>
-        <input id="login-pin" type="password" placeholder="Ej: 1234" maxlength="10">
-        <button id="btn-verificar">Verificar Identidad</button>
+        <p>Ingresa tu PIN para editar los datos de tu mascota.</p>
+        <input id="login-pin" type="password" placeholder="Ingresa tu PIN">
+        <button id="btn-verificar">Verificar PIN</button>
     </div>
 
     <div id="seccion-editor" class="hidden">
-        <label>Nuevo Teléfono de Contacto:</label>
-        <input id="edit-tel" type="tel" placeholder="Tu nuevo número">
+        <label>Teléfono de contacto:</label>
+        <input id="edit-tel" type="tel">
         
-        <label>Información Médica o Notas:</label>
-        <textarea id="edit-msj" rows="5" placeholder="Alergias, dirección, indicaciones especiales..."></textarea>
+        <label>Información/Mensaje:</label>
+        <textarea id="edit-msj" rows="4"></textarea>
         
         <button id="btn-guardar">Guardar Cambios</button>
-        <p style="text-align: center; font-size: 12px; color: #999; margin-top: 15px;">Los cambios se verán reflejados al instante en el perfil público.</p>
     </div>
 
     <div id="mensaje-status"></div>
@@ -67,90 +54,44 @@
     const db = getFirestore(app);
 
     const urlParams = new URLSearchParams(window.location.search);
-    const placaId = urlParams.get('id') ? urlParams.get('id').toUpperCase() : null;
+    const placaId = urlParams.get('id')?.toUpperCase();
     const status = document.getElementById("mensaje-status");
 
-    // Mostrar el ID en pantalla
-    if(placaId) {
-        document.getElementById("placa-id-display").innerText = "ID PLACA: " + placaId;
-    } else {
-        document.getElementById("placa-id-display").innerText = "❌ ERROR: ID NO ENCONTRADO";
-        document.getElementById("btn-verificar").disabled = true;
-    }
-
-    // --- PASO 1: VERIFICAR PIN ---
+    // 1. VERIFICAR PIN
     document.getElementById("btn-verificar").onclick = async () => {
         const pinIngresado = document.getElementById("login-pin").value;
-        
-        if(!pinIngresado) {
-            status.innerText = "⚠️ Por favor, ingresa tu PIN.";
-            status.style.color = "orange";
-            return;
-        }
+        const docRef = doc(db, "placas", placaId);
+        const docSnap = await getDoc(docRef);
 
-        status.innerHTML = '<div class="loader"></div> Verificando...';
-        
-        try {
-            const docRef = doc(db, "placas", placaId);
-            const docSnap = await getDoc(docRef);
-
-            if (docSnap.exists()) {
-                const datos = docSnap.data();
-                
-                if (datos.pin === pinIngresado) {
-                    // PIN Correcto: Abrir editor
-                    status.innerText = "✅ Identidad confirmada";
-                    status.style.color = "green";
-                    
-                    document.getElementById("titulo-pagina").innerText = "📝 Editar Perfil";
-                    document.getElementById("seccion-login").classList.add("hidden");
-                    document.getElementById("seccion-editor").classList.remove("hidden");
-                    
-                    // Pre-cargar datos actuales
-                    document.getElementById("edit-tel").value = datos.telefono || "";
-                    document.getElementById("edit-msj").value = datos.mensaje || "";
-                } else {
-                    status.innerText = "❌ PIN incorrecto. Intenta de nuevo.";
-                    status.style.color = "red";
-                }
-            } else {
-                status.innerText = "❌ Esta placa no está registrada.";
-                status.style.color = "red";
-            }
-        } catch (error) {
-            status.innerText = "❌ Error de conexión.";
-            console.error(error);
-        }
-    };
-
-    // --- PASO 2: GUARDAR CAMBIOS ---
-    document.getElementById("btn-guardar").onclick = async () => {
-        const nuevoTel = document.getElementById("edit-tel").value;
-        const nuevoMsj = document.getElementById("edit-msj").value;
-
-        status.innerHTML = '<div class="loader"></div> Guardando cambios...';
-        
-        try {
-            const docRef = doc(db, "placas", placaId);
-            await updateDoc(docRef, {
-                telefono: nuevoTel,
-                mensaje: nuevoMsj
-            });
-
-            status.innerHTML = "✨ ¡Datos actualizados correctamente!";
+        if (docSnap.exists() && docSnap.data().pin === pinIngresado) {
+            status.innerText = "✅ PIN Correcto";
             status.style.color = "green";
+            document.getElementById("seccion-login").classList.add("hidden");
+            document.getElementById("seccion-editor").classList.remove("hidden");
             
-            // Opcional: Redirigir al perfil después de 2 segundos para ver los cambios
-            setTimeout(() => {
-                window.location.href = `perfil.html?id=${placaId}`;
-            }, 2000);
-
-        } catch (error) {
-            status.innerText = "❌ Error al guardar los cambios.";
+            // Cargar datos actuales
+            document.getElementById("edit-tel").value = docSnap.data().telefono;
+            document.getElementById("edit-msj").value = docSnap.data().mensaje;
+        } else {
+            status.innerText = "❌ PIN incorrecto o placa no activa";
             status.style.color = "red";
         }
     };
-</script>
 
+    // 2. GUARDAR CAMBIOS
+    document.getElementById("btn-guardar").onclick = async () => {
+        const docRef = doc(db, "placas", placaId);
+        try {
+            await updateDoc(docRef, {
+                telefono: document.getElementById("edit-tel").value,
+                mensaje: document.getElementById("edit-msj").value
+            });
+            status.innerText = "✨ ¡Datos actualizados con éxito!";
+            status.style.color = "green";
+        } catch (e) {
+            status.innerText = "❌ Error al guardar";
+        }
+    };
+</script>
 </body>
 </html>
