@@ -3,49 +3,55 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Perfil de Mascota | Huellitas Digitales</title>
+    <title>Perfil Mascota | Huellitas Digitales</title>
     <style>
-        body { font-family: 'Segoe UI', sans-serif; background-color: #f0f2f5; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; padding: 20px; }
-        .card { background: white; padding: 30px; border-radius: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); width: 100%; max-width: 400px; text-align: center; }
-        .pet-icon { font-size: 50px; margin-bottom: 10px; }
-        h1 { color: #2bb673; margin: 10px 0; font-size: 28px; }
-        .info-box { background: #f9f9f9; padding: 15px; border-radius: 12px; margin-bottom: 20px; border-left: 5px solid #2bb673; text-align: left; }
-        .btn { display: flex; align-items: center; justify-content: center; width: 100%; padding: 15px; margin-bottom: 12px; border: none; border-radius: 10px; font-size: 16px; font-weight: bold; cursor: pointer; text-decoration: none; transition: 0.3s; color: white; }
-        .btn-call { background-color: #007bff; }
-        .btn-whatsapp { background-color: #25d366; }
-        .btn:hover { opacity: 0.9; transform: scale(1.02); }
-        #mensaje-ayuda { font-style: italic; color: #666; }
-        .loader { border: 4px solid #f3f3f3; border-top: 4px solid #2bb673; border-radius: 50%; width: 30px; height: 30px; animation: spin 1s linear infinite; margin: 20px auto; }
+        :root { --primary: #2bb673; --bg: #f4f7f6; --text: #333; }
+        body { font-family: 'Segoe UI', Roboto, sans-serif; background: var(--bg); margin: 0; display: flex; justify-content: center; align-items: center; min-height: 100vh; padding: 20px; }
+        .card { background: white; padding: 30px; border-radius: 24px; box-shadow: 0 15px 35px rgba(0,0,0,0.1); width: 100%; max-width: 380px; text-align: center; position: relative; }
+        
+        /* Icono con pulsación visual al hacer clic */
+        .pet-avatar { font-size: 65px; cursor: pointer; transition: transform 0.1s; user-select: none; -webkit-tap-highlight-color: transparent; }
+        .pet-avatar:active { transform: scale(0.85); }
+        
+        h1 { margin: 10px 0; color: var(--text); font-size: 32px; }
+        .status-badge { display: inline-block; background: #e8f5e9; color: var(--primary); padding: 5px 15px; border-radius: 20px; font-size: 14px; font-weight: bold; margin-bottom: 20px; }
+        
+        .info-box { background: #fffbe6; border-left: 4px solid #ffe58f; padding: 15px; border-radius: 12px; text-align: left; margin-bottom: 25px; }
+        
+        .btn { display: flex; align-items: center; justify-content: center; width: 100%; padding: 16px; margin-bottom: 12px; border: none; border-radius: 12px; font-size: 17px; font-weight: bold; cursor: pointer; text-decoration: none; color: white; transition: 0.2s; box-sizing: border-box; }
+        .btn-call { background: #007bff; box-shadow: 0 4px 12px rgba(0,123,255,0.3); }
+        .btn-whatsapp { background: #25d366; box-shadow: 0 4px 12px rgba(37,211,102,0.3); }
+        
+        .footer-text { font-size: 12px; color: #999; margin-top: 25px; }
+        .loader { border: 4px solid #f3f3f3; border-top: 4px solid var(--primary); border-radius: 50%; width: 30px; height: 30px; animation: spin 1s linear infinite; margin: 20px auto; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
     </style>
 </head>
 <body>
 
-<div class="card" id="perfil-card">
-    <div id="loading">
-        <div class="loader"></div>
-        <p>Buscando información...</p>
-    </div>
+<div class="card">
+    <div id="loading"><div class="loader"></div><p>Buscando mascota...</p></div>
     
     <div id="contenido" style="display: none;">
-        <div class="pet-icon">🐾</div>
+        <div class="pet-avatar" id="edit-trigger">🐾</div>
+        <div class="status-badge">Placa Identificada</div>
         <h1 id="nombre-mascota">Nombre</h1>
         
         <div class="info-box">
-            <strong style="color: #333;">Mensaje del dueño:</strong><br>
-            <p id="mensaje-ayuda">Cargando mensaje...</p>
+            <strong style="font-size: 14px; color: #856404;">⚠️ Nota importante:</strong>
+            <p id="mensaje-ayuda" style="margin: 5px 0 0; color: #555;">Cargando datos...</p>
         </div>
 
         <a href="#" id="link-llamada" class="btn btn-call">📞 Llamar al Dueño</a>
         <a href="#" id="link-whatsapp" target="_blank" class="btn btn-whatsapp">💬 Enviar WhatsApp</a>
         
-        <p style="font-size: 12px; color: #999; margin-top: 20px;">Gracias por ayudar a que regrese a casa ❤️</p>
+        <p class="footer-text">Huellitas Digitales<br>Identificación Inteligente para Mascotas</p>
     </div>
 
     <div id="error-msg" style="display: none;">
-        <div class="pet-icon">⚠️</div>
-        <h2>Placa no encontrada</h2>
-        <p>Esta placa aún no ha sido activada o el ID es incorrecto.</p>
+        <div style="font-size: 50px;">🚫</div>
+        <h2>No activada</h2>
+        <p>Esta placa no está registrada en nuestro sistema.</p>
     </div>
 </div>
 
@@ -66,29 +72,37 @@
     const db = getFirestore(app);
 
     const urlParams = new URLSearchParams(window.location.search);
-    const placaId = urlParams.get('id');
+    const id = urlParams.get('id');
 
-    async function cargarPerfil() {
-        if (!placaId) {
+    async function cargarDatos() {
+        if (!id) {
             mostrarError();
             return;
         }
 
         try {
-            const ref = doc(db, "placas", placaId);
-            const snap = await getDoc(ref);
-
+            const snap = await getDoc(doc(db, "placas", id));
             if (snap.exists() && snap.data().activa) {
-                const datos = snap.data();
+                const data = snap.data();
+                document.getElementById("nombre-mascota").innerText = data.mascota;
+                document.getElementById("mensaje-ayuda").innerText = data.mensaje || "Sin observaciones médicas.";
                 
-                // Llenar datos en la página
-                document.getElementById("nombre-mascota").innerText = datos.mascota;
-                document.getElementById("mensaje-ayuda").innerText = datos.mensaje || "Sin mensaje adicional.";
-                
-                // Configurar botones de contacto
-                const tel = datos.telefono.replace(/\s+/g, ''); // Limpiar espacios
+                const tel = data.telefono.replace(/\D/g,'');
                 document.getElementById("link-llamada").href = `tel:${tel}`;
-                document.getElementById("link-whatsapp").href = `https://wa.me/${tel}?text=Hola, encontré a tu mascota ${datos.mascota}!`;
+                document.getElementById("link-whatsapp").href = `https://wa.me/${tel}?text=¡Hola! Encontré a tu mascota ${data.mascota}.`;
+
+                // --- ACCESO SECRETO ---
+                let clicks = 0;
+                let timer;
+                document.getElementById("edit-trigger").addEventListener("click", () => {
+                    clicks++;
+                    clearTimeout(timer);
+                    if (clicks === 3) {
+                        window.location.href = `editar.html?id=${id}`;
+                    }
+                    // Reiniciar contador si no hace los 3 clics en 2 segundos
+                    timer = setTimeout(() => { clicks = 0; }, 2000);
+                });
 
                 document.getElementById("loading").style.display = "none";
                 document.getElementById("contenido").style.display = "block";
@@ -106,8 +120,7 @@
         document.getElementById("error-msg").style.display = "block";
     }
 
-    cargarPerfil();
+    cargarDatos();
 </script>
-
 </body>
 </html>
