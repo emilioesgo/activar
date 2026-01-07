@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Panel de Ventas | Huellitas</title>
+    <style>
+        :root { --primary: #2196F3; --success: #2bb673; --bg: #1a1a1a; }
+        body { font-family: 'Segoe UI', sans-serif; background: var(--bg); color: white; margin: 0; display: flex; justify-content: center; padding: 20px; }
+        .app-container { width: 100%; max-width: 400px; background: #2a2a2a; padding: 30px; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+        
+        h2 { text-align: center; color: var(--primary); margin-top: 0; }
+        .status-badge { text-align: center; padding: 10px; border-radius: 10px; margin-bottom: 20px; font-weight: bold; font-size: 14px; }
+        .status-wait { background: #444; color: #aaa; }
+        .status-ready { background: #e8f5e9; color: #2e7d32; }
+        .status-blocked { background: #ffebee; color: #c62828; }
+
+        input { width: 100%; padding: 15px; background: #333; border: 1px solid #444; border-radius: 10px; color: white; font-size: 20px; text-align: center; text-transform: uppercase; margin-bottom: 15px; box-sizing: border-box; }
+        
+        button { width: 100%; padding: 15px; border: none; border-radius: 10px; font-size: 16px; font-weight: bold; cursor: pointer; transition: 0.3s; margin-bottom: 10px; }
+        .btn-search { background: var(--primary); color: white; }
+        .btn-sell { background: var(--success); color: white; display: none; }
+        
+        #info-placa { background: #333; padding: 15px; border-radius: 10px; margin-bottom: 15px; display: none; font-size: 14px; }
+        .loader { border: 3px solid #f3f3f3; border-top: 3px solid var(--primary); border-radius: 50%; width: 20px; height: 20px; animation: spin 1s linear infinite; display: inline-block; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+    </style>
+</head>
+<body>
+
+<div class="app-container">
+    <h2>🛒 Terminal de Venta</h2>
+    <div id="status-display" class="status-badge status-wait">Esperando ID...</div>
+
+    <input type="text" id="id-venta" placeholder="ID DE PLACA" maxlength="6">
+    
+    <button id="btn-buscar" class="btn-search">🔍 Verificar Placa</button>
+
+    <div id="info-placa">
+        <p><strong>Estado:</strong> <span id="txt-estado">--</span></p>
+        <p><strong>Pagada:</strong> <span id="txt-pagada">--</span></p>
+    </div>
+
+    <button id="btn-habilitar" class="btn-sell">✅ MARCAR COMO PAGADA</button>
+    
+    <div id="msg" style="text-align:center; margin-top:10px; font-size:13px;"></div>
+</div>
+
+<script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+    import { getFirestore, doc, getDoc, updateDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+    const firebaseConfig = {
+        apiKey: "AIzaSyCqROIzmp2guo2XLbdYrSW3ujlUBc7ngOc",
+        authDomain: "huellitas-digitales.firebaseapp.com",
+        projectId: "huellitas-digitales",
+        storageBucket: "huellitas-digitales.firebasestorage.app",
+        messagingSenderId: "523935942496",
+        appId: "1:523935942496:web:0bb3ad3b28c189345fc005"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+
+    const input = document.getElementById('id-venta');
+    const btnBuscar = document.getElementById('btn-buscar');
+    const btnHabilitar = document.getElementById('btn-habilitar');
+    const infoBox = document.getElementById('info-placa');
+    const statusDisp = document.getElementById('status-display');
+
+    btnBuscar.onclick = async () => {
+        const id = input.value.trim().toUpperCase();
+        if(!id) return;
+
+        btnBuscar.innerHTML = '<div class="loader"></div>';
+        const docRef = doc(db, "placas", id);
+        const docSnap = await getDoc(docRef);
+
+        if (docSnap.exists()) {
+            const data = docSnap.data();
+            infoBox.style.display = 'block';
+            document.getElementById('txt-estado').innerText = data.activa ? "YA ACTIVADA POR CLIENTE" : "SIN ACTIVAR";
+            document.getElementById('txt-pagada').innerText = data.pagada ? "SÍ (HABILITADA)" : "NO (BLOQUEADA)";
+            
+            if(!data.pagada) {
+                btnHabilitar.style.display = 'block';
+                statusDisp.className = "status-badge status-blocked";
+                statusDisp.innerText = "PLACA BLOQUEADA PARA VENTA";
+            } else {
+                btnHabilitar.style.display = 'none';
+                statusDisp.className = "status-badge status-ready";
+                statusDisp.innerText = "PLACA YA LISTA / VENDIDA";
+            }
+        } else {
+            alert("Ese ID no existe en el inventario.");
+        }
+        btnBuscar.innerText = "🔍 Verificar Placa";
+    };
+
+    btnHabilitar.onclick = async () => {
+        const id = input.value.trim().toUpperCase();
+        btnHabilitar.disabled = true;
+        btnHabilitar.innerText = "PROCESANDO PAGO...";
+
+        try {
+            await updateDoc(doc(db, "placas", id), {
+                pagada: true
+            });
+            alert("✨ ¡Placa habilitada! El cliente ya puede activarla.");
+            location.reload();
+        } catch (e) {
+            alert("Error: " + e.message);
+            btnHabilitar.disabled = false;
+        }
+    };
+</script>
+</body>
+</html>
