@@ -8,48 +8,51 @@
         :root { --primary: #2bb673; --bg: #f4f7f6; --text: #333; }
         body { font-family: 'Segoe UI', sans-serif; background: var(--bg); margin: 0; display: flex; justify-content: center; min-height: 100vh; }
         
-        /* Contenedor Principal */
-        .container { width: 100%; max-width: 450px; background: white; min-height: 100vh; position: relative; display: none; /* Se muestra al cargar datos */ }
+        /* Contenedor Principal de Perfil Activo */
+        .container { width: 100%; max-width: 450px; background: white; min-height: 100vh; position: relative; display: none; }
 
         /* Cabecera con Foto */
-        .header { width: 100%; height: 300px; position: relative; background: #ddd; }
+        .header { width: 100%; height: 350px; position: relative; background: #eee; }
         .header img { width: 100%; height: 100%; object-fit: cover; }
-        .header::after { content: ''; position: absolute; bottom: 0; left: 0; width: 100%; height: 50%; background: linear-gradient(transparent, white); }
+        .header::after { content: ''; position: absolute; bottom: 0; left: 0; width: 100%; height: 60%; background: linear-gradient(transparent, white); }
 
-        /* Información */
-        .content { padding: 20px; text-align: center; margin-top: -50px; position: relative; z-index: 10; }
-        .nombre-mascota { font-size: 32px; font-weight: bold; color: var(--text); margin: 10px 0; }
-        .id-label { background: #e8f5e9; color: var(--primary); padding: 5px 15px; border-radius: 20px; font-size: 12px; font-weight: bold; }
+        /* Información Mascota */
+        .content { padding: 25px; text-align: center; margin-top: -60px; position: relative; z-index: 10; }
+        .nombre-mascota { font-size: 36px; font-weight: bold; color: var(--text); margin: 10px 0; }
+        .id-label { background: #e8f5e9; color: var(--primary); padding: 6px 18px; border-radius: 20px; font-size: 13px; font-weight: bold; text-transform: uppercase; }
         
-        .info-box { background: #f9f9f9; padding: 20px; border-radius: 20px; margin: 20px 0; text-align: left; border-left: 5px solid var(--primary); }
-        .info-box h3 { margin-top: 0; font-size: 16px; color: #666; }
-        .info-box p { margin: 0; color: #444; line-height: 1.4; }
+        .info-box { background: #f9f9f9; padding: 20px; border-radius: 22px; margin: 25px 0; text-align: left; border-left: 6px solid var(--primary); box-shadow: 0 4px 12px rgba(0,0,0,0.03); }
+        .info-box h3 { margin-top: 0; font-size: 16px; color: #777; text-transform: uppercase; letter-spacing: 1px; }
+        .info-box p { margin: 0; color: #444; line-height: 1.6; font-size: 16px; }
 
         /* Botones de Acción */
-        .actions { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; padding: 0 20px; }
-        .btn { padding: 15px; border-radius: 15px; text-decoration: none; font-weight: bold; display: flex; align-items: center; justify-content: center; gap: 10px; transition: 0.3s; }
-        .btn-call { background: var(--primary); color: white; }
-        .btn-wa { background: #25D366; color: white; }
-        .btn-edit { background: #f0f0f0; color: #666; grid-column: span 2; margin-top: 10px; }
+        .actions { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; padding: 0 5px; }
+        .btn { padding: 18px; border-radius: 16px; text-decoration: none; font-weight: bold; display: flex; align-items: center; justify-content: center; gap: 10px; transition: 0.3s; font-size: 16px; }
+        .btn-call { background: var(--primary); color: white; box-shadow: 0 6px 15px rgba(43, 182, 115, 0.3); }
+        .btn-wa { background: #25D366; color: white; box-shadow: 0 6px 15px rgba(37, 211, 102, 0.3); }
+        .btn-edit { background: #f0f0f0; color: #777; grid-column: span 2; margin-top: 15px; font-size: 14px; }
         
-        .btn:active { transform: scale(0.95); }
+        .btn:active { transform: scale(0.96); }
 
-        /* Estilos Pantalla de Carga y Errores */
-        .status-screen { text-align: center; padding: 50px 20px; width: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; }
-        .loader { border: 4px solid #f3f3f3; border-top: 4px solid var(--primary); border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; }
+        /* Pantallas de Estado (Carga / No activada) */
+        .status-screen { text-align: center; padding: 40px 20px; width: 100%; display: flex; align-items: center; justify-content: center; flex-direction: column; }
+        .loader { border: 4px solid #f3f3f3; border-top: 4px solid var(--primary); border-radius: 50%; width: 45px; height: 45px; animation: spin 1s linear infinite; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+        /* Estilo Tarjeta Comercial (Placa Nueva) */
+        .promo-card { background: white; padding: 40px 25px; border-radius: 30px; box-shadow: 0 15px 40px rgba(0,0,0,0.1); max-width: 380px; width: 90%; border: 1px solid #eee; }
     </style>
 </head>
 <body>
 
 <div id="status-screen" class="status-screen">
     <div id="loader" class="loader"></div>
-    <div id="status-msg" style="margin-top: 20px; color: #666;">Cargando perfil...</div>
+    <p id="status-msg" style="margin-top: 20px; color: #888;">Consultando base de datos...</p>
 </div>
 
 <div class="container" id="perfil-container">
     <div class="header">
-        <img id="foto-mascota" src="" alt="Foto de mascota">
+        <img id="foto-mascota" src="" alt="Foto de la mascota">
     </div>
 
     <div class="content">
@@ -57,18 +60,19 @@
         <h1 class="nombre-mascota" id="nombre-mascota">Nombre</h1>
         
         <div class="info-box">
-            <h3>Información Importante:</h3>
-            <p id="mensaje-mascota">Sin notas adicionales.</p>
+            <h3>Notas de Salud/Contacto:</h3>
+            <p id="mensaje-mascota">Cargando notas...</p>
         </div>
 
         <div class="actions">
             <a href="#" id="btn-llamar" class="btn btn-call">📞 Llamar Dueño</a>
             <a href="#" id="btn-whatsapp" class="btn btn-wa">💬 WhatsApp</a>
-            <a href="#" id="btn-editar" class="btn btn-edit">⚙️ Editar mi información</a>
+            <a href="#" id="btn-editar" class="btn btn-edit">⚙️ Gestionar este perfil</a>
         </div>
 
-        <footer style="margin-top: 40px; color: #ccc; font-size: 11px;">
-            &copy; 2026 Huellitas Digitales <br> Protegiendo a los que no tienen voz.
+        <footer style="margin-top: 50px; color: #bbb; font-size: 12px; line-height: 1.5;">
+            🛡️ <b>Huellitas Digitales 2026</b> <br>
+            Este perfil está protegido por tecnología de vida digital.
         </footer>
     </div>
 </div>
@@ -98,7 +102,7 @@
 
     async function cargarPerfil() {
         if (!placaId) {
-            statusMsg.innerText = "ID de placa no válido.";
+            statusMsg.innerHTML = "❌ ID no detectado.<br>Escanea el código QR de nuevo.";
             document.getElementById("loader").style.display = "none";
             return;
         }
@@ -109,44 +113,32 @@
             if (docSnap.exists()) {
                 const data = docSnap.data();
 
-                // --- MEJORA: SI LA PLACA NO ESTÁ ACTIVA ---
+                // --- CASO: PLACA NO ACTIVADA (PANTALLA COMERCIAL) ---
                 if (data.activa === false) {
                     statusScreen.innerHTML = `
-                        <div style="background:white; padding:35px; border-radius:30px; box-shadow:0 15px 35px rgba(0,0,0,0.1); max-width:350px;">
-                            <div style="font-size:60px;">✨</div>
-                            <h2 style="color:#333;">¡Placa nueva!</h2>
-                            <p style="color:#666; font-size:14px;">Esta placa inteligente de <b>Huellitas Digitales</b> aún no tiene dueño registrado.</p>
-                            <a href="index.html?id=${placaId}" style="display:block; background:var(--primary); color:white; text-decoration:none; padding:15px; border-radius:12px; font-weight:bold; margin-bottom:10px;">🚀 Activar ahora</a>
-                            <a href="https://tu-tienda.com" style="display:block; background:#f0f0f0; color:#666; text-decoration:none; padding:12px; border-radius:12px; font-size:14px;">🛍️ Comprar otra</a>
+                        <div class="promo-card">
+                            <div style="font-size:70px; margin-bottom:15px; color:var(--primary);">🐾</div>
+                            <h2 style="color:#333; margin-bottom:15px; font-size:26px;">¡Placa nueva detectada!</h2>
+                            <p style="color:#555; font-size:16px; line-height:1.6; margin-bottom:30px;">
+                                Estás a <b style="color:var(--primary);">un solo paso</b> de asegurar a tu mascota y brindarle la protección de una <b>vida digital</b>.
+                                <br><br>
+                                Completa sus datos ahora y activa su perfil en segundos.
+                            </p>
+                            <a href="index.html?id=${placaId}" 
+                               style="display:block; background:var(--primary); color:white; text-decoration:none; padding:18px; border-radius:15px; font-weight:bold; font-size:18px; margin-bottom:15px; box-shadow: 0 8px 20px rgba(43,182,115,0.3);">
+                               🚀 Activar ahora
+                            </a>
+                            <a href="https://tu-tienda.com" 
+                               style="display:block; background:#f8f9fa; color:#666; text-decoration:none; padding:14px; border-radius:15px; font-weight:bold; font-size:14px; border:1px solid #eee;">
+                               🛍️ Comprar otra placa
+                            </a>
                         </div>`;
                     return;
                 }
 
-                // --- SI ESTÁ ACTIVA: MOSTRAR PERFIL ---
+                // --- CASO: PERFIL ACTIVO (MOSTRAR DATOS) ---
                 statusScreen.style.display = "none";
                 perfilContainer.style.display = "block";
 
-                document.getElementById("foto-mascota").src = data.foto || "https://via.placeholder.com/400x300?text=Sin+Foto";
+                document.getElementById("foto-mascota").src = data.foto || "https://via.placeholder.com/400x400?text=Mascota+Feliz";
                 document.getElementById("nombre-mascota").innerText = data.mascota;
-                document.getElementById("placa-id-txt").innerText = "ID PLACA: " + placaId;
-                document.getElementById("mensaje-mascota").innerText = data.mensaje || "Soy una mascota muy amada, por favor ayúdame a volver a casa.";
-
-                // Configurar Botones
-                document.getElementById("btn-llamar").href = "tel:+" + data.telefono;
-                document.getElementById("btn-whatsapp").href = `https://wa.me/${data.telefono}?text=Hola, encontré a ${data.mascota}. Me gustaría ayudarte a que regrese a casa.`;
-                document.getElementById("btn-editar").href = "editar.html?id=" + placaId;
-
-            } else {
-                statusMsg.innerHTML = "❌ Esta placa no existe en nuestro inventario.<br><br><a href='https://tu-tienda.com' style='color:var(--primary)'>Comprar placa oficial</a>";
-                document.getElementById("loader").style.display = "none";
-            }
-        } catch (e) {
-            statusMsg.innerText = "Error de conexión: " + e.message;
-        }
-    }
-
-    cargarPerfil();
-</script>
-
-</body>
-</html>
