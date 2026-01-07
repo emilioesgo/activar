@@ -3,124 +3,61 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Perfil Mascota | Huellitas Digitales</title>
+    <title>Perfil Mascota</title>
     <style>
-        :root { --primary: #2bb673; --bg: #f4f7f6; --text: #333; }
-        body { font-family: 'Segoe UI', Roboto, sans-serif; background: var(--bg); margin: 0; display: flex; justify-content: center; align-items: center; min-height: 100vh; padding: 20px; }
-        .card { background: white; padding: 30px; border-radius: 24px; box-shadow: 0 15px 35px rgba(0,0,0,0.1); width: 100%; max-width: 380px; text-align: center; position: relative; }
-        
-        /* Icono con pulsación visual al hacer clic */
-        .pet-avatar { font-size: 65px; cursor: pointer; transition: transform 0.1s; user-select: none; -webkit-tap-highlight-color: transparent; }
-        .pet-avatar:active { transform: scale(0.85); }
-        
-        h1 { margin: 10px 0; color: var(--text); font-size: 32px; }
-        .status-badge { display: inline-block; background: #e8f5e9; color: var(--primary); padding: 5px 15px; border-radius: 20px; font-size: 14px; font-weight: bold; margin-bottom: 20px; }
-        
-        .info-box { background: #fffbe6; border-left: 4px solid #ffe58f; padding: 15px; border-radius: 12px; text-align: left; margin-bottom: 25px; }
-        
-        .btn { display: flex; align-items: center; justify-content: center; width: 100%; padding: 16px; margin-bottom: 12px; border: none; border-radius: 12px; font-size: 17px; font-weight: bold; cursor: pointer; text-decoration: none; color: white; transition: 0.2s; box-sizing: border-box; }
-        .btn-call { background: #007bff; box-shadow: 0 4px 12px rgba(0,123,255,0.3); }
-        .btn-whatsapp { background: #25d366; box-shadow: 0 4px 12px rgba(37,211,102,0.3); }
-        
-        .footer-text { font-size: 12px; color: #999; margin-top: 25px; }
-        .loader { border: 4px solid #f3f3f3; border-top: 4px solid var(--primary); border-radius: 50%; width: 30px; height: 30px; animation: spin 1s linear infinite; margin: 20px auto; }
-        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        body { font-family: sans-serif; background: #f4f7f6; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; }
+        .card { background: white; padding: 30px; border-radius: 25px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); width: 100%; max-width: 350px; text-align: center; }
+        #pet-img { width: 150px; height: 150px; border-radius: 50%; object-fit: cover; border: 5px solid #2bb673; margin-bottom: 15px; display: none; }
+        .huella { font-size: 80px; cursor: pointer; }
+        .btn { display: block; padding: 15px; margin: 10px 0; border-radius: 10px; color: white; text-decoration: none; font-weight: bold; }
+        .btn-call { background: #007bff; }
+        .btn-wa { background: #25d366; }
     </style>
 </head>
 <body>
-
 <div class="card">
-    <div id="loading"><div class="loader"></div><p>Buscando mascota...</p></div>
-    
-    <div id="contenido" style="display: none;">
-        <div class="pet-avatar" id="edit-trigger">🐾</div>
-        <div class="status-badge">Placa Identificada</div>
-        <h1 id="nombre-mascota">Nombre</h1>
-        
-        <div class="info-box">
-            <strong style="font-size: 14px; color: #856404;">⚠️ Nota importante:</strong>
-            <p id="mensaje-ayuda" style="margin: 5px 0 0; color: #555;">Cargando datos...</p>
-        </div>
-
-        <a href="#" id="link-llamada" class="btn btn-call">📞 Llamar al Dueño</a>
-        <a href="#" id="link-whatsapp" target="_blank" class="btn btn-whatsapp">💬 Enviar WhatsApp</a>
-        
-        <p class="footer-text">Huellitas Digitales<br>Identificación Inteligente para Mascotas</p>
-    </div>
-
-    <div id="error-msg" style="display: none;">
-        <div style="font-size: 50px;">🚫</div>
-        <h2>No activada</h2>
-        <p>Esta placa no está registrada en nuestro sistema.</p>
-    </div>
+    <img id="pet-img" src="">
+    <div id="huella-icon" class="huella">🐾</div>
+    <h1 id="pet-name">Cargando...</h1>
+    <p id="pet-msg" style="background: #fffbe6; padding: 10px; border-radius: 10px;"></p>
+    <a id="call-link" href="#" class="btn btn-call">📞 Llamar al Dueño</a>
+    <a id="wa-link" href="#" class="btn btn-wa">💬 Enviar WhatsApp</a>
 </div>
 
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
     import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
-    const firebaseConfig = {
-        apiKey: "AIzaSyCqROIzmp2guo2XLbdYrSW3ujlUBc7ngOc",
-        authDomain: "huellitas-digitales.firebaseapp.com",
-        projectId: "huellitas-digitales",
-        storageBucket: "huellitas-digitales.firebasestorage.app",
-        messagingSenderId: "523935942496",
-        appId: "1:523935942496:web:0bb3ad3b28c189345fc005"
-    };
-
+    const firebaseConfig = { /* Mismo config de arriba */ };
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
 
-    const urlParams = new URLSearchParams(window.location.search);
-    const id = urlParams.get('id');
+    const placaId = new URLSearchParams(window.location.search).get('id');
 
-    async function cargarDatos() {
-        if (!id) {
-            mostrarError();
-            return;
-        }
-
-        try {
-            const snap = await getDoc(doc(db, "placas", id));
-            if (snap.exists() && snap.data().activa) {
-                const data = snap.data();
-                document.getElementById("nombre-mascota").innerText = data.mascota;
-                document.getElementById("mensaje-ayuda").innerText = data.mensaje || "Sin observaciones médicas.";
-                
-                const tel = data.telefono.replace(/\D/g,'');
-                document.getElementById("link-llamada").href = `tel:${tel}`;
-                document.getElementById("link-whatsapp").href = `https://wa.me/${tel}?text=¡Hola! Encontré a tu mascota ${data.mascota}.`;
-
-                // --- ACCESO SECRETO ---
-                let clicks = 0;
-                let timer;
-                document.getElementById("edit-trigger").addEventListener("click", () => {
-                    clicks++;
-                    clearTimeout(timer);
-                    if (clicks === 3) {
-                        window.location.href = `editar.html?id=${id}`;
-                    }
-                    // Reiniciar contador si no hace los 3 clics en 2 segundos
-                    timer = setTimeout(() => { clicks = 0; }, 2000);
-                });
-
-                document.getElementById("loading").style.display = "none";
-                document.getElementById("contenido").style.display = "block";
-            } else {
-                mostrarError();
+    async function load() {
+        const snap = await getDoc(doc(db, "placas", placaId));
+        if(snap.exists()) {
+            const d = snap.data();
+            document.getElementById("pet-name").innerText = d.mascota;
+            document.getElementById("pet-msg").innerText = d.mensaje || "Sin avisos médicos.";
+            if(d.foto) {
+                document.getElementById("pet-img").src = d.foto;
+                document.getElementById("pet-img").style.display = "inline-block";
+                document.getElementById("huella-icon").style.display = "none";
             }
-        } catch (e) {
-            console.error(e);
-            mostrarError();
+            document.getElementById("call-link").href = "tel:" + d.telefono;
+            document.getElementById("wa-link").href = `https://wa.me/${d.telefono.replace(/\+/g,'')}?text=Encontré a ${d.mascota}`;
+            
+            // Atajo: 3 clics en la huella/foto para editar
+            let taps = 0;
+            const trigger = d.foto ? document.getElementById("pet-img") : document.getElementById("huella-icon");
+            trigger.onclick = () => {
+                taps++;
+                if(taps === 3) window.location.href = `editar.html?id=${placaId}`;
+            };
         }
     }
-
-    function mostrarError() {
-        document.getElementById("loading").style.display = "none";
-        document.getElementById("error-msg").style.display = "block";
-    }
-
-    cargarDatos();
+    load();
 </script>
 </body>
 </html>
