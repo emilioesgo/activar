@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Perfil de Mascota | Huellitas Digitales</title>
     <style>
-        :root { --primary: #2bb673; --bg: #f4f7f6; --text: #333; }
+        :root { --primary: #2bb673; --whatsapp: #25D366; --bg: #f4f7f6; --text: #333; }
         body { font-family: 'Segoe UI', sans-serif; background: var(--bg); margin: 0; display: flex; justify-content: center; padding: 20px; }
         .card { background: white; padding: 0; border-radius: 24px; box-shadow: 0 15px 35px rgba(0,0,0,0.1); width: 100%; max-width: 450px; overflow: hidden; text-align: center; }
         
@@ -16,19 +16,20 @@
         h1 { color: var(--primary); margin: 0 0 10px 0; font-size: 28px; }
         .badge-id { display: inline-block; background: #f0f0f0; padding: 5px 15px; border-radius: 20px; font-size: 12px; font-weight: bold; color: #888; margin-bottom: 20px; }
         
-        .dato-contacto { background: #f9f9f9; padding: 15px; border-radius: 15px; margin-bottom: 15px; border-left: 5px solid var(--primary); text-align: left; }
+        .mensaje-box { background: #fffde7; padding: 15px; border-radius: 15px; margin-bottom: 25px; border: 1px dashed #ffd54f; font-style: italic; color: #555; text-align: left; }
         .label { font-size: 12px; color: #999; text-transform: uppercase; font-weight: bold; }
-        .valor { font-size: 18px; color: var(--text); display: block; margin-top: 5px; text-decoration: none; }
-        
-        .mensaje-box { background: #fffde7; padding: 15px; border-radius: 15px; margin-top: 20px; border: 1px dashed #ffd54f; font-style: italic; color: #555; }
-        
-        /* Botones de acción */
-        .btn-call { background: var(--primary); color: white; text-decoration: none; padding: 15px; border-radius: 12px; display: block; font-weight: bold; margin-top: 20px; transition: 0.3s; }
-        .btn-edit { background: transparent; color: #aaa; border: 1px solid #ddd; padding: 10px 20px; border-radius: 20px; cursor: pointer; font-size: 13px; margin-top: 40px; transition: 0.3s; }
-        .btn-edit:hover { background: #f0f0f0; color: #666; }
 
+        /* Botones de acción */
+        .btn-action { text-decoration: none; padding: 16px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-weight: bold; margin-bottom: 12px; transition: 0.3s; font-size: 16px; border: none; width: 100%; cursor: pointer; }
+        
+        .btn-call { background: var(--primary); color: white; }
+        .btn-whatsapp { background: var(--whatsapp); color: white; }
+        
+        .btn-edit { background: transparent; color: #aaa; border: 1px solid #ddd; padding: 10px 20px; border-radius: 20px; cursor: pointer; font-size: 13px; margin-top: 30px; }
+        
         #loading { padding: 50px; color: #999; }
         .hidden { display: none; }
+        .icon { margin-right: 10px; font-size: 20px; }
     </style>
 </head>
 <body>
@@ -45,17 +46,18 @@
             <span id="placa-id" class="badge-id">ID: ----</span>
             <h1 id="mascota-nombre">Nombre</h1>
             
-            <div class="dato-contacto">
-                <span class="label">Contacto del Dueño</span>
-                <a id="mascota-tel-link" href="" class="valor">📞 <span id="mascota-tel">---</span></a>
-            </div>
-
             <div id="mensaje-container" class="mensaje-box">
-                <span class="label">Nota importante:</span>
-                <p id="mascota-msj" style="margin: 5px 0 0 0;">Sin mensajes adicionales.</p>
+                <span class="label">Mensaje del dueño:</span>
+                <p id="mascota-msj" style="margin: 5px 0 0 0;">Cargando notas...</p>
             </div>
 
-            <a id="btn-llamar" href="" class="btn-call">LLAMAR AL DUEÑO</a>
+            <a id="btn-llamar" href="#" class="btn-action btn-call">
+                <span class="icon">📞</span> LLAMAR AL DUEÑO
+            </a>
+
+            <a id="btn-whatsapp" href="#" target="_blank" class="btn-action btn-whatsapp">
+                <span class="icon">💬</span> ENVIAR WHATSAPP
+            </a>
 
             <button id="btn-ir-editar" class="btn-edit">⚙️ Soy el dueño, editar datos</button>
         </div>
@@ -94,18 +96,26 @@
             if (docSnap.exists() && docSnap.data().activa === true) {
                 const datos = docSnap.data();
 
-                // Llenar datos en el HTML
+                // Llenar datos
                 document.getElementById("placa-id").innerText = "ID: " + placaId;
                 document.getElementById("mascota-nombre").innerText = datos.mascota;
-                document.getElementById("mascota-tel").innerText = datos.telefono;
                 document.getElementById("mascota-msj").innerText = datos.mensaje || "Sin notas adicionales.";
                 document.getElementById("mascota-foto").src = datos.foto || "https://via.placeholder.com/300?text=Sin+Foto";
                 
-                // Configurar enlaces de llamada
-                document.getElementById("mascota-tel-link").href = "tel:" + datos.telefono;
+                // Configurar Llamada
                 document.getElementById("btn-llamar").href = "tel:" + datos.telefono;
 
-                // Mostrar contenido y ocultar loading
+                // Configurar WhatsApp con mensaje personalizado
+                // Formato: https://wa.me/NUMERO?text=MENSAJE_CODIFICADO
+                const nombreMascota = datos.mascota;
+                const mensajeWa = `Hola, encontré a ${nombreMascota} 🐶🐱, contáctame pronto.`;
+                const mensajeEncoded = encodeURIComponent(mensajeWa);
+                
+                // Quitamos espacios o símbolos del teléfono para el link de WhatsApp
+                const telLimpio = datos.telefono.replace(/\D/g,''); 
+                document.getElementById("btn-whatsapp").href = `https://wa.me/${telLimpio}?text=${mensajeEncoded}`;
+
+                // Mostrar contenido
                 document.getElementById("loading").classList.add("hidden");
                 document.getElementById("perfil-content").classList.remove("hidden");
             } else {
@@ -117,7 +127,6 @@
         }
     }
 
-    // LÓGICA DEL BOTÓN EDITAR
     document.getElementById("btn-ir-editar").onclick = () => {
         window.location.href = `editar.html?id=${placaId}`;
     };
