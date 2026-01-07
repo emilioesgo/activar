@@ -6,45 +6,47 @@
     <title>Activar Placa | Huellitas Digitales</title>
     <style>
         :root { --primary: #2bb673; --bg: #f4f7f6; --text: #333; }
-        body { font-family: 'Segoe UI', Roboto, sans-serif; background: var(--bg); margin: 0; display: flex; justify-content: center; padding: 20px; }
+        body { font-family: 'Segoe UI', sans-serif; background: var(--bg); margin: 0; display: flex; justify-content: center; padding: 20px; }
         .card { background: white; padding: 30px; border-radius: 24px; box-shadow: 0 15px 35px rgba(0,0,0,0.1); width: 100%; max-width: 400px; }
-        h2 { text-align: center; color: var(--text); margin-bottom: 25px; }
-        .id-badge { background: #e8f5e9; color: var(--primary); padding: 8px; text-align: center; border-radius: 12px; font-weight: bold; margin-bottom: 25px; border: 1px dashed var(--primary); }
+        h2 { text-align: center; color: var(--text); margin-bottom: 20px; }
+        .id-badge { background: #e8f5e9; color: var(--primary); padding: 8px; text-align: center; border-radius: 12px; font-weight: bold; margin-bottom: 20px; border: 1px dashed var(--primary); }
         label { display: block; margin-bottom: 5px; font-size: 14px; color: #666; font-weight: 600; }
-        input, textarea { width: 100%; padding: 12px; margin-bottom: 18px; border: 1.5px solid #eee; border-radius: 12px; box-sizing: border-box; font-size: 16px; background: #fafafa; }
-        input:focus { border-color: var(--primary); outline: none; background: #fff; }
-        button { width: 100%; padding: 16px; background: var(--primary); color: white; border: none; border-radius: 12px; font-size: 16px; font-weight: bold; cursor: pointer; transition: 0.3s; box-shadow: 0 4px 12px rgba(43,182,115,0.2); }
-        button:hover { transform: translateY(-2px); opacity: 0.9; }
-        #status { text-align: center; font-weight: bold; margin-top: 15px; font-size: 14px; color: #555; }
-        .loader { border: 3px solid #f3f3f3; border-top: 3px solid var(--primary); border-radius: 50%; width: 20px; height: 20px; animation: spin 1s linear infinite; display: inline-block; vertical-align: middle; margin-right: 10px; }
-        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        input, textarea { width: 100%; padding: 12px; margin-bottom: 15px; border: 1.5px solid #eee; border-radius: 10px; box-sizing: border-box; font-size: 16px; }
+        button { width: 100%; padding: 16px; background: var(--primary); color: white; border: none; border-radius: 12px; font-size: 16px; font-weight: bold; cursor: pointer; transition: 0.3s; }
+        button:hover { opacity: 0.9; transform: translateY(-1px); }
+        #status { text-align: center; font-weight: bold; margin-top: 15px; font-size: 14px; }
     </style>
 </head>
 <body>
 
 <div class="card">
-    <div id="placa-id-display" class="id-badge">ID: No detectado</div>
+    <div id="placa-id-display" class="id-badge">ID: Cargando...</div>
     <h2>Activar Mascota</h2>
     
-    <label>PIN de Seguridad (para editar después):</label>
+    <label>Correo Electrónico:</label>
+    <input id="correo" type="email" placeholder="Para recibir tu PIN y respaldo">
+
+    <label>Crea un PIN de Seguridad:</label>
     <input id="pin" type="password" placeholder="Ej: 1234">
     
     <label>Nombre de la Mascota:</label>
     <input id="mascota" type="text" placeholder="¿Cómo se llama?">
     
-    <label>Teléfono de Contacto (con código de país):</label>
+    <label>Teléfono de Contacto:</label>
     <input id="telefono" type="tel" placeholder="Ej: +521234567890">
     
     <label>Foto de la Mascota:</label>
     <input id="foto-input" type="file" accept="image/*">
     
-    <label>Información Médica o Notas:</label>
-    <textarea id="mensaje" rows="3" placeholder="Ej: Es alérgico al pollo o necesita medicina..."></textarea>
+    <label>Información Médica:</label>
+    <textarea id="mensaje" rows="2" placeholder="Alergias, medicinas, etc."></textarea>
     
     <button id="btnActivar">Activar Ahora</button>
     
     <div id="status"></div>
 </div>
+
+<script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
 
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
@@ -55,7 +57,6 @@
         apiKey: "AIzaSyCqROIzmp2guo2XLbdYrSW3ujlUBc7ngOc",
         authDomain: "huellitas-digitales.firebaseapp.com",
         projectId: "huellitas-digitales",
-        // CORRECCIÓN CLAVE: Usamos el dominio que autorizamos en Cloud Shell
         storageBucket: "huellitas-digitales.firebasestorage.app", 
         messagingSenderId: "523935942496",
         appId: "1:523935942496:web:0bb3ad3b28c189345fc005"
@@ -65,72 +66,72 @@
     const db = getFirestore(app);
     const storage = getStorage(app);
 
-    const urlParams = new URLSearchParams(window.location.search);
-    const placaId = urlParams.get('id');
+    // Inicializar EmailJS con tu PUBLIC KEY (Búscala en tu cuenta de EmailJS)
+    emailjs.init("VfH1GOnB2X8T6S_83"); // Reemplaza esta por la tuya si es distinta
 
-    if(placaId) {
-        document.getElementById("placa-id-display").innerText = "ID PLACA: " + placaId;
-    } else {
-        document.getElementById("placa-id-display").style.background = "#ffebee";
-        document.getElementById("placa-id-display").style.color = "#c62828";
-        document.getElementById("placa-id-display").innerText = "⚠️ ERROR: Falta ID de Placa";
-    }
+    const placaId = new URLSearchParams(window.location.search).get('id');
+    if(placaId) document.getElementById("placa-id-display").innerText = "ID PLACA: " + placaId;
 
     document.getElementById("btnActivar").addEventListener("click", async () => {
+        const correo = document.getElementById("correo").value;
         const pin = document.getElementById("pin").value;
         const nombre = document.getElementById("mascota").value;
         const tel = document.getElementById("telefono").value;
         const fotoFile = document.getElementById("foto-input").files[0];
         const statusDiv = document.getElementById("status");
 
-        if(!placaId || !pin || !nombre || !tel) {
-            statusDiv.innerHTML = "⚠️ Por favor, llena todos los campos obligatorios.";
+        if(!placaId || !correo || !pin || !nombre || !tel) {
+            statusDiv.innerText = "⚠️ Completa todos los campos obligatorios.";
             statusDiv.style.color = "red";
             return;
         }
 
         try {
-            statusDiv.innerHTML = '<div class="loader"></div> Subiendo información y foto...';
+            statusDiv.innerText = "⏳ Subiendo información y enviando correo...";
             let fotoUrl = "";
 
-            // Subir foto si existe
+            // 1. Subir Foto a Storage
             if(fotoFile) {
                 const storageRef = sRef(storage, `fotos/${placaId}`);
                 const uploadTask = uploadBytesResumable(storageRef, fotoFile);
-
-                await new Promise((resolve, reject) => {
-                    uploadTask.on('state_changed', 
-                        null, 
-                        (error) => reject(error), 
-                        () => resolve()
-                    );
+                await new Promise((res, rej) => {
+                    uploadTask.on('state_changed', null, (err) => rej(err), () => res());
                 });
                 fotoUrl = await getDownloadURL(uploadTask.snapshot.ref);
             }
 
-            // Guardar en Firestore
+            // 2. Guardar en Firestore
             await setDoc(doc(db, "placas", placaId), {
                 mascota: nombre,
+                correo: correo,
                 telefono: tel,
                 pin: pin,
                 mensaje: document.getElementById("mensaje").value,
                 foto: fotoUrl,
                 activa: true,
-                fechaCreacion: serverTimestamp()
+                fecha: serverTimestamp()
             });
 
+            // 3. Enviar Correo con EmailJS
+            const emailParams = {
+                to_email: correo,
+                nombre_mascota: nombre,
+                telefono: tel,
+                pin: pin,
+                placa_id: placaId
+            };
+
+            await emailjs.send("service_xwx9czt", "template_zgl2oii", emailParams);
+
             statusDiv.style.color = "green";
-            statusDiv.innerHTML = "✅ ¡Placa activada con éxito! Ya puedes escanearla.";
+            statusDiv.innerText = "✅ ¡Listo! Placa activa y correo enviado.";
             document.getElementById("btnActivar").disabled = true;
-            document.getElementById("btnActivar").style.background = "#ccc";
 
         } catch (error) {
-            console.error(error);
             statusDiv.style.color = "red";
-            statusDiv.innerHTML = "❌ Error al activar: " + error.message;
+            statusDiv.innerText = "❌ Error: " + error.message;
         }
     });
 </script>
-
 </body>
 </html>
