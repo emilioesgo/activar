@@ -7,96 +7,157 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
         :root { --primary: #2bb673; --dark: #2c3e50; --bg: #ffffff; }
-        body { font-family: 'Segoe UI', sans-serif; margin: 0; background: #f8f9fa; color: var(--dark); }
+        body { font-family: 'Segoe UI', sans-serif; margin: 0; background: #f8f9fa; color: var(--dark); overflow-x: hidden; }
         
         .container { max-width: 500px; margin: auto; background: white; min-height: 100vh; padding-bottom: 50px; }
         
-        /* Estilo del Producto (Acrílico) */
-        .product-visual { 
-            background: linear-gradient(135deg, #e0e0e0 0%, #ffffff 100%);
-            padding: 40px; text-align: center; position: relative;
+        /* --- ESTILOS DEL CARRUSEL --- */
+        .carousel-container {
+            width: 100%;
+            position: relative;
+            background: #fff;
+            overflow: hidden;
         }
-        .placa-img { 
-            width: 200px; height: 200px; 
-            background: rgba(255,255,255,0.4); 
-            backdrop-filter: blur(5px);
-            border: 2px solid rgba(255,255,255,0.8);
-            border-radius: 50%; display: flex; align-items: center; justify-content: center;
-            margin: auto; box-shadow: 0 15px 35px rgba(0,0,0,0.05);
-            font-size: 80px; color: rgba(0,0,0,0.1);
+        .carousel-track {
+            display: flex;
+            overflow-x: auto;
+            scroll-snap-type: x mandatory;
+            scroll-behavior: smooth;
+            -webkit-overflow-scrolling: touch;
         }
+        .carousel-track::-webkit-scrollbar { display: none; } /* Ocultar barra */
+        
+        .carousel-slide {
+            min-width: 100%;
+            scroll-snap-align: start;
+            height: 350px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #f1f1f1;
+        }
+        .carousel-slide img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover; /* Ajusta la foto al cuadro */
+        }
+        
+        .carousel-dots {
+            display: flex;
+            justify-content: center;
+            gap: 8px;
+            padding: 15px 0;
+            background: white;
+        }
+        .dot { width: 8px; height: 8px; background: #ddd; border-radius: 50%; }
+        .dot.active { background: var(--primary); width: 20px; border-radius: 10px; transition: 0.3s; }
 
-        .info-section { padding: 30px; }
+        /* --- INFO DEL PRODUCTO --- */
+        .info-section { padding: 25px; }
         .badge { background: #e8f5e9; color: var(--primary); padding: 5px 12px; border-radius: 20px; font-size: 12px; font-weight: bold; }
         
-        h1 { margin: 15px 0 5px; font-size: 28px; }
-        .price { font-size: 32px; font-weight: bold; color: var(--primary); margin-bottom: 20px; }
+        h1 { margin: 15px 0 5px; font-size: 26px; }
+        .price { font-size: 30px; font-weight: bold; color: var(--primary); margin-bottom: 20px; }
         .price span { font-size: 16px; color: #777; font-weight: normal; }
-
-        .features { list-style: none; padding: 0; margin: 25px 0; }
-        .features li { margin-bottom: 12px; display: flex; align-items: center; gap: 10px; font-size: 15px; }
-        .features i { color: var(--primary); }
 
         .vitalicio-box { 
             background: var(--dark); color: white; padding: 15px; border-radius: 15px; 
-            display: flex; align-items: center; gap: 15px; margin-bottom: 30px;
+            display: flex; align-items: center; gap: 15px; margin-bottom: 25px;
         }
-        .vitalicio-box i { font-size: 24px; color: #f1c40f; }
+        .vitalicio-box i { font-size: 22px; color: #f1c40f; }
 
-        /* Botones de Pago */
+        .features { list-style: none; padding: 0; margin-bottom: 30px; }
+        .features li { margin-bottom: 12px; display: flex; align-items: center; gap: 10px; font-size: 14px; color: #555; }
+        .features i { color: var(--primary); font-size: 16px; }
+
+        /* BOTONES PAGO */
         .btn-pay { 
             display: flex; align-items: center; justify-content: center; gap: 10px;
             width: 100%; padding: 18px; border-radius: 15px; border: none; 
-            font-size: 16px; font-weight: bold; cursor: pointer; transition: 0.3s; margin-bottom: 15px;
+            font-size: 16px; font-weight: bold; cursor: pointer; transition: 0.3s; margin-bottom: 12px;
         }
         .btn-mp { background: #009ee3; color: white; }
         .btn-paypal { background: #ffc439; color: #003087; }
         
-        .nav-back { padding: 20px; display: block; text-decoration: none; color: var(--dark); font-weight: bold; }
+        .nav-back { padding: 15px; display: block; text-decoration: none; color: var(--dark); font-size: 14px; }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <a href="index.html" class="nav-back"><i class="fas fa-arrow-left"></i> Volver</a>
+    <a href="admin.html" class="nav-back"><i class="fas fa-arrow-left"></i> Volver al Panel</a>
 
-    <div class="product-visual">
-        <div class="placa-img">
-            <i class="fas fa-shield-dog"></i>
+    <div class="carousel-container">
+        <div class="carousel-track" id="track">
+            <div class="carousel-slide">
+                <img src="assets/img/placa-transparente-1.jpg" alt="Placa Acrilico 1">
+            </div>
+            <div class="carousel-slide">
+                <img src="assets/img/placa-transparente-2.jpg" alt="Placa Acrilico 2">
+            </div>
+            <div class="carousel-slide">
+                <img src="assets/img/placa-transparente-3.jpg" alt="Placa Acrilico 3">
+            </div>
         </div>
+        <div class="carousel-dots">
+            <div class="dot active"></div>
+            <div class="dot"></div>
+            <div class="dot"></div>
         </div>
+    </div>
 
     <div class="info-section">
-        <span class="badge">PROTOTIPO EDICIÓN LIMITADA</span>
-        <h1>Placa Acrílico Crystal</h1>
+        <span class="badge">PROTOTIPO: ACRÍLICO CRYSTAL</span>
+        <h1>Placa Inteligente QR</h1>
         <div class="price">$250.00 <span>MXN</span></div>
 
         <div class="vitalicio-box">
             <i class="fas fa-infinity"></i>
             <div>
-                <strong>Servicio Vitalicio</strong>
-                <p style="margin:0; font-size: 12px; opacity: 0.8;">Sin mensualidades ni costos de renovación.</p>
+                <strong>Servicio Vitalicio Incluido</strong>
+                <p style="margin:0; font-size: 11px; opacity: 0.8;">Sin suscripciones ni pagos extra nunca.</p>
             </div>
         </div>
 
         <ul class="features">
-            <li><i class="fas fa-check-circle"></i> Material Acrílico Transparente Premium</li>
-            <li><i class="fas fa-check-circle"></i> Grabado Láser de alta precisión</li>
-            <li><i class="fas fa-check-circle"></i> Perfil digital con geolocalización</li>
-            <li><i class="fas fa-check-circle"></i> Notificaciones de escaneo inmediatas</li>
+            <li><i class="fas fa-check-circle"></i> Acrílico transparente de 3mm</li>
+            <li><i class="fas fa-check-circle"></i> Grabado láser que no se borra</li>
+            <li><i class="fas fa-check-circle"></i> Perfil digital actualizable 24/7</li>
+            <li><i class="fas fa-check-circle"></i> Aviso de escaneo por Email</li>
         </ul>
 
-        <p style="font-size: 13px; color: #777; text-align: center; margin-bottom: 20px;">Selecciona tu método de pago seguro:</p>
-
-        <button class="btn-pay btn-mp">
-            <i class="fas fa-credit-card"></i> Pagar con Mercado Pago
+        <button class="btn-pay btn-mp" onclick="pagarMP()">
+            <i class="fas fa-shopping-cart"></i> Comprar con Mercado Pago
         </button>
 
-        <button class="btn-pay btn-paypal">
-            <i class="fab fa-paypal"></i> Pagar con PayPal
+        <button class="btn-pay btn-paypal" onclick="pagarPaypal()">
+            <i class="fab fa-paypal"></i> Comprar con PayPal
         </button>
     </div>
 </div>
+
+<script>
+    // Lógica simple para los puntos del carrusel
+    const track = document.getElementById('track');
+    const dots = document.querySelectorAll('.dot');
+
+    track.addEventListener('scroll', () => {
+        const index = Math.round(track.scrollLeft / track.offsetWidth);
+        dots.forEach((dot, i) => {
+            dot.classList.toggle('active', i === index);
+        });
+    });
+
+    function pagarMP() {
+        alert("Conectando con Mercado Pago...");
+        // Aquí insertaremos el SDK de Mercado Pago pronto
+    }
+
+    function pagarPaypal() {
+        alert("Conectando con PayPal...");
+        // Aquí insertaremos el SDK de PayPal pronto
+    }
+</script>
 
 </body>
 </html>
