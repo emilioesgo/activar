@@ -9,24 +9,19 @@
         :root { --primary: #2bb673; --dark: #2c3e50; --bg: #f0f2f5; }
         body { font-family: 'Segoe UI', sans-serif; background: var(--bg); margin: 0; display: flex; justify-content: center; align-items: center; min-height: 100vh; }
         
-        /* Pantalla de Bloqueo */
         #login-screen { background: white; padding: 40px; border-radius: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); text-align: center; width: 300px; }
         input { width: 100%; padding: 12px; margin: 15px 0; border: 1px solid #ddd; border-radius: 10px; text-align: center; font-size: 18px; box-sizing: border-box; }
         
-        /* Panel Principal (Oculto inicialmente) */
         #admin-panel { display: none; width: 90%; max-width: 800px; background: white; padding: 30px; border-radius: 25px; box-shadow: 0 15px 35px rgba(0,0,0,0.1); }
         
         .header { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #eee; padding-bottom: 20px; margin-bottom: 30px; }
-        .header h1 { margin: 0; color: var(--dark); font-size: 24px; }
-
         .grid-menu { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; }
         
         .card { background: #f8f9fa; padding: 25px; border-radius: 20px; text-decoration: none; color: var(--dark); transition: 0.3s; border: 1px solid #eee; text-align: center; }
         .card:hover { transform: translateY(-5px); border-color: var(--primary); background: #f0fff4; }
         .card-icon { font-size: 40px; margin-bottom: 15px; display: block; }
-        .card-title { font-weight: bold; font-size: 18px; display: block; margin-bottom: 5px; }
-        .card-desc { font-size: 13px; color: #777; }
-
+        .card-title { font-weight: bold; font-size: 18px; display: block; }
+        
         .btn { background: var(--primary); color: white; border: none; padding: 12px 25px; border-radius: 10px; font-weight: bold; cursor: pointer; width: 100%; }
         .btn-logout { background: #ff4757; width: auto; font-size: 12px; }
     </style>
@@ -34,52 +29,46 @@
 <body>
 
     <div id="login-screen">
-        <div style="font-size: 50px;">🔑</div>
+        <img src="assets/img/logo.png" alt="Logo" style="width: 80px; margin-bottom: 10px;">
         <h2>Acceso Admin</h2>
-        <p style="color: #666; font-size: 14px;">Ingresa el PIN maestro para gestionar el sistema.</p>
-        <input type="password" id="admin-pin" placeholder="****" maxlength="4">
-        <button class="btn" onclick="checkPin()">Entrar al Panel</button>
+        <input type="password" id="admin-pin" placeholder="PIN Maestro" maxlength="4">
+        <button class="btn" onclick="checkPin()">Entrar</button>
     </div>
 
     <div id="admin-panel">
         <div class="header">
-            <h1>🐾 Huellitas <span style="color: var(--primary);">Admin</span></h1>
-            <button class="btn btn-logout" onclick="location.reload()">Cerrar Sesión</button>
+            <h1>🐾 Panel <span style="color: var(--primary);">Control</span></h1>
+            <button class="btn btn-logout" onclick="location.reload()">Cerrar</button>
         </div>
 
         <div class="grid-menu">
             <a href="admin/cajero.html" class="card">
                 <span class="card-icon">💰</span>
-                <span class="card-title">Punto de Venta</span>
-                <span class="card-desc">Habilitar placas vendidas (Candado de cajero).</span>
+                <span class="card-title">Cajero</span>
+                <p style="font-size:12px; color:#888;">Habilitar placas vendidas</p>
             </a>
 
             <a href="admin/inventario.html" class="card">
                 <span class="card-icon">📦</span>
                 <span class="card-title">Inventario</span>
-                <span class="card-desc">Crear nuevos IDs de placas en la base de datos.</span>
+                <p style="font-size:12px; color:#888;">Registrar nuevos IDs</p>
             </a>
 
             <a href="ayuda.html" class="card">
                 <span class="card-icon">📖</span>
-                <span class="card-title">Ver Manual</span>
-                <span class="card-desc">Visualizar lo que el cliente ve en el centro de ayuda.</span>
+                <span class="card-title">Guía Usuario</span>
+                <p style="font-size:12px; color:#888;">Ver manual de activación</p>
             </a>
 
             <a href="https://console.firebase.google.com/" target="_blank" class="card">
                 <span class="card-icon">🔥</span>
-                <span class="card-title">Firebase Console</span>
-                <span class="card-desc">Acceso directo a la base de datos técnica.</span>
+                <span class="card-title">Firebase</span>
+                <p style="font-size:12px; color:#888;">Base de datos técnica</p>
             </a>
-        </div>
-
-        <div style="margin-top: 40px; text-align: center; color: #ccc; font-size: 12px;">
-            Dashboard Operativo v1.0 • 2026 Huellitas Digitales
         </div>
     </div>
 
     <script>
-        // Define aquí tu PIN maestro (Cámbialo por el que quieras)
         const PIN_MAESTRO = "2026"; 
 
         function checkPin() {
@@ -88,17 +77,10 @@
                 document.getElementById("login-screen").style.display = "none";
                 document.getElementById("admin-panel").style.display = "block";
             } else {
-                alert("PIN Incorrecto. Acceso denegado.");
+                alert("PIN incorrecto");
                 document.getElementById("admin-pin").value = "";
             }
         }
-
-        // Permitir entrar con la tecla "Enter"
-        document.getElementById("admin-pin").addEventListener("keypress", function(event) {
-            if (event.key === "Enter") {
-                checkPin();
-            }
-        });
     </script>
 </body>
 </html>
