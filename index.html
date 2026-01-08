@@ -24,7 +24,10 @@
         input, textarea, select { width: 100%; padding: 12px; border: 2px solid #eee; border-radius: 12px; font-size: 15px; box-sizing: border-box; transition: 0.3s; }
         input:focus, textarea:focus { border-color: var(--primary); outline: none; background: #f9fffb; }
         .id-input { background: #f1f3f2; font-family: monospace; font-weight: bold; text-align: center; text-transform: uppercase; color: var(--primary); font-size: 18px; letter-spacing: 2px; }
-        .toggle-pin { position: absolute; right: 12px; top: 33px; cursor: pointer; background: none; border: none; font-size: 18px; color: #999; }
+        
+        /* Estilo para los botones de ver PIN */
+        .toggle-btn { position: absolute; right: 12px; top: 35px; background: none; border: none; cursor: pointer; font-size: 18px; color: #999; z-index: 2; }
+
         .btn-submit { width: 100%; background: var(--primary); color: white; border: none; padding: 18px; border-radius: 15px; font-weight: bold; font-size: 18px; cursor: pointer; margin-top: 20px; box-shadow: 0 6px 20px rgba(43,182,115,0.4); transition: 0.3s; }
         .btn-submit:hover { background: #24a163; transform: translateY(-2px); }
         #loader { display: none; position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(255,255,255,0.95); border-radius: 25px; flex-direction: column; justify-content: center; align-items: center; z-index: 100; }
@@ -65,33 +68,51 @@
             <label>Nombre de la Mascota</label>
             <input type="text" id="nombreMascota" placeholder="¿Cómo se llama?">
         </div>
+        
         <div class="form-group">
             <label>País</label>
             <select id="paisCod">
-                <option value="52">🇲🇽 +52</option>
-                <option value="1">🇺🇸 +1</option>
-                <option value="57">🇨🇴 +57</option>
+                <option value="52">🇲🇽 México (+52)</option>
+                <option value="1">🇺🇸 USA (+1)</option>
+                <option value="57">🇨🇴 Colombia (+57)</option>
+                <option value="34">🇪🇸 España (+34)</option>
+                <option value="54">🇦🇷 Argentina (+54)</option>
+                <option value="56">🇨🇱 Chile (+56)</option>
+                <option value="51">🇵🇪 Perú (+51)</option>
+                <option value="593">🇪🇨 Ecuador (+593)</option>
+                <option value="506">🇨🇷 Costa Rica (+506)</option>
+                <option value="502">🇬🇹 Guatemala (+502)</option>
             </select>
         </div>
+        
         <div class="form-group">
-            <label>WhatsApp</label>
+            <label>Celular</label>
             <input type="tel" id="telefono" placeholder="1234567890">
         </div>
+
         <div class="form-group full">
             <label>Email</label>
             <input type="email" id="email" placeholder="ejemplo@correo.com">
         </div>
+        <div class="form-group full">
+            <label>Confirmar Email</label>
+            <input type="email" id="emailConf" placeholder="Repite tu correo">
+        </div>
+
         <div class="form-group">
             <label>PIN (4 dígitos)</label>
             <input type="password" id="pin" maxlength="4" placeholder="****">
+            <button type="button" class="toggle-btn" onclick="togglePin('pin')">👁️</button>
         </div>
         <div class="form-group">
             <label>Confirmar PIN</label>
             <input type="password" id="pinConf" maxlength="4" placeholder="****">
+            <button type="button" class="toggle-btn" onclick="togglePin('pinConf')">👁️</button>
         </div>
+
         <div class="form-group full">
-            <label>Notas Médicas</label>
-            <textarea id="observaciones" rows="2" placeholder="Alergias, medicinas..."></textarea>
+            <label>Observaciones y/o Notas Médicas</label>
+            <textarea id="observaciones" rows="2" placeholder="Alergias, medicinas, comportamiento..."></textarea>
         </div>
     </div>
 
@@ -103,6 +124,12 @@
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
     import { getFirestore, doc, getDoc, updateDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
     import { getStorage, ref, uploadString, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-storage.js";
+
+    // Función para ver/ocultar PIN
+    window.togglePin = (id) => {
+        const input = document.getElementById(id);
+        input.type = input.type === 'password' ? 'text' : 'password';
+    }
 
     emailjs.init("TWeQlV3AV77UPCLZ6");
 
@@ -119,13 +146,22 @@
     const db = getFirestore(app);
     const storage = getStorage(app);
 
+    // Leer ID desde la URL automáticamente
+    window.onload = () => {
+        const urlParams = new URLSearchParams(window.location.search);
+        const idFromUrl = urlParams.get('id');
+        if (idFromUrl) {
+            document.getElementById('placaId').value = idFromUrl.toUpperCase();
+        }
+    };
+
     let base64Image = "";
     const fotoInput = document.getElementById("fotoInput");
     const preview = document.getElementById("preview");
 
     fotoInput.onchange = e => {
         const file = e.target.files[0];
-        if (file && file.size > 5242880) { // 5MB en bytes
+        if (file && file.size > 5242880) { // 5MB
             alert("⚠️ La imagen supera los 5MB permitidos.");
             fotoInput.value = "";
             return;
@@ -143,12 +179,23 @@
         const id = document.getElementById("placaId").value.trim().toUpperCase();
         const nombre = document.getElementById("nombreMascota").value.trim();
         const email = document.getElementById("email").value.trim();
+        const emailConf = document.getElementById("emailConf").value.trim();
         const pin = document.getElementById("pin").value.trim();
         const pinConf = document.getElementById("pinConf").value.trim();
         const tel = `+${document.getElementById("paisCod").value}${document.getElementById("telefono").value.trim()}`;
 
-        if (!id || !nombre || !email || !pin || pin !== pinConf) {
-            alert("Revisa los datos y que los PIN coincidan.");
+        if (!id || !nombre || !email || !pin) {
+            alert("Por favor, completa todos los campos obligatorios.");
+            return;
+        }
+
+        if (email !== emailConf) {
+            alert("Los correos electrónicos no coinciden.");
+            return;
+        }
+
+        if (pin !== pinConf) {
+            alert("Los PIN no coinciden.");
             return;
         }
 
@@ -161,7 +208,6 @@
             if (docSnap.exists() && docSnap.data().vendida === true) {
                 
                 let urlFoto = "";
-                // Subir a Storage si hay foto
                 if (base64Image) {
                     const storageRef = ref(storage, `fotos_mascotas/${id}.jpg`);
                     await uploadString(storageRef, base64Image, 'data_url');
