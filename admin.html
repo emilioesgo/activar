@@ -6,7 +6,7 @@
     <title>Dashboard Admin | Huellitas Digitales</title>
     <link rel="icon" type="image/png" href="assets/img/favicon.png">
     <style>
-        :root { --primary: #2bb673; --dark: #2c3e50; --bg: #f0f2f5; }
+        :root { --primary: #2bb673; --dark: #2c3e50; --bg: #f0f2f5; --danger: #ff4757; }
         body { font-family: 'Segoe UI', sans-serif; background: var(--bg); margin: 0; display: flex; justify-content: center; align-items: center; min-height: 100vh; padding: 20px; box-sizing: border-box; }
         
         #login-screen { background: white; padding: 40px; border-radius: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); text-align: center; width: 100%; max-width: 320px; }
@@ -17,17 +17,18 @@
         .header { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #eee; padding-bottom: 20px; margin-bottom: 30px; }
         .header h1 { margin: 0; color: var(--dark); font-size: 24px; }
 
-        /* Grid de 3 columnas para PC, 1 para Móvil */
         .grid-menu { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 20px; }
         
         .card { background: #f8f9fa; padding: 25px; border-radius: 20px; text-decoration: none; color: var(--dark); transition: 0.3s; border: 1px solid #eee; text-align: center; cursor: pointer; }
         .card:hover { transform: translateY(-5px); border-color: var(--primary); background: #f0fff4; }
+        .card.danger:hover { border-color: var(--danger); background: #fff5f5; }
+        
         .card-icon { font-size: 40px; margin-bottom: 15px; display: block; }
         .card-title { font-weight: bold; font-size: 18px; display: block; margin-bottom: 5px; }
         .card-desc { font-size: 13px; color: #777; }
 
         .btn { background: var(--primary); color: white; border: none; padding: 12px 25px; border-radius: 10px; font-weight: bold; cursor: pointer; width: 100%; }
-        .btn-logout { background: #ff4757; width: auto; font-size: 12px; }
+        .btn-logout { background: var(--danger); width: auto; font-size: 12px; }
     </style>
 </head>
 <body>
@@ -58,16 +59,16 @@
                 <span class="card-desc">Configurar perfil al cliente ahora.</span>
             </div>
 
+            <div class="card danger" onclick="resetearPlaca()">
+                <span class="card-icon">🔄</span>
+                <span class="card-title" style="color: var(--danger);">Resetear Placa</span>
+                <span class="card-desc">Borrar datos y volver a estado inicial.</span>
+            </div>
+
             <a href="admin/inventario.html" class="card">
                 <span class="card-icon">📦</span>
                 <span class="card-title">Inventario</span>
                 <span class="card-desc">Carga masiva de nuevos IDs.</span>
-            </a>
-
-            <a href="ayuda.html" class="card">
-                <span class="card-icon">📖</span>
-                <span class="card-title">Ver Manual</span>
-                <span class="card-desc">Guía de usuario y soporte.</span>
             </a>
 
             <a href="https://console.firebase.google.com/" target="_blank" class="card">
@@ -78,10 +79,26 @@
         </div>
     </div>
 
-    <script>
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { getFirestore, doc, updateDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyCqROIzmp2guo2XLbdYrSW3ujlUBc7ngOc",
+            authDomain: "huellitas-digitales.firebaseapp.com",
+            projectId: "huellitas-digitales",
+            storageBucket: "huellitas-digitales.firebasestorage.app",
+            messagingSenderId: "523935942496",
+            appId: "1:523935942496:web:0bb3ad3b28c189345fc005"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
         const PIN_MAESTRO = "2026"; 
 
-        function checkPin() {
+        // Hacer las funciones accesibles globalmente para los onclick de los botones
+        window.checkPin = function() {
             const input = document.getElementById("admin-pin").value;
             if (input === PIN_MAESTRO) {
                 document.getElementById("login-screen").style.display = "none";
@@ -90,18 +107,60 @@
                 alert("PIN Incorrecto.");
                 document.getElementById("admin-pin").value = "";
             }
-        }
+        };
 
-        // Función para enviar al registro de mascota
-        function irARegistro() {
+        window.irARegistro = function() {
             const id = prompt("Ingresa el ID de la placa a configurar:");
             if (id) {
-                // Redirige a index.html (donde está el formulario de registro) con el ID
                 window.location.href = `index.html?id=${id.toUpperCase().trim()}`;
             }
-        }
+        };
 
-        document.getElementById("admin-pin").addEventListener("keypress", (e) => { if(e.key === "Enter") checkPin(); });
+        // FUNCIÓN DE RESETEO PROFESIONAL
+        window.resetearPlaca = async function() {
+            const id = prompt("Ingrese el ID de la placa a RESETEAR:");
+            if (!id) return;
+
+            const confirmPin = prompt("SEGURIDAD: Ingrese el PIN MAESTRO para confirmar el borrado:");
+            if (confirmPin !== PIN_MAESTRO) {
+                alert("PIN Maestro incorrecto. Operación cancelada.");
+                return;
+            }
+
+            const confirmFinal = confirm(`¿ESTÁS SEGURO?\n\nSe borrarán permanentemente todos los datos de la mascota y del dueño asociados al ID: ${id.toUpperCase()}.\n\nEsta acción no se puede deshacer.`);
+            
+            if (confirmFinal) {
+                try {
+                    const docRef = doc(db, "placas", id.toUpperCase().trim());
+                    const docSnap = await getDoc(docRef);
+
+                    if (!docSnap.exists()) {
+                        alert("El ID ingresado no existe en la base de datos.");
+                        return;
+                    }
+
+                    // Resetear los campos a valores iniciales
+                    await updateDoc(docRef, {
+                        activa: false,
+                        vendida: false, // Opcional: poner false si quieres que pase de nuevo por cajero
+                        mascota: "Nueva Mascota",
+                        notas: "",
+                        foto: "",
+                        telefono: "",
+                        email: "",
+                        pin: "1234" // PIN por defecto para el siguiente dueño
+                    });
+
+                    alert("✅ Placa reseteada con éxito. Ahora está lista para ser vendida y activada nuevamente.");
+                } catch (error) {
+                    console.error("Error al resetear:", error);
+                    alert("Ocurrió un error al intentar resetear la placa.");
+                }
+            }
+        };
+
+        // Soporte para tecla Enter
+        document.getElementById("admin-pin").addEventListener("keypress", (e) => { if(e.key === "Enter") window.checkPin(); });
     </script>
 </body>
 </html>
