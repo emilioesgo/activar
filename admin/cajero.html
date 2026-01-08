@@ -3,53 +3,66 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Panel de Ventas | Huellitas</title>
+    <title>Punto de Venta | Huellitas Digitales</title>
+    <link rel="icon" type="image/png" href="../assets/img/favicon.png">
     <style>
-        :root { --primary: #2196F3; --success: #2bb673; --bg: #1a1a1a; }
-        body { font-family: 'Segoe UI', sans-serif; background: var(--bg); color: white; margin: 0; display: flex; justify-content: center; padding: 20px; }
-        .app-container { width: 100%; max-width: 400px; background: #2a2a2a; padding: 30px; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+        :root { --primary: #2bb673; --dark: #2c3e50; --bg: #f4f7f6; }
+        body { font-family: 'Segoe UI', sans-serif; background: var(--bg); margin: 0; padding: 20px; display: flex; justify-content: center; }
         
-        h2 { text-align: center; color: var(--primary); margin-top: 0; }
-        .status-badge { text-align: center; padding: 10px; border-radius: 10px; margin-bottom: 20px; font-weight: bold; font-size: 14px; }
-        .status-wait { background: #444; color: #aaa; }
-        .status-ready { background: #e8f5e9; color: #2e7d32; }
-        .status-blocked { background: #ffebee; color: #c62828; }
+        .card { background: white; padding: 30px; border-radius: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.05); width: 100%; max-width: 400px; }
+        
+        /* Botón Volver */
+        .btn-back { display: inline-flex; align-items: center; text-decoration: none; color: #666; font-size: 14px; margin-bottom: 20px; font-weight: bold; }
+        .btn-back:hover { color: var(--primary); }
 
-        input { width: 100%; padding: 15px; background: #333; border: 1px solid #444; border-radius: 10px; color: white; font-size: 20px; text-align: center; text-transform: uppercase; margin-bottom: 15px; box-sizing: border-box; }
-        
-        button { width: 100%; padding: 15px; border: none; border-radius: 10px; font-size: 16px; font-weight: bold; cursor: pointer; transition: 0.3s; margin-bottom: 10px; }
-        .btn-search { background: var(--primary); color: white; }
-        .btn-sell { background: var(--success); color: white; display: none; }
-        
-        #info-placa { background: #333; padding: 15px; border-radius: 10px; margin-bottom: 15px; display: none; font-size: 14px; }
-        .loader { border: 3px solid #f3f3f3; border-top: 3px solid var(--primary); border-radius: 50%; width: 20px; height: 20px; animation: spin 1s linear infinite; display: inline-block; }
-        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        h2 { margin: 0 0 10px 0; color: var(--dark); }
+        p { color: #777; font-size: 14px; margin-bottom: 25px; }
+
+        .input-group { margin-bottom: 20px; }
+        label { display: block; margin-bottom: 8px; font-size: 13px; font-weight: bold; color: #555; }
+        input { width: 100%; padding: 15px; border: 2px solid #eee; border-radius: 12px; font-size: 18px; box-sizing: border-box; text-transform: uppercase; transition: 0.3s; }
+        input:focus { border-color: var(--primary); outline: none; background: #f0fff4; }
+
+        .btn-activate { width: 100%; background: var(--primary); color: white; border: none; padding: 18px; border-radius: 12px; font-weight: bold; font-size: 16px; cursor: pointer; box-shadow: 0 6px 15px rgba(43,182,115,0.3); transition: 0.3s; }
+        .btn-activate:active { transform: scale(0.98); }
+        .btn-activate:disabled { background: #ccc; box-shadow: none; cursor: not-allowed; }
+
+        #mensaje { margin-top: 20px; padding: 15px; border-radius: 10px; display: none; text-align: center; font-size: 14px; font-weight: bold; }
+        .success { background: #e8f5e9; color: #2e7d32; border: 1px solid #c8e6c9; display: block !important; }
+        .error { background: #ffebee; color: #c62828; border: 1px solid #ffcdd2; display: block !important; }
+
+        .footer-info { margin-top: 30px; text-align: center; font-size: 11px; color: #bbb; border-top: 1px solid #eee; padding-top: 15px; }
     </style>
 </head>
 <body>
 
-<div class="app-container">
-    <h2>🛒 Terminal de Venta</h2>
-    <div id="status-display" class="status-badge status-wait">Esperando ID...</div>
+<div class="card">
+    <a href="../admin.html" class="btn-back">⬅️ Volver al Panel</a>
 
-    <input type="text" id="id-venta" placeholder="ID DE PLACA" maxlength="6">
-    
-    <button id="btn-buscar" class="btn-search">🔍 Verificar Placa</button>
+    <img src="../assets/img/logo.png" alt="Huellitas" style="width: 50px; margin-bottom: 10px;">
+    <h2>Habilitar Placa</h2>
+    <p>Ingresa el ID de la placa física que el cliente acaba de comprar para activarla en el sistema.</p>
 
-    <div id="info-placa">
-        <p><strong>Estado:</strong> <span id="txt-estado">--</span></p>
-        <p><strong>Pagada:</strong> <span id="txt-pagada">--</span></p>
+    <div class="input-group">
+        <label for="placaId">ID DE LA PLACA (6 caracteres)</label>
+        <input type="text" id="placaId" placeholder="EJ: K9W7X2" maxlength="6" autocomplete="off">
     </div>
 
-    <button id="btn-habilitar" class="btn-sell">✅ MARCAR COMO PAGADA</button>
-    
-    <div id="msg" style="text-align:center; margin-top:10px; font-size:13px;"></div>
+    <button id="btnActivar" class="btn-activate">✅ Habilitar para Venta</button>
+
+    <div id="mensaje"></div>
+
+    <div class="footer-info">
+        <b>MODO CAJERO ACTIVO</b><br>
+        Esta acción cambia el estado de la placa de "No activa" a "Pendiente de registro".
+    </div>
 </div>
 
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-    import { getFirestore, doc, getDoc, updateDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+    import { getFirestore, doc, updateDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
+    // Configuración de Firebase (Asegúrate de que sea la misma de tus otros archivos)
     const firebaseConfig = {
         apiKey: "AIzaSyCqROIzmp2guo2XLbdYrSW3ujlUBc7ngOc",
         authDomain: "huellitas-digitales.firebaseapp.com",
@@ -62,57 +75,53 @@
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
 
-    const input = document.getElementById('id-venta');
-    const btnBuscar = document.getElementById('btn-buscar');
-    const btnHabilitar = document.getElementById('btn-habilitar');
-    const infoBox = document.getElementById('info-placa');
-    const statusDisp = document.getElementById('status-display');
+    const inputPlaca = document.getElementById("placaId");
+    const btnActivar = document.getElementById("btnActivar");
+    const mensaje = document.getElementById("mensaje");
 
-    btnBuscar.onclick = async () => {
-        const id = input.value.trim().toUpperCase();
-        if(!id) return;
-
-        btnBuscar.innerHTML = '<div class="loader"></div>';
-        const docRef = doc(db, "placas", id);
-        const docSnap = await getDoc(docRef);
-
-        if (docSnap.exists()) {
-            const data = docSnap.data();
-            infoBox.style.display = 'block';
-            document.getElementById('txt-estado').innerText = data.activa ? "YA ACTIVADA POR CLIENTE" : "SIN ACTIVAR";
-            document.getElementById('txt-pagada').innerText = data.pagada ? "SÍ (HABILITADA)" : "NO (BLOQUEADA)";
-            
-            if(!data.pagada) {
-                btnHabilitar.style.display = 'block';
-                statusDisp.className = "status-badge status-blocked";
-                statusDisp.innerText = "PLACA BLOQUEADA PARA VENTA";
-            } else {
-                btnHabilitar.style.display = 'none';
-                statusDisp.className = "status-badge status-ready";
-                statusDisp.innerText = "PLACA YA LISTA / VENDIDA";
-            }
-        } else {
-            alert("Ese ID no existe en el inventario.");
+    btnActivar.addEventListener("click", async () => {
+        const id = inputPlaca.value.toUpperCase().trim();
+        
+        if (id.length < 6) {
+            mostrarMensaje("El ID debe tener 6 caracteres", "error");
+            return;
         }
-        btnBuscar.innerText = "🔍 Verificar Placa";
-    };
 
-    btnHabilitar.onclick = async () => {
-        const id = input.value.trim().toUpperCase();
-        btnHabilitar.disabled = true;
-        btnHabilitar.innerText = "PROCESANDO PAGO...";
+        btnActivar.disabled = true;
+        btnActivar.innerText = "Procesando...";
+        mensaje.style.display = "none";
 
         try {
-            await updateDoc(doc(db, "placas", id), {
-                pagada: true
-            });
-            alert("✨ ¡Placa habilitada! El cliente ya puede activarla.");
-            location.reload();
-        } catch (e) {
-            alert("Error: " + e.message);
-            btnHabilitar.disabled = false;
+            const docRef = doc(db, "placas", id);
+            const docSnap = await getDoc(docRef);
+
+            if (docSnap.exists()) {
+                // Actualizamos el estado de la placa
+                await updateDoc(docRef, {
+                    activa: false, // Permitimos que el cliente ahora la registre
+                    vendida: true,
+                    fechaVenta: new Date().toISOString()
+                });
+
+                mostrarMensaje(`¡Placa ${id} habilitada con éxito!`, "success");
+                inputPlaca.value = ""; // Limpiar para la siguiente venta
+            } else {
+                mostrarMensaje("Ese ID no existe en el inventario", "error");
+            }
+        } catch (error) {
+            console.error(error);
+            mostrarMensaje("Error de conexión con la base de datos", "error");
+        } finally {
+            btnActivar.disabled = false;
+            btnActivar.innerText = "✅ Habilitar para Venta";
         }
-    };
+    });
+
+    function mostrarMensaje(texto, tipo) {
+        mensaje.innerText = texto;
+        mensaje.className = tipo;
+    }
 </script>
+
 </body>
 </html>
