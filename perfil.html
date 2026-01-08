@@ -11,38 +11,32 @@
         
         .profile-card { background: white; width: 100%; max-width: 450px; min-height: 100vh; position: relative; box-shadow: 0 0 20px rgba(0,0,0,0.1); }
         
-        /* Cabecera con Foto */
         .photo-container { width: 100%; height: 350px; background: #ddd; position: relative; overflow: hidden; }
         #pet-photo { width: 100%; height: 100%; object-fit: cover; }
         
         .status-badge { position: absolute; bottom: 20px; left: 20px; background: var(--primary); color: white; padding: 8px 15px; border-radius: 20px; font-weight: bold; font-size: 14px; box-shadow: 0 4px 10px rgba(0,0,0,0.2); }
 
-        /* Información */
         .info-content { padding: 30px; border-radius: 30px 30px 0 0; background: white; margin-top: -30px; position: relative; }
-        h1 { margin: 0; font-size: 32px; color: var(--dark); }
+        h1 { margin: 0; font-size: 32px; }
         .breed { color: #888; font-size: 16px; margin-bottom: 20px; display: block; }
 
         .emergency-box { background: #fff5f5; border: 1px dashed #feb2b2; padding: 15px; border-radius: 15px; margin-bottom: 15px; }
         .emergency-box span { color: #c53030; font-weight: bold; font-size: 13px; display: block; margin-bottom: 5px; text-transform: uppercase; }
 
-        /* Caja Médica */
         .medical-box { background: var(--medical); border: 1px solid var(--medical-border); padding: 15px; border-radius: 15px; margin-bottom: 25px; }
         .medical-box span { color: #2c7a7b; font-weight: bold; font-size: 13px; display: block; margin-bottom: 5px; text-transform: uppercase; }
 
-        /* Botones de Acción */
         .actions { display: grid; gap: 15px; }
         .btn { display: flex; align-items: center; justify-content: center; gap: 10px; padding: 18px; border-radius: 15px; text-decoration: none; color: white; font-weight: bold; font-size: 18px; transition: 0.3s; }
         .btn-call { background: var(--primary); box-shadow: 0 5px 15px rgba(43,182,115,0.3); }
         .btn-wa { background: var(--whatsapp); box-shadow: 0 5px 15px rgba(37,211,102,0.3); }
-        .btn:active { transform: scale(0.95); }
 
-        /* Estilos Vista No Activa */
-        .no-active-container { text-align: center; padding: 60px 30px; }
+        /* Estilos Vistas de Estado */
+        .status-container { text-align: center; padding: 60px 30px; }
         .btn-activate { background: var(--primary); color: white; padding: 20px; border-radius: 15px; text-decoration: none; font-weight: bold; display: block; font-size: 18px; margin-top: 25px; box-shadow: 0 5px 15px rgba(43,182,115,0.3); }
 
         footer { text-align: center; padding: 40px 20px; font-size: 12px; color: #aaa; background: #fafafa; border-top: 1px solid #eee; }
         .btn-owner { display: inline-block; background: #2c3e50; color: white; padding: 10px 20px; border-radius: 10px; text-decoration: none; font-weight: bold; margin-top: 15px; font-size: 14px; transition: 0.3s; border: none; cursor: pointer; }
-        .btn-owner:hover { background: #1a252f; }
 
         .loading { text-align: center; padding: 100px 20px; }
     </style>
@@ -54,17 +48,20 @@
     <p>Buscando información de la mascota...</p>
 </div>
 
+<div id="not-sold-view" class="profile-card" style="display: none;">
+    <div class="status-container">
+        <img src="assets/img/logo.png" width="100" style="margin-bottom: 30px;">
+        <h2 style="color: var(--text);">Placa no disponible</h2>
+        <p style="color: #666; line-height: 1.6;">Esta placa de <b>Huellitas Digitales</b> aún no ha sido habilitada para su venta o activación. Por favor, contacta con soporte o con tu punto de venta.</p>
+    </div>
+</div>
+
 <div id="not-active-view" class="profile-card" style="display: none;">
-    <div class="no-active-container">
+    <div class="status-container">
         <img src="assets/img/logo.png" width="100" style="margin-bottom: 30px;">
         <h2 style="color: var(--text); margin-bottom: 10px;">¡Placa Detectada!</h2>
-        <p style="color: #666; line-height: 1.6;">Esta placa de <b>Huellitas Digitales</b> aún no ha sido activada por su dueño.</p>
-        
-        <a href="#" id="btn-activar-link" class="btn-activate">
-            🐾 ACTIVAR MI PLACA AHORA
-        </a>
-        
-        <p style="margin-top: 40px; font-size: 13px; color: #aaa;">ID de Placa: <span id="display-id-inactive">---</span></p>
+        <p style="color: #666; line-height: 1.6;">Esta placa ya es tuya, pero aún no has registrado los datos de tu mascota.</p>
+        <a href="#" id="btn-activar-link" class="btn-activate">🐾 ACTIVAR MI PLACA AHORA</a>
     </div>
 </div>
 
@@ -73,35 +70,25 @@
         <img id="pet-photo" src="assets/img/default-pet.jpg" alt="Mascota">
         <div class="status-badge">🛡️ Protegido por Huellitas</div>
     </div>
-
     <div class="info-content">
         <h1 id="pet-name">Cargando...</h1>
         <span class="breed">Placa ID: <span id="display-id">---</span></span>
-
         <div class="emergency-box">
             <span id="label-mensaje">MENSAJE DE MI MASCOTA:</span>
             <p id="pet-msg" style="margin: 0; font-size: 15px;">Si me encuentras, por favor contacta a mi familia lo antes posible. ¡Gracias!</p>
         </div>
-
         <div class="medical-box">
             <span>🩺 OBSERVACIONES Y NOTAS MÉDICAS:</span>
             <p id="pet-medical" style="margin: 0; font-size: 15px; color: #2d3748;">Sin observaciones registradas.</p>
         </div>
-
         <div class="actions">
-            <a href="#" id="call-link" class="btn btn-call">
-                📞 Llamar al Dueño
-            </a>
-            <a href="#" id="wa-link" class="btn btn-wa">
-                💬 Enviar WhatsApp
-            </a>
+            <a href="#" id="call-link" class="btn btn-call">📞 Llamar al Dueño</a>
+            <a href="#" id="wa-link" class="btn btn-wa">💬 Enviar WhatsApp</a>
         </div>
     </div>
-
     <footer>
         <img src="assets/img/logo.png" width="30" style="margin-bottom: 10px; filter: grayscale(1);"><br>
         <b>Huellitas Digitales</b><br>
-        ¿Quieres una placa como esta? Visita nuestro sitio.<br>
         <button onclick="ownerAccess()" class="btn-owner">⚙️ GESTIONAR MI PERFIL (DUEÑO)</button>
     </footer>
 </div>
@@ -135,28 +122,36 @@
             const docRef = doc(db, "placas", id.toUpperCase());
             const docSnap = await getDoc(docRef);
 
-            // Ocultar cargador siempre después de la consulta
             document.getElementById("loading-view").style.display = "none";
 
-            if (docSnap.exists() && docSnap.data().activa) {
+            if (docSnap.exists()) {
                 const data = docSnap.data();
-                
-                document.getElementById("pet-name").innerText = data.mascota;
-                document.getElementById("display-id").innerText = id.toUpperCase();
-                document.getElementById("label-mensaje").innerText = `MENSAJE DE ${data.mascota.toUpperCase()}:`;
-                
-                if(data.notas) document.getElementById("pet-medical").innerText = data.notas;
-                if(data.foto) document.getElementById("pet-photo").src = data.foto;
 
-                document.getElementById("call-link").href = `tel:${data.telefono}`;
-                document.getElementById("wa-link").href = `https://wa.me/${data.telefono.replace(/\+/g, '').replace(/\s/g, '')}?text=Hola,%20encontré%20a%20tu%20mascota%20${data.mascota}.%20Escaneé%20su%20placa%20QR.`;
+                if (data.activa) {
+                    // 1. PLACA ACTIVA: Mostrar perfil completo
+                    document.getElementById("pet-name").innerText = data.mascota;
+                    document.getElementById("display-id").innerText = id.toUpperCase();
+                    document.getElementById("label-mensaje").innerText = `MENSAJE DE ${data.mascota.toUpperCase()}:`;
+                    if(data.notas) document.getElementById("pet-medical").innerText = data.notas;
+                    if(data.foto) document.getElementById("pet-photo").src = data.foto;
 
-                document.getElementById("profile-view").style.display = "block";
+                    document.getElementById("call-link").href = `tel:${data.telefono}`;
+                    document.getElementById("wa-link").href = `https://wa.me/${data.telefono.replace(/\+/g, '').replace(/\s/g, '')}?text=Hola,%20encontré%20a%20tu%20mascota%20${data.mascota}.`;
+
+                    document.getElementById("profile-view").style.display = "block";
+                } 
+                else if (data.vendida) {
+                    // 2. VENDIDA PERO NO ACTIVA: Mostrar botón de activación
+                    document.getElementById("btn-activar-link").href = `index.html?id=${id.toUpperCase()}`;
+                    document.getElementById("not-active-view").style.display = "block";
+                } 
+                else {
+                    // 3. NO VENDIDA: Mensaje restrictivo sin botón
+                    document.getElementById("not-sold-view").style.display = "block";
+                }
             } else {
-                // PLACA NO ACTIVADA: Mostrar vista de activación
-                document.getElementById("display-id-inactive").innerText = id.toUpperCase();
-                document.getElementById("btn-activar-link").href = `index.html?id=${id.toUpperCase()}`;
-                document.getElementById("not-active-view").style.display = "block";
+                // ID NO EXISTE
+                document.getElementById("not-sold-view").style.display = "block";
             }
         } catch (e) {
             console.error(e);
