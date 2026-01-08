@@ -11,49 +11,58 @@
         body { font-family: 'Segoe UI', sans-serif; background: var(--bg); margin: 0; padding: 15px; display: flex; justify-content: center; }
         .card { background: white; padding: 25px; border-radius: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.05); width: 100%; max-width: 400px; }
         
-        #reader { width: 100%; border-radius: 15px; overflow: hidden; margin-bottom: 15px; border: 2px solid #eee; background: #000; }
-        .nfc-badge { background: #e3f2fd; color: #1976d2; padding: 8px; border-radius: 8px; font-size: 11px; font-weight: bold; margin-bottom: 15px; display: block; text-align: center; border: 1px solid #bbdefb; }
+        /* Contenedor del Escáner */
+        #reader-container { display: none; margin-bottom: 15px; border-radius: 15px; overflow: hidden; border: 2px solid var(--primary); background: #000; }
+        #reader { width: 100%; }
 
         h2 { margin: 0 0 5px 0; color: var(--dark); text-align: center; font-size: 22px; }
-        p { color: #777; font-size: 13px; margin-bottom: 15px; text-align: center; }
+        p { color: #777; font-size: 13px; margin-bottom: 20px; text-align: center; }
         
-        .input-container { position: relative; margin-bottom: 15px; }
-        input { width: 100%; padding: 15px; border: 2px solid #eee; border-radius: 12px; font-size: 22px; box-sizing: border-box; text-transform: uppercase; text-align: center; font-family: monospace; background: #f9f9f9; font-weight: bold; }
+        .input-container { margin-bottom: 15px; }
+        label { display:block; font-size: 10px; font-weight: bold; color: #bbb; margin-bottom: 5px; text-transform: uppercase; text-align: center; }
         
-        .btn-group { display: grid; grid-template-columns: 1fr 2fr; gap: 10px; }
-        .btn { border: none; padding: 18px; border-radius: 12px; font-weight: bold; font-size: 16px; cursor: pointer; transition: 0.3s; }
+        /* Input habilitado para escritura manual */
+        input { width: 100%; padding: 15px; border: 2px solid #eee; border-radius: 12px; font-size: 22px; box-sizing: border-box; text-transform: uppercase; text-align: center; font-family: monospace; background: #fff; font-weight: bold; transition: 0.3s; }
+        input:focus { border-color: var(--primary); outline: none; background: #f0fff4; }
+        
+        .btn-group { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 10px; }
+        
+        .btn { border: none; padding: 15px; border-radius: 12px; font-weight: bold; font-size: 14px; cursor: pointer; transition: 0.3s; display: flex; align-items: center; justify-content: center; gap: 8px; }
+        .btn-qr { background: var(--dark); color: white; width: 100%; margin-bottom: 15px; }
         .btn-clear { background: var(--gray); color: white; }
         .btn-activate { background: var(--primary); color: white; box-shadow: 0 6px 15px rgba(43,182,115,0.3); }
         .btn:disabled { background: #ccc; box-shadow: none; cursor: not-allowed; }
 
-        #mensaje { margin-top: 15px; padding: 12px; border-radius: 12px; display: none; text-align: center; font-size: 14px; animation: fadeIn 0.3s; font-weight: 500; }
+        #mensaje { margin-top: 15px; padding: 12px; border-radius: 12px; display: none; text-align: center; font-size: 14px; font-weight: 500; }
         .success { background: #e8f5e9; color: #2e7d32; border: 1px solid #c8e6c9; display: block !important; }
         .error { background: #ffebee; color: #c62828; border: 1px solid #ffcdd2; display: block !important; }
 
-        /* Estilos del Contador */
-        .stats-container { margin-top: 25px; padding-top: 15px; border-top: 1px dashed #ddd; text-align: center; }
-        .counter-box { display: inline-block; background: var(--dark); color: white; padding: 5px 15px; border-radius: 20px; font-size: 12px; font-weight: bold; }
-        .counter-number { color: var(--primary); font-size: 16px; margin-left: 5px; }
-        
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
+        .stats-container { margin-top: 20px; text-align: center; border-top: 1px solid #eee; padding-top: 15px; }
+        .counter-box { background: var(--dark); color: white; padding: 5px 15px; border-radius: 20px; font-size: 12px; font-weight: bold; }
     </style>
 </head>
 <body>
 
 <div class="card">
     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
-        <a href="../admin.html" style="text-decoration: none; color: var(--gray); font-weight: bold; font-size: 14px;">⬅️ Panel</a>
-        <div class="counter-box">HOY: <span id="ventasHoy" class="counter-number">0</span></div>
+        <a href="../admin.html" style="text-decoration: none; color: var(--gray); font-weight: bold; font-size: 13px;">⬅️ Panel</a>
+        <div class="counter-box">VENTAS HOY: <span id="ventasHoy">0</span></div>
     </div>
 
     <h2>Cajero Digital</h2>
-    <p>Escanea QR o usa el NFC de la placa</p>
+    <p>Ingresa el ID manual o usa el escáner QR</p>
 
-    <div id="reader"></div>
-    <div id="nfc-status" class="nfc-badge">📡 NFC Activo</div>
+    <button id="btnToggleQR" class="btn btn-qr" onclick="toggleQR()">
+        <span id="qrIcon">📷</span> <span id="qrText">Abrir Escáner QR</span>
+    </button>
+
+    <div id="reader-container">
+        <div id="reader"></div>
+    </div>
 
     <div class="input-container">
-        <input type="text" id="placaId" placeholder="--- ---" maxlength="6" readonly>
+        <label>ID de la Placa (6 caracteres)</label>
+        <input type="text" id="placaId" placeholder="ABC123" maxlength="6">
     </div>
 
     <div class="btn-group">
@@ -62,10 +71,6 @@
     </div>
 
     <div id="mensaje"></div>
-    
-    <div class="stats-container">
-        <span style="font-size: 10px; color: #bbb; text-transform: uppercase; letter-spacing: 1px;">Punto de Venta Huellitas Digitales</span>
-    </div>
 </div>
 
 <script type="module">
@@ -89,55 +94,55 @@
     const btnActivar = document.getElementById("btnActivar");
     const mensaje = document.getElementById("mensaje");
     const txtContador = document.getElementById("ventasHoy");
+    const readerContainer = document.getElementById("reader-container");
+    const btnToggleQR = document.getElementById("btnToggleQR");
 
-    // --- GESTIÓN DEL CONTADOR ---
-    function actualizarContador(incrementar = false) {
-        const hoy = new Date().toLocaleDateString();
-        let stats = JSON.parse(localStorage.getItem('stats_huellitas')) || { fecha: hoy, total: 0 };
-        
-        if (stats.fecha !== hoy) {
-            stats = { fecha: hoy, total: 0 };
+    let html5QrCode;
+    let isScannerOpen = false;
+
+    // --- GESTIÓN DE CÁMARA QR ---
+    window.toggleQR = async function() {
+        if (!isScannerOpen) {
+            readerContainer.style.display = "block";
+            btnToggleQR.style.background = "#e74c3c";
+            document.getElementById("qrText").innerText = "Cerrar Escáner";
+            document.getElementById("qrIcon").innerText = "❌";
+            
+            html5QrCode = new Html5Qrcode("reader");
+            await html5QrCode.start(
+                { facingMode: "environment" }, 
+                { fps: 10, qrbox: 200 },
+                (text) => {
+                    let id = text.includes("id=") ? new URL(text).searchParams.get("id") : text;
+                    inputPlaca.value = id.toUpperCase().substring(0,6);
+                    if (navigator.vibrate) navigator.vibrate(100);
+                    toggleQR(); // Cerrar cámara al detectar
+                }
+            );
+            isScannerOpen = true;
+        } else {
+            if(html5QrCode) {
+                await html5QrCode.stop();
+                html5QrCode.clear();
+            }
+            readerContainer.style.display = "none";
+            btnToggleQR.style.background = "var(--dark)";
+            document.getElementById("qrText").innerText = "Abrir Escáner QR";
+            document.getElementById("qrIcon").innerText = "📷";
+            isScannerOpen = false;
         }
-        
-        if (incrementar) stats.total++;
-        
-        localStorage.setItem('stats_huellitas', JSON.stringify(stats));
-        txtContador.innerText = stats.total;
-    }
-    actualizarContador(); // Carga inicial
-
-    // --- ESCÁNER QR ---
-    const html5QrCode = new Html5Qrcode("reader");
-    html5QrCode.start({ facingMode: "environment" }, { fps: 10, qrbox: 200 }, (text) => {
-        let id = text.includes("id=") ? new URL(text).searchParams.get("id") : text;
-        if (id) {
-            inputPlaca.value = id.toUpperCase().substring(0,6);
-            if (navigator.vibrate) navigator.vibrate(100);
-            mensaje.style.display = "none";
-        }
-    });
-
-    // --- LECTURA NFC ---
-    if ('NDEFReader' in window) {
-        const ndef = new NDEFReader();
-        ndef.scan().then(() => {
-            ndef.onreading = event => {
-                const decoder = new TextDecoder();
-                const texto = decoder.decode(event.message.records[0].data);
-                inputPlaca.value = (texto.includes("id=") ? texto.split("id=")[1] : texto).substring(0,6).toUpperCase();
-                if (navigator.vibrate) navigator.vibrate(100);
-                mensaje.style.display = "none";
-            };
-        });
-    }
+    };
 
     // --- LÓGICA DE VENTA ---
     window.procesarVenta = async function() {
-        const id = inputPlaca.value.trim();
-        if (!id) return;
+        const id = inputPlaca.value.toUpperCase().trim();
+        if (id.length < 4) {
+            mostrarMensaje("❌ Ingresa un ID válido.", "error");
+            return;
+        }
 
         btnActivar.disabled = true;
-        btnActivar.innerText = "⏳ ...";
+        btnActivar.innerText = "Procesando...";
 
         try {
             const docRef = doc(db, "placas", id);
@@ -146,7 +151,7 @@
             if (snap.exists()) {
                 const data = snap.data();
                 if (data.activa) {
-                    mostrarMensaje(`🚫 La placa ${id} ya tiene dueño.`, "error");
+                    mostrarMensaje(`🚫 La placa ${id} ya está en uso.`, "error");
                 } else if (data.vendida) {
                     mostrarMensaje(`⚠️ Ya fue vendida anteriormente.`, "error");
                 } else {
@@ -162,20 +167,21 @@
                     });
 
                     mostrarMensaje(`✅ Placa ${id} habilitada.`, "success");
-                    actualizarContador(true); // Incrementa el contador visual
+                    actualizarContador(true);
                     setTimeout(limpiarTodo, 2500);
                 }
             } else {
-                mostrarMensaje("❌ ID no encontrado.", "error");
+                mostrarMensaje("❌ ID no existe en inventario.", "error");
             }
         } catch (e) {
-            mostrarMensaje("⚠️ Error de red.", "error");
+            mostrarMensaje("⚠️ Error de conexión.", "error");
         } finally {
             btnActivar.disabled = false;
             btnActivar.innerText = "✅ Vender";
         }
     };
 
+    // --- FUNCIONES AUXILIARES ---
     window.limpiarTodo = function() {
         inputPlaca.value = "";
         mensaje.style.display = "none";
@@ -184,7 +190,18 @@
     function mostrarMensaje(texto, tipo) {
         mensaje.innerText = texto;
         mensaje.className = tipo;
+        mensaje.style.display = "block";
     }
+
+    function actualizarContador(incrementar = false) {
+        const hoy = new Date().toLocaleDateString();
+        let stats = JSON.parse(localStorage.getItem('stats_huellitas')) || { fecha: hoy, total: 0 };
+        if (stats.fecha !== hoy) stats = { fecha: hoy, total: 0 };
+        if (incrementar) stats.total++;
+        localStorage.setItem('stats_huellitas', JSON.stringify(stats));
+        txtContador.innerText = stats.total;
+    }
+    actualizarContador();
 </script>
 </body>
 </html>
