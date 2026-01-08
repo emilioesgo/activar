@@ -3,30 +3,93 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Inventario | Huellitas Digitales</title>
+    <title>Carga de Inventario | Huellitas Digitales</title>
+    <link rel="icon" type="image/png" href="../assets/img/favicon.png">
     <style>
-        body { font-family: sans-serif; background: #f4f7f6; display: flex; justify-content: center; padding: 50px; }
-        .card { background: white; padding: 30px; border-radius: 15px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); width: 350px; }
-        input { width: 100%; padding: 12px; margin: 10px 0; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; font-weight: bold; text-transform: uppercase; }
-        button { width: 100%; padding: 12px; background: #2bb673; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; }
-        #status { margin-top: 15px; font-size: 14px; text-align: center; }
+        :root { --primary: #2bb673; --dark: #2c3e50; --bg: #f4f7f6; }
+        body { font-family: 'Segoe UI', sans-serif; background: var(--bg); margin: 0; padding: 20px; display: flex; justify-content: center; }
+        
+        .card { background: white; padding: 30px; border-radius: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.05); width: 100%; max-width: 500px; }
+        
+        .btn-back { display: inline-flex; align-items: center; text-decoration: none; color: #666; font-size: 14px; margin-bottom: 20px; font-weight: bold; }
+        
+        h2 { margin: 0 0 5px 0; color: var(--dark); }
+        .subtitle { color: #777; font-size: 14px; margin-bottom: 25px; }
+
+        label { display: block; margin-bottom: 8px; font-size: 13px; font-weight: bold; color: #555; }
+        
+        /* Area para múltiples IDs */
+        textarea { 
+            width: 100%; 
+            height: 150px; 
+            padding: 15px; 
+            border: 2px solid #eee; 
+            border-radius: 12px; 
+            font-family: monospace; 
+            font-size: 16px; 
+            box-sizing: border-box; 
+            resize: none;
+            text-transform: uppercase;
+        }
+        textarea:focus { border-color: var(--primary); outline: none; background: #f0fff4; }
+
+        .btn-save { 
+            width: 100%; 
+            background: var(--dark); 
+            color: white; 
+            border: none; 
+            padding: 18px; 
+            border-radius: 12px; 
+            font-weight: bold; 
+            font-size: 16px; 
+            cursor: pointer; 
+            margin-top: 20px;
+            transition: 0.3s; 
+        }
+        .btn-save:hover { background: #1a252f; }
+        .btn-save:disabled { background: #ccc; cursor: not-allowed; }
+
+        #log { 
+            margin-top: 20px; 
+            max-height: 200px; 
+            overflow-y: auto; 
+            font-size: 12px; 
+            padding: 10px; 
+            background: #f9f9f9; 
+            border-radius: 8px; 
+            display: none;
+            border: 1px solid #eee;
+        }
+        .log-entry { margin-bottom: 4px; border-bottom: 1px solid #f0f0f0; padding-bottom: 2px; }
+        .success-text { color: var(--primary); font-weight: bold; }
+        .error-text { color: #e74c3c; }
     </style>
 </head>
 <body>
 
 <div class="card">
-    <h2>Registrar Nueva Placa</h2>
-    <p style="font-size: 12px; color: #666;">El ID será creado como <b>No Pagado</b> y <b>No Activo</b> por seguridad.</p>
+    <a href="../admin.html" class="btn-back">⬅️ Volver al Panel</a>
     
-    <input type="text" id="placa-id" placeholder="Ej: BB7D1F" maxlength="6">
-    <button id="btn-registrar">Subir a Inventario</button>
-    
-    <div id="status"></div>
+    <h2>Carga Masiva de Placas</h2>
+    <p class="subtitle">Pega los IDs generados en Sheets (uno por línea o separados por comas).</p>
+
+    <div class="input-group">
+        <label for="listaIds">LISTADO DE IDS (6 CARACTERES)</label>
+        <textarea id="listaIds" placeholder="K9W7X2&#10;BT4M8P&#10;RH9L3Y"></textarea>
+    </div>
+
+    <button id="btnGuardar" class="btn-save">🚀 Registrar en Base de Datos</button>
+
+    <div id="log"></div>
+
+    <div style="margin-top: 25px; padding: 15px; background: #fff9db; border-radius: 10px; font-size: 12px; color: #856404;">
+        ⚠️ <b>Nota:</b> Solo se registrarán IDs que no existan previamente. Las placas se crean con estado "Inactiva" hasta que sean habilitadas en el Cajero.
+    </div>
 </div>
 
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-    import { getFirestore, doc, setDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+    import { getFirestore, doc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
     const firebaseConfig = {
         apiKey: "AIzaSyCqROIzmp2guo2XLbdYrSW3ujlUBc7ngOc",
@@ -40,37 +103,67 @@
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
 
-    document.getElementById("btn-registrar").onclick = async () => {
-        const id = document.getElementById("placa-id").value.trim().toUpperCase();
-        const status = document.getElementById("status");
+    const textarea = document.getElementById("listaIds");
+    const btnGuardar = document.getElementById("btnGuardar");
+    const logDiv = document.getElementById("log");
 
-        if (id.length < 5) {
-            status.innerText = "❌ ID demasiado corto.";
-            return;
+    btnGuardar.addEventListener("click", async () => {
+        const contenido = textarea.value.trim();
+        if (!contenido) return alert("Pega algunos IDs primero.");
+
+        // Separar por saltos de línea o comas, limpiar espacios y quitar vacíos
+        const ids = contenido.split(/[\n,]+/).map(id => id.trim().toUpperCase()).filter(id => id.length > 0);
+        
+        if (!confirm(`¿Estás seguro de que quieres subir ${ids.length} placas al sistema?`)) return;
+
+        btnGuardar.disabled = true;
+        btnGuardar.innerText = "Subiendo placas...";
+        logDiv.style.display = "block";
+        logDiv.innerHTML = "<b>Iniciando proceso...</b><br>";
+
+        let exitosos = 0;
+        let fallidos = 0;
+
+        for (const id of ids) {
+            if (id.length !== 6) {
+                logDiv.innerHTML += `<div class="log-entry error-text">❌ ${id}: Formato inválido (debe ser de 6 caracteres).</div>`;
+                fallidos++;
+                continue;
+            }
+
+            try {
+                const docRef = doc(db, "placas", id);
+                const docSnap = await getDoc(docRef);
+
+                if (!docSnap.exists()) {
+                    await setDoc(docRef, {
+                        activa: false,   // No tiene datos de mascota aún
+                        vendida: false,  // Aún no pasa por caja
+                        mascota: "",
+                        telefono: "",
+                        foto: "",
+                        mensaje: "",
+                        pin: ""
+                    });
+                    logDiv.innerHTML += `<div class="log-entry success-text">✅ ${id}: Registrada correctamente.</div>`;
+                    exitosos++;
+                } else {
+                    logDiv.innerHTML += `<div class="log-entry" style="color:#e67e22">⚠️ ${id}: Ya existe en la base de datos.</div>`;
+                    fallidos++;
+                }
+            } catch (e) {
+                logDiv.innerHTML += `<div class="log-entry error-text">❌ ${id}: Error de conexión.</div>`;
+                fallidos++;
+            }
+            // Auto-scroll al último mensaje del log
+            logDiv.scrollTop = logDiv.scrollHeight;
         }
 
-        try {
-            status.innerText = "⏳ Registrando...";
-            
-            // USAMOS setDoc PARA CREAR EL DOCUMENTO DESDE CERO
-            await setDoc(doc(db, "placas", id), {
-                id: id,
-                activa: false,   // 🔓 El cliente aún no pone sus datos
-                pagada: false,   // 🚫 Bloqueada comercialmente hasta que pase por caja
-                fechaCreacion: serverTimestamp(),
-                // Dejamos los demás campos vacíos o inexistentes hasta la activación
-                mascota: "",
-                telefono: "",
-                pin: ""
-            });
-
-            status.innerHTML = `<b style="color:green;">✅ ID ${id} registrado en inventario.</b>`;
-            document.getElementById("placa-id").value = ""; // Limpiar campo
-            
-        } catch (e) {
-            status.innerText = "❌ Error: " + e.message;
-        }
-    };
+        btnGuardar.disabled = false;
+        btnGuardar.innerText = "🚀 Registrar en Base de Datos";
+        alert(`Proceso terminado.\nExitosos: ${exitosos}\nFallidos/Duplicados: ${fallidos}`);
+    });
 </script>
+
 </body>
 </html>
