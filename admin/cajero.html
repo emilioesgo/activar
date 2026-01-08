@@ -4,6 +4,13 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Punto de Venta | Huellitas Digitales</title>
+
+    <link rel="manifest" href="../manifest.json">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <link rel="apple-touch-icon" href="../assets/img/icon-192.png">
+    <meta name="theme-color" content="#2bb673">
+
     <link rel="icon" type="image/png" href="../assets/img/favicon.png">
     <script src="https://unpkg.com/html5-qrcode"></script>
     <style>
@@ -11,7 +18,6 @@
         body { font-family: 'Segoe UI', sans-serif; background: var(--bg); margin: 0; padding: 15px; display: flex; justify-content: center; }
         .card { background: white; padding: 25px; border-radius: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.05); width: 100%; max-width: 400px; }
         
-        /* Contenedor del Escáner */
         #reader-container { display: none; margin-bottom: 15px; border-radius: 15px; overflow: hidden; border: 2px solid var(--primary); background: #000; }
         #reader { width: 100%; }
 
@@ -21,7 +27,6 @@
         .input-container { margin-bottom: 15px; }
         label { display:block; font-size: 10px; font-weight: bold; color: #bbb; margin-bottom: 5px; text-transform: uppercase; text-align: center; }
         
-        /* Input habilitado para escritura manual */
         input { width: 100%; padding: 15px; border: 2px solid #eee; border-radius: 12px; font-size: 22px; box-sizing: border-box; text-transform: uppercase; text-align: center; font-family: monospace; background: #fff; font-weight: bold; transition: 0.3s; }
         input:focus { border-color: var(--primary); outline: none; background: #f0fff4; }
         
@@ -37,7 +42,6 @@
         .success { background: #e8f5e9; color: #2e7d32; border: 1px solid #c8e6c9; display: block !important; }
         .error { background: #ffebee; color: #c62828; border: 1px solid #ffcdd2; display: block !important; }
 
-        .stats-container { margin-top: 20px; text-align: center; border-top: 1px solid #eee; padding-top: 15px; }
         .counter-box { background: var(--dark); color: white; padding: 5px 15px; border-radius: 20px; font-size: 12px; font-weight: bold; }
     </style>
 </head>
@@ -74,6 +78,15 @@
 </div>
 
 <script type="module">
+    // Registro del Service Worker para PWA
+    if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+            navigator.serviceWorker.register('../sw.js')
+                .then(reg => console.log('SW Cajero OK'))
+                .catch(err => console.log('Error SW Cajero', err));
+        });
+    }
+
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
     import { getFirestore, doc, updateDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
@@ -100,7 +113,6 @@
     let html5QrCode;
     let isScannerOpen = false;
 
-    // --- GESTIÓN DE CÁMARA QR ---
     window.toggleQR = async function() {
         if (!isScannerOpen) {
             readerContainer.style.display = "block";
@@ -116,7 +128,7 @@
                     let id = text.includes("id=") ? new URL(text).searchParams.get("id") : text;
                     inputPlaca.value = id.toUpperCase().substring(0,6);
                     if (navigator.vibrate) navigator.vibrate(100);
-                    toggleQR(); // Cerrar cámara al detectar
+                    toggleQR();
                 }
             );
             isScannerOpen = true;
@@ -133,7 +145,6 @@
         }
     };
 
-    // --- LÓGICA DE VENTA ---
     window.procesarVenta = async function() {
         const id = inputPlaca.value.toUpperCase().trim();
         if (id.length < 4) {
@@ -171,7 +182,7 @@
                     setTimeout(limpiarTodo, 2500);
                 }
             } else {
-                mostrarMensaje("❌ ID no existe en inventario.", "error");
+                mostrarMensaje("❌ ID no existe.", "error");
             }
         } catch (e) {
             mostrarMensaje("⚠️ Error de conexión.", "error");
@@ -181,7 +192,6 @@
         }
     };
 
-    // --- FUNCIONES AUXILIARES ---
     window.limpiarTodo = function() {
         inputPlaca.value = "";
         mensaje.style.display = "none";
