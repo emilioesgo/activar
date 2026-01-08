@@ -5,55 +5,66 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Punto de Venta | Huellitas Digitales</title>
     <link rel="icon" type="image/png" href="../assets/img/favicon.png">
+    <script src="https://unpkg.com/html5-qrcode"></script>
     <style>
-        :root { --primary: #2bb673; --error: #e74c3c; --dark: #2c3e50; --bg: #f4f7f6; }
-        body { font-family: 'Segoe UI', sans-serif; background: var(--bg); margin: 0; padding: 20px; display: flex; justify-content: center; }
+        :root { --primary: #2bb673; --error: #e74c3c; --dark: #2c3e50; --bg: #f4f7f6; --gray: #95a5a6; }
+        body { font-family: 'Segoe UI', sans-serif; background: var(--bg); margin: 0; padding: 15px; display: flex; justify-content: center; }
+        .card { background: white; padding: 25px; border-radius: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.05); width: 100%; max-width: 400px; }
         
-        .card { background: white; padding: 30px; border-radius: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.05); width: 100%; max-width: 400px; }
+        #reader { width: 100%; border-radius: 15px; overflow: hidden; margin-bottom: 15px; border: 2px solid #eee; background: #000; }
+        .nfc-badge { background: #e3f2fd; color: #1976d2; padding: 8px; border-radius: 8px; font-size: 11px; font-weight: bold; margin-bottom: 15px; display: block; text-align: center; border: 1px solid #bbdefb; }
+
+        h2 { margin: 0 0 5px 0; color: var(--dark); text-align: center; font-size: 22px; }
+        p { color: #777; font-size: 13px; margin-bottom: 15px; text-align: center; }
         
-        .btn-back { display: inline-flex; align-items: center; text-decoration: none; color: #666; font-size: 14px; margin-bottom: 20px; font-weight: bold; transition: 0.2s; }
-        .btn-back:hover { color: var(--primary); }
+        .input-container { position: relative; margin-bottom: 15px; }
+        input { width: 100%; padding: 15px; border: 2px solid #eee; border-radius: 12px; font-size: 22px; box-sizing: border-box; text-transform: uppercase; text-align: center; font-family: monospace; background: #f9f9f9; font-weight: bold; }
+        
+        .btn-group { display: grid; grid-template-columns: 1fr 2fr; gap: 10px; }
+        .btn { border: none; padding: 18px; border-radius: 12px; font-weight: bold; font-size: 16px; cursor: pointer; transition: 0.3s; }
+        .btn-clear { background: var(--gray); color: white; }
+        .btn-activate { background: var(--primary); color: white; box-shadow: 0 6px 15px rgba(43,182,115,0.3); }
+        .btn:disabled { background: #ccc; box-shadow: none; cursor: not-allowed; }
 
-        h2 { margin: 0 0 10px 0; color: var(--dark); }
-        p { color: #777; font-size: 14px; margin-bottom: 25px; line-height: 1.4; }
-
-        .input-group { margin-bottom: 20px; }
-        label { display: block; margin-bottom: 8px; font-size: 12px; font-weight: bold; color: #555; text-transform: uppercase; letter-spacing: 1px; }
-        input { width: 100%; padding: 15px; border: 2px solid #eee; border-radius: 12px; font-size: 20px; box-sizing: border-box; text-transform: uppercase; text-align: center; font-family: monospace; transition: 0.3s; }
-        input:focus { border-color: var(--primary); outline: none; background: #f0fff4; }
-
-        .btn-activate { width: 100%; background: var(--primary); color: white; border: none; padding: 18px; border-radius: 12px; font-weight: bold; font-size: 16px; cursor: pointer; box-shadow: 0 6px 15px rgba(43,182,115,0.3); transition: 0.3s; }
-        .btn-activate:active { transform: scale(0.98); }
-        .btn-activate:disabled { background: #ccc; box-shadow: none; cursor: not-allowed; }
-
-        #mensaje { margin-top: 20px; padding: 15px; border-radius: 12px; display: none; text-align: center; font-size: 14px; line-height: 1.4; }
+        #mensaje { margin-top: 15px; padding: 12px; border-radius: 12px; display: none; text-align: center; font-size: 14px; animation: fadeIn 0.3s; font-weight: 500; }
         .success { background: #e8f5e9; color: #2e7d32; border: 1px solid #c8e6c9; display: block !important; }
         .error { background: #ffebee; color: #c62828; border: 1px solid #ffcdd2; display: block !important; }
 
-        .footer-info { margin-top: 30px; text-align: center; font-size: 11px; color: #bbb; border-top: 1px solid #eee; padding-top: 15px; }
+        /* Estilos del Contador */
+        .stats-container { margin-top: 25px; padding-top: 15px; border-top: 1px dashed #ddd; text-align: center; }
+        .counter-box { display: inline-block; background: var(--dark); color: white; padding: 5px 15px; border-radius: 20px; font-size: 12px; font-weight: bold; }
+        .counter-number { color: var(--primary); font-size: 16px; margin-left: 5px; }
+        
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
     </style>
 </head>
 <body>
 
 <div class="card">
-    <a href="../admin.html" class="btn-back">⬅️ Panel Principal</a>
-
-    <img src="../assets/img/logo.png" alt="Huellitas" style="width: 50px; margin-bottom: 15px;">
-    <h2>Cajero: Habilitar Venta</h2>
-    <p>Escanea o escribe el ID de la placa para permitir que el cliente pueda registrar a su mascota.</p>
-
-    <div class="input-group">
-        <label for="placaId">ID de Placa (6 caracteres)</label>
-        <input type="text" id="placaId" placeholder="ABC123" maxlength="6" autocomplete="off">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+        <a href="../admin.html" style="text-decoration: none; color: var(--gray); font-weight: bold; font-size: 14px;">⬅️ Panel</a>
+        <div class="counter-box">HOY: <span id="ventasHoy" class="counter-number">0</span></div>
     </div>
 
-    <button id="btnActivar" class="btn-activate">✅ Habilitar para Venta</button>
+    <h2>Cajero Digital</h2>
+    <p>Escanea QR o usa el NFC de la placa</p>
+
+    <div id="reader"></div>
+    <div id="nfc-status" class="nfc-badge">📡 NFC Activo</div>
+
+    <div class="input-container">
+        <input type="text" id="placaId" placeholder="--- ---" maxlength="6" readonly>
+    </div>
+
+    <div class="btn-group">
+        <button class="btn btn-clear" onclick="limpiarTodo()">Borrar</button>
+        <button id="btnActivar" class="btn btn-activate" onclick="procesarVenta()">✅ Vender</button>
+    </div>
 
     <div id="mensaje"></div>
-
-    <div class="footer-info">
-        <b>SISTEMA DE SEGURIDAD ACTIVO</b><br>
-        Las placas activas o ya vendidas no pueden procesarse dos veces.
+    
+    <div class="stats-container">
+        <span style="font-size: 10px; color: #bbb; text-transform: uppercase; letter-spacing: 1px;">Punto de Venta Huellitas Digitales</span>
     </div>
 </div>
 
@@ -72,87 +83,108 @@
 
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
-
-    // --- CONFIGURACIÓN DE GOOGLE SHEETS ---
     const URL_SHEETS = "https://script.google.com/macros/s/AKfycbzH1tsICupT_eLE1aNzsUMUx_0w3Wl6ZcAckHGmtuvXLmuOBKg2kBHf285e1DVGY6iVSA/exec"; 
 
     const inputPlaca = document.getElementById("placaId");
     const btnActivar = document.getElementById("btnActivar");
     const mensaje = document.getElementById("mensaje");
+    const txtContador = document.getElementById("ventasHoy");
 
-    btnActivar.addEventListener("click", async () => {
-        const id = inputPlaca.value.toUpperCase().trim();
+    // --- GESTIÓN DEL CONTADOR ---
+    function actualizarContador(incrementar = false) {
+        const hoy = new Date().toLocaleDateString();
+        let stats = JSON.parse(localStorage.getItem('stats_huellitas')) || { fecha: hoy, total: 0 };
         
-        if (id.length < 6) {
-            mostrarMensaje("❌ El ID debe tener exactamente 6 caracteres.", "error");
-            return;
+        if (stats.fecha !== hoy) {
+            stats = { fecha: hoy, total: 0 };
         }
+        
+        if (incrementar) stats.total++;
+        
+        localStorage.setItem('stats_huellitas', JSON.stringify(stats));
+        txtContador.innerText = stats.total;
+    }
+    actualizarContador(); // Carga inicial
+
+    // --- ESCÁNER QR ---
+    const html5QrCode = new Html5Qrcode("reader");
+    html5QrCode.start({ facingMode: "environment" }, { fps: 10, qrbox: 200 }, (text) => {
+        let id = text.includes("id=") ? new URL(text).searchParams.get("id") : text;
+        if (id) {
+            inputPlaca.value = id.toUpperCase().substring(0,6);
+            if (navigator.vibrate) navigator.vibrate(100);
+            mensaje.style.display = "none";
+        }
+    });
+
+    // --- LECTURA NFC ---
+    if ('NDEFReader' in window) {
+        const ndef = new NDEFReader();
+        ndef.scan().then(() => {
+            ndef.onreading = event => {
+                const decoder = new TextDecoder();
+                const texto = decoder.decode(event.message.records[0].data);
+                inputPlaca.value = (texto.includes("id=") ? texto.split("id=")[1] : texto).substring(0,6).toUpperCase();
+                if (navigator.vibrate) navigator.vibrate(100);
+                mensaje.style.display = "none";
+            };
+        });
+    }
+
+    // --- LÓGICA DE VENTA ---
+    window.procesarVenta = async function() {
+        const id = inputPlaca.value.trim();
+        if (!id) return;
 
         btnActivar.disabled = true;
-        btnActivar.innerText = "Verificando estado...";
-        mensaje.style.display = "none";
+        btnActivar.innerText = "⏳ ...";
 
         try {
             const docRef = doc(db, "placas", id);
-            const docSnap = await getDoc(docRef);
+            const snap = await getDoc(docRef);
 
-            if (docSnap.exists()) {
-                const data = docSnap.data();
+            if (snap.exists()) {
+                const data = snap.data();
+                if (data.activa) {
+                    mostrarMensaje(`🚫 La placa ${id} ya tiene dueño.`, "error");
+                } else if (data.vendida) {
+                    mostrarMensaje(`⚠️ Ya fue vendida anteriormente.`, "error");
+                } else {
+                    await updateDoc(docRef, {
+                        vendida: true,
+                        fechaVenta: new Date().toISOString()
+                    });
 
-                if (data.activa === true) {
-                    mostrarMensaje(`🚫 BLOQUEADO: La placa ${id} ya está activa y vinculada a la mascota "${data.mascota.toUpperCase()}". No se puede re-habilitar.`, "error");
-                    resetBtn();
-                    return;
+                    fetch(URL_SHEETS, {
+                        method: 'POST',
+                        mode: 'no-cors',
+                        body: JSON.stringify({ id: id, status: "VENDIDA" })
+                    });
+
+                    mostrarMensaje(`✅ Placa ${id} habilitada.`, "success");
+                    actualizarContador(true); // Incrementa el contador visual
+                    setTimeout(limpiarTodo, 2500);
                 }
-
-                if (data.vendida === true) {
-                    const fecha = data.fechaVenta ? new Date(data.fechaVenta).toLocaleDateString() : "desconocida";
-                    mostrarMensaje(`⚠️ AVISO: Esta placa ya fue habilitada en caja el día ${fecha}. Está lista para que el cliente la use.`, "error");
-                    resetBtn();
-                    return;
-                }
-
-                await updateDoc(docRef, {
-                    activa: false,
-                    vendida: true,
-                    fechaVenta: new Date().toISOString()
-                });
-
-                // --- ACTUALIZAR GOOGLE SHEETS ---
-                fetch(URL_SHEETS, {
-                    method: 'POST',
-                    mode: 'no-cors',
-                    body: JSON.stringify({
-                        id: id,
-                        status: "VENDIDA"
-                    }),
-                    headers: { 'Content-Type': 'application/json' }
-                }).catch(e => console.log("Error Sheets:", e));
-                // --------------------------------
-
-                mostrarMensaje(`✅ ÉXITO: Placa ${id} habilitada. El cliente ya puede registrar a su mascota.`, "success");
-                inputPlaca.value = ""; 
             } else {
-                mostrarMensaje("❌ ERROR: El ID ingresado no existe en el inventario maestro.", "error");
+                mostrarMensaje("❌ ID no encontrado.", "error");
             }
-        } catch (error) {
-            console.error("Error Firebase:", error);
-            mostrarMensaje("⚠️ Error de conexión con la base de datos.", "error");
+        } catch (e) {
+            mostrarMensaje("⚠️ Error de red.", "error");
         } finally {
-            resetBtn();
+            btnActivar.disabled = false;
+            btnActivar.innerText = "✅ Vender";
         }
-    });
+    };
+
+    window.limpiarTodo = function() {
+        inputPlaca.value = "";
+        mensaje.style.display = "none";
+    };
 
     function mostrarMensaje(texto, tipo) {
         mensaje.innerText = texto;
         mensaje.className = tipo;
     }
-
-    function resetBtn() {
-        btnActivar.disabled = false;
-        btnActivar.innerText = "✅ Habilitar para Venta";
-    }
 </script>
-
 </body>
 </html>
