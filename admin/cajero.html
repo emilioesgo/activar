@@ -61,7 +61,6 @@
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
     import { getFirestore, doc, updateDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
-    // Tu configuración de Firebase
     const firebaseConfig = {
         apiKey: "AIzaSyCqROIzmp2guo2XLbdYrSW3ujlUBc7ngOc",
         authDomain: "huellitas-digitales.firebaseapp.com",
@@ -73,6 +72,9 @@
 
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
+
+    // --- CONFIGURACIÓN DE GOOGLE SHEETS ---
+    const URL_SHEETS = "TU_URL_DE_APPS_SCRIPT_AQUI"; 
 
     const inputPlaca = document.getElementById("placaId");
     const btnActivar = document.getElementById("btnActivar");
@@ -86,7 +88,6 @@
             return;
         }
 
-        // Bloquear botón para evitar múltiples clics
         btnActivar.disabled = true;
         btnActivar.innerText = "Verificando estado...";
         mensaje.style.display = "none";
@@ -98,14 +99,12 @@
             if (docSnap.exists()) {
                 const data = docSnap.data();
 
-                // 1. Validar si la placa ya tiene un dueño (Está activa)
                 if (data.activa === true) {
                     mostrarMensaje(`🚫 BLOQUEADO: La placa ${id} ya está activa y vinculada a la mascota "${data.mascota.toUpperCase()}". No se puede re-habilitar.`, "error");
                     resetBtn();
                     return;
                 }
 
-                // 2. Validar si la placa ya fue vendida (Pero no activada por el cliente)
                 if (data.vendida === true) {
                     const fecha = data.fechaVenta ? new Date(data.fechaVenta).toLocaleDateString() : "desconocida";
                     mostrarMensaje(`⚠️ AVISO: Esta placa ya fue habilitada en caja el día ${fecha}. Está lista para que el cliente la use.`, "error");
@@ -113,12 +112,23 @@
                     return;
                 }
 
-                // 3. Si pasa los filtros, habilitar para la venta
                 await updateDoc(docRef, {
-                    activa: false, // Sigue en false para que el cliente la registre
+                    activa: false,
                     vendida: true,
                     fechaVenta: new Date().toISOString()
                 });
+
+                // --- ACTUALIZAR GOOGLE SHEETS ---
+                fetch(URL_SHEETS, {
+                    method: 'POST',
+                    mode: 'no-cors',
+                    body: JSON.stringify({
+                        id: id,
+                        status: "VENDIDA"
+                    }),
+                    headers: { 'Content-Type': 'application/json' }
+                }).catch(e => console.log("Error Sheets:", e));
+                // --------------------------------
 
                 mostrarMensaje(`✅ ÉXITO: Placa ${id} habilitada. El cliente ya puede registrar a su mascota.`, "success");
                 inputPlaca.value = ""; 
