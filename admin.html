@@ -4,6 +4,13 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dashboard Admin | Huellitas Digitales</title>
+    
+    <link rel="manifest" href="manifest.json">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <link rel="apple-touch-icon" href="assets/img/icon-192.png">
+    <meta name="theme-color" content="#2bb673">
+
     <link rel="icon" type="image/png" href="assets/img/favicon.png">
     <style>
         :root { --primary: #2bb673; --dark: #2c3e50; --bg: #f0f2f5; --danger: #ff4757; --sheets: #0f9d58; }
@@ -33,6 +40,10 @@
 
         .btn { background: var(--primary); color: white; border: none; padding: 12px 25px; border-radius: 10px; font-weight: bold; cursor: pointer; width: 100%; }
         .btn-logout { background: var(--danger); width: auto; font-size: 12px; }
+
+        /* Widget de Estado */
+        .system-status { margin-top: 30px; padding: 15px; background: #f1f2f6; border-radius: 15px; display: flex; justify-content: space-around; font-size: 12px; color: #57606f; }
+        .status-item b { color: var(--primary); display: block; font-size: 16px; }
     </style>
 </head>
 <body>
@@ -87,9 +98,24 @@
                 <span class="card-desc">Base de datos técnica.</span>
             </a>
         </div>
+
+        <div class="system-status">
+            <div class="status-item">ESTADO <b id="status-cloud">Conectado</b></div>
+            <div class="status-item">SESIÓN <b>Activa</b></div>
+            <div class="status-item">MODO <b>Admin PWA</b></div>
+        </div>
     </div>
 
     <script type="module">
+        // Registro del Service Worker para PWA
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('./sw.js')
+                    .then(reg => console.log('SW registrado'))
+                    .catch(err => console.log('Error SW', err));
+            });
+        }
+
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
         import { getFirestore, doc, updateDoc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
@@ -107,7 +133,6 @@
 
         const URL_SHEETS = "https://script.google.com/macros/s/AKfycbzH1tsICupT_eLE1aNzsUMUx_0w3Wl6ZcAckHGmtuvXLmuOBKg2kBHf285e1DVGY6iVSA/exec"; 
         
-        // Objeto centralizado para reseteo
         const DATOS_RESET = {
             activa: false,
             vendida: false,
@@ -124,7 +149,6 @@
             const loginScreen = document.getElementById("login-screen");
             
             try {
-                // Seguridad: Validamos el PIN contra Firestore en lugar de tenerlo en texto plano
                 const pinRef = doc(db, "configuracion", "seguridad");
                 const pinSnap = await getDoc(pinRef);
                 const pinMaestro = pinSnap.exists() ? pinSnap.data().pin_admin : "2026";
@@ -139,7 +163,6 @@
                     inputField.value = "";
                 }
             } catch (e) {
-                // Fallback si no hay internet o no existe el doc en Firebase
                 if (inputField.value === "2026") {
                     loginScreen.style.display = "none";
                     document.getElementById("admin-panel").style.display = "block";
@@ -162,7 +185,6 @@
 
             const confirmPin = prompt("SEGURIDAD: Ingrese el PIN MAESTRO para confirmar el borrado:");
             
-            // Re-validación de PIN para acciones críticas
             const pinRef = doc(db, "configuracion", "seguridad");
             const pinSnap = await getDoc(pinRef);
             const pinMaestro = pinSnap.exists() ? pinSnap.data().pin_admin : "2026";
@@ -172,7 +194,7 @@
                 return;
             }
 
-            const confirmFinal = confirm(`¿ESTÁS SEGURO?\n\nSe borrarán permanentemente todos los datos de la mascota y del dueño asociados al ID: ${id}.\n\nEsta acción no se puede deshacer.`);
+            const confirmFinal = confirm(`¿ESTÁS SEGURO?\n\nSe borrarán permanentemente todos los datos de la mascota y del dueño asociados al ID: ${id}.`);
             
             if (confirmFinal) {
                 try {
@@ -180,21 +202,18 @@
                     const docSnap = await getDoc(docRef);
 
                     if (!docSnap.exists()) {
-                        alert("El ID ingresado no existe en la base de datos.");
+                        alert("El ID ingresado no existe.");
                         return;
                     }
 
-                    // Resetear en Firebase usando el objeto centralizado
                     await updateDoc(docRef, DATOS_RESET);
 
-                    // Registro de Log (Auditoría)
                     await setDoc(doc(db, "logs", `${Date.now()}_${id}`), {
                         accion: "RESETEO_PLACA",
                         placa_id: id,
                         fecha: new Date().toISOString()
                     });
 
-                    // Actualizar Google Sheets
                     fetch(URL_SHEETS, {
                         method: 'POST',
                         mode: 'no-cors',
@@ -204,12 +223,11 @@
                             mascota: "---",
                             contacto: "---"
                         })
-                    }).catch(err => console.log("Error Sheets:", err));
+                    });
 
-                    alert("✅ Placa reseteada con éxito. El cambio se ha registrado en el historial.");
+                    alert("✅ Placa reseteada con éxito.");
                 } catch (error) {
-                    console.error("Error al resetear:", error);
-                    alert("Ocurrió un error al intentar resetear la placa.");
+                    alert("Error al resetear.");
                 }
             }
         };
