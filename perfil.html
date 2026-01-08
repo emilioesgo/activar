@@ -25,7 +25,7 @@
         .emergency-box { background: #fff5f5; border: 1px dashed #feb2b2; padding: 15px; border-radius: 15px; margin-bottom: 15px; }
         .emergency-box span { color: #c53030; font-weight: bold; font-size: 13px; display: block; margin-bottom: 5px; text-transform: uppercase; }
 
-        /* Nueva caja Médica */
+        /* Caja Médica */
         .medical-box { background: var(--medical); border: 1px solid var(--medical-border); padding: 15px; border-radius: 15px; margin-bottom: 25px; }
         .medical-box span { color: #2c7a7b; font-weight: bold; font-size: 13px; display: block; margin-bottom: 5px; text-transform: uppercase; }
 
@@ -36,9 +36,11 @@
         .btn-wa { background: var(--whatsapp); box-shadow: 0 5px 15px rgba(37,211,102,0.3); }
         .btn:active { transform: scale(0.95); }
 
+        /* Estilos Vista No Activa */
+        .no-active-container { text-align: center; padding: 60px 30px; }
+        .btn-activate { background: var(--primary); color: white; padding: 20px; border-radius: 15px; text-decoration: none; font-weight: bold; display: block; font-size: 18px; margin-top: 25px; box-shadow: 0 5px 15px rgba(43,182,115,0.3); }
+
         footer { text-align: center; padding: 40px 20px; font-size: 12px; color: #aaa; background: #fafafa; border-top: 1px solid #eee; }
-        
-        /* Botón de Acceso Dueño */
         .btn-owner { display: inline-block; background: #2c3e50; color: white; padding: 10px 20px; border-radius: 10px; text-decoration: none; font-weight: bold; margin-top: 15px; font-size: 14px; transition: 0.3s; border: none; cursor: pointer; }
         .btn-owner:hover { background: #1a252f; }
 
@@ -50,6 +52,20 @@
 <div id="loading-view" class="loading">
     <img src="assets/img/logo.png" width="80" style="margin-bottom: 20px; opacity: 0.5;">
     <p>Buscando información de la mascota...</p>
+</div>
+
+<div id="not-active-view" class="profile-card" style="display: none;">
+    <div class="no-active-container">
+        <img src="assets/img/logo.png" width="100" style="margin-bottom: 30px;">
+        <h2 style="color: var(--text); margin-bottom: 10px;">¡Placa Detectada!</h2>
+        <p style="color: #666; line-height: 1.6;">Esta placa de <b>Huellitas Digitales</b> aún no ha sido activada por su dueño.</p>
+        
+        <a href="#" id="btn-activar-link" class="btn-activate">
+            🐾 ACTIVAR MI PLACA AHORA
+        </a>
+        
+        <p style="margin-top: 40px; font-size: 13px; color: #aaa;">ID de Placa: <span id="display-id-inactive">---</span></p>
+    </div>
 </div>
 
 <div id="profile-view" class="profile-card" style="display: none;">
@@ -86,7 +102,6 @@
         <img src="assets/img/logo.png" width="30" style="margin-bottom: 10px; filter: grayscale(1);"><br>
         <b>Huellitas Digitales</b><br>
         ¿Quieres una placa como esta? Visita nuestro sitio.<br>
-        
         <button onclick="ownerAccess()" class="btn-owner">⚙️ GESTIONAR MI PERFIL (DUEÑO)</button>
     </footer>
 </div>
@@ -120,10 +135,12 @@
             const docRef = doc(db, "placas", id.toUpperCase());
             const docSnap = await getDoc(docRef);
 
+            // Ocultar cargador siempre después de la consulta
+            document.getElementById("loading-view").style.display = "none";
+
             if (docSnap.exists() && docSnap.data().activa) {
                 const data = docSnap.data();
                 
-                // Llenar datos
                 document.getElementById("pet-name").innerText = data.mascota;
                 document.getElementById("display-id").innerText = id.toUpperCase();
                 document.getElementById("label-mensaje").innerText = `MENSAJE DE ${data.mascota.toUpperCase()}:`;
@@ -131,15 +148,15 @@
                 if(data.notas) document.getElementById("pet-medical").innerText = data.notas;
                 if(data.foto) document.getElementById("pet-photo").src = data.foto;
 
-                // Configurar enlaces de contacto
                 document.getElementById("call-link").href = `tel:${data.telefono}`;
                 document.getElementById("wa-link").href = `https://wa.me/${data.telefono.replace(/\+/g, '').replace(/\s/g, '')}?text=Hola,%20encontré%20a%20tu%20mascota%20${data.mascota}.%20Escaneé%20su%20placa%20QR.`;
 
-                // Mostrar perfil
-                document.getElementById("loading-view").style.display = "none";
                 document.getElementById("profile-view").style.display = "block";
             } else {
-                document.body.innerHTML = "<h2 style='text-align:center; margin-top:50px;'>Esta placa aún no ha sido activada.</h2>";
+                // PLACA NO ACTIVADA: Mostrar vista de activación
+                document.getElementById("display-id-inactive").innerText = id.toUpperCase();
+                document.getElementById("btn-activar-link").href = `index.html?id=${id.toUpperCase()}`;
+                document.getElementById("not-active-view").style.display = "block";
             }
         } catch (e) {
             console.error(e);
@@ -147,7 +164,6 @@
         }
     }
 
-    // Función de Acceso Dueño directa
     window.ownerAccess = () => {
         const id = new URLSearchParams(window.location.search).get('id');
         window.location.href = `editar.html?id=${id}`;
