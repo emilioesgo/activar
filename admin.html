@@ -6,10 +6,13 @@
     <title>Dashboard Admin | Huellitas Digitales</title>
     <link rel="icon" type="image/png" href="assets/img/favicon.png">
     <style>
-        :root { --primary: #2bb673; --dark: #2c3e50; --bg: #f0f2f5; --danger: #ff4757; }
+        :root { --primary: #2bb673; --dark: #2c3e50; --bg: #f0f2f5; --danger: #ff4757; --sheets: #0f9d58; }
         body { font-family: 'Segoe UI', sans-serif; background: var(--bg); margin: 0; display: flex; justify-content: center; align-items: center; min-height: 100vh; padding: 20px; box-sizing: border-box; }
         
-        #login-screen { background: white; padding: 40px; border-radius: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); text-align: center; width: 100%; max-width: 320px; }
+        #login-screen { background: white; padding: 40px; border-radius: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); text-align: center; width: 100%; max-width: 320px; transition: transform 0.2s; }
+        .shake { animation: shake 0.4s; }
+        @keyframes shake { 0%, 100% {transform: translateX(0);} 25% {transform: translateX(-10px);} 75% {transform: translateX(10px);} }
+        
         input { width: 100%; padding: 12px; margin: 15px 0; border: 1px solid #ddd; border-radius: 10px; text-align: center; font-size: 18px; box-sizing: border-box; }
         
         #admin-panel { display: none; width: 100%; max-width: 900px; background: white; padding: 30px; border-radius: 25px; box-shadow: 0 15px 35px rgba(0,0,0,0.1); }
@@ -22,6 +25,7 @@
         .card { background: #f8f9fa; padding: 25px; border-radius: 20px; text-decoration: none; color: var(--dark); transition: 0.3s; border: 1px solid #eee; text-align: center; cursor: pointer; }
         .card:hover { transform: translateY(-5px); border-color: var(--primary); background: #f0fff4; }
         .card.danger:hover { border-color: var(--danger); background: #fff5f5; }
+        .card.sheets:hover { border-color: var(--sheets); background: #e8f5e9; }
         
         .card-icon { font-size: 40px; margin-bottom: 15px; display: block; }
         .card-title { font-weight: bold; font-size: 18px; display: block; margin-bottom: 5px; }
@@ -59,6 +63,12 @@
                 <span class="card-desc">Configurar perfil al cliente ahora.</span>
             </div>
 
+            <a href="https://docs.google.com/spreadsheets/d/1Rod5EGtal0xl6DuhHx0bugDCrP4XOS8B" target="_blank" class="card sheets">
+                <span class="card-icon">📊</span>
+                <span class="card-title" style="color: var(--sheets);">Base de Datos</span>
+                <span class="card-desc">Abrir hoja de Google Sheets.</span>
+            </a>
+
             <div class="card danger" onclick="resetearPlaca()">
                 <span class="card-icon">🔄</span>
                 <span class="card-title" style="color: var(--danger);">Resetear Placa</span>
@@ -81,7 +91,7 @@
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-        import { getFirestore, doc, updateDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+        import { getFirestore, doc, updateDoc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyCqROIzmp2guo2XLbdYrSW3ujlUBc7ngOc",
@@ -95,19 +105,47 @@
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
 
-        // --- CONFIGURACIÓN DE GOOGLE SHEETS ---
         const URL_SHEETS = "https://script.google.com/macros/s/AKfycbzH1tsICupT_eLE1aNzsUMUx_0w3Wl6ZcAckHGmtuvXLmuOBKg2kBHf285e1DVGY6iVSA/exec"; 
+        
+        // Objeto centralizado para reseteo
+        const DATOS_RESET = {
+            activa: false,
+            vendida: false,
+            mascota: "Nueva Mascota",
+            notas: "",
+            foto: "",
+            telefono: "",
+            email: "",
+            pin: "1234"
+        };
 
-        const PIN_MAESTRO = "2026"; 
+        window.checkPin = async function() {
+            const inputField = document.getElementById("admin-pin");
+            const loginScreen = document.getElementById("login-screen");
+            
+            try {
+                // Seguridad: Validamos el PIN contra Firestore en lugar de tenerlo en texto plano
+                const pinRef = doc(db, "configuracion", "seguridad");
+                const pinSnap = await getDoc(pinRef);
+                const pinMaestro = pinSnap.exists() ? pinSnap.data().pin_admin : "2026";
 
-        window.checkPin = function() {
-            const input = document.getElementById("admin-pin").value;
-            if (input === PIN_MAESTRO) {
-                document.getElementById("login-screen").style.display = "none";
-                document.getElementById("admin-panel").style.display = "block";
-            } else {
-                alert("PIN Incorrecto.");
-                document.getElementById("admin-pin").value = "";
+                if (inputField.value === pinMaestro) {
+                    loginScreen.style.display = "none";
+                    document.getElementById("admin-panel").style.display = "block";
+                } else {
+                    loginScreen.classList.add("shake");
+                    setTimeout(() => loginScreen.classList.remove("shake"), 400);
+                    alert("PIN Incorrecto.");
+                    inputField.value = "";
+                }
+            } catch (e) {
+                // Fallback si no hay internet o no existe el doc en Firebase
+                if (inputField.value === "2026") {
+                    loginScreen.style.display = "none";
+                    document.getElementById("admin-panel").style.display = "block";
+                } else {
+                    alert("Error de validación.");
+                }
             }
         };
 
@@ -123,7 +161,13 @@
             if (!id) return;
 
             const confirmPin = prompt("SEGURIDAD: Ingrese el PIN MAESTRO para confirmar el borrado:");
-            if (confirmPin !== PIN_MAESTRO) {
+            
+            // Re-validación de PIN para acciones críticas
+            const pinRef = doc(db, "configuracion", "seguridad");
+            const pinSnap = await getDoc(pinRef);
+            const pinMaestro = pinSnap.exists() ? pinSnap.data().pin_admin : "2026";
+
+            if (confirmPin !== pinMaestro) {
                 alert("PIN Maestro incorrecto. Operación cancelada.");
                 return;
             }
@@ -140,19 +184,17 @@
                         return;
                     }
 
-                    // Resetear en Firebase
-                    await updateDoc(docRef, {
-                        activa: false,
-                        vendida: false,
-                        mascota: "Nueva Mascota",
-                        notas: "",
-                        foto: "",
-                        telefono: "",
-                        email: "",
-                        pin: "1234"
+                    // Resetear en Firebase usando el objeto centralizado
+                    await updateDoc(docRef, DATOS_RESET);
+
+                    // Registro de Log (Auditoría)
+                    await setDoc(doc(db, "logs", `${Date.now()}_${id}`), {
+                        accion: "RESETEO_PLACA",
+                        placa_id: id,
+                        fecha: new Date().toISOString()
                     });
 
-                    // --- ACTUALIZAR GOOGLE SHEETS ---
+                    // Actualizar Google Sheets
                     fetch(URL_SHEETS, {
                         method: 'POST',
                         mode: 'no-cors',
@@ -163,9 +205,8 @@
                             contacto: "---"
                         })
                     }).catch(err => console.log("Error Sheets:", err));
-                    // --------------------------------
 
-                    alert("✅ Placa reseteada con éxito en Firebase y Google Sheets.");
+                    alert("✅ Placa reseteada con éxito. El cambio se ha registrado en el historial.");
                 } catch (error) {
                     console.error("Error al resetear:", error);
                     alert("Ocurrió un error al intentar resetear la placa.");
