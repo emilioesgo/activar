@@ -6,7 +6,7 @@
     <title>Perfil de Mascota | Huellitas Digitales</title>
     <link rel="icon" type="image/png" href="assets/img/favicon.png">
     <style>
-        :root { --primary: #2bb673; --whatsapp: #25D366; --bg: #f0f2f5; --text: #2c3e50; }
+        :root { --primary: #2bb673; --whatsapp: #25D366; --bg: #f0f2f5; --text: #2c3e50; --medical: #e6fffa; --medical-border: #b2f5ea; }
         body { font-family: 'Segoe UI', sans-serif; background: var(--bg); margin: 0; display: flex; justify-content: center; color: var(--text); }
         
         .profile-card { background: white; width: 100%; max-width: 450px; min-height: 100vh; position: relative; box-shadow: 0 0 20px rgba(0,0,0,0.1); }
@@ -22,21 +22,27 @@
         h1 { margin: 0; font-size: 32px; color: var(--dark); }
         .breed { color: #888; font-size: 16px; margin-bottom: 20px; display: block; }
 
-        .emergency-box { background: #fff5f5; border: 1px dashed #feb2b2; padding: 15px; border-radius: 15px; margin-bottom: 25px; }
-        .emergency-box span { color: #c53030; font-weight: bold; font-size: 14px; display: block; margin-bottom: 5px; }
+        .emergency-box { background: #fff5f5; border: 1px dashed #feb2b2; padding: 15px; border-radius: 15px; margin-bottom: 15px; }
+        .emergency-box span { color: #c53030; font-weight: bold; font-size: 13px; display: block; margin-bottom: 5px; text-transform: uppercase; }
+
+        /* Nueva caja Médica */
+        .medical-box { background: var(--medical); border: 1px solid var(--medical-border); padding: 15px; border-radius: 15px; margin-bottom: 25px; }
+        .medical-box span { color: #2c7a7b; font-weight: bold; font-size: 13px; display: block; margin-bottom: 5px; text-transform: uppercase; }
 
         /* Botones de Acción */
         .actions { display: grid; gap: 15px; }
         .btn { display: flex; align-items: center; justify-content: center; gap: 10px; padding: 18px; border-radius: 15px; text-decoration: none; color: white; font-weight: bold; font-size: 18px; transition: 0.3s; }
         .btn-call { background: var(--primary); box-shadow: 0 5px 15px rgba(43,182,115,0.3); }
         .btn-wa { background: var(--whatsapp); box-shadow: 0 5px 15px rgba(37,211,102,0.3); }
-        
         .btn:active { transform: scale(0.95); }
 
-        footer { text-align: center; padding: 40px 20px; font-size: 12px; color: #aaa; }
+        footer { text-align: center; padding: 40px 20px; font-size: 12px; color: #aaa; background: #fafafa; border-top: 1px solid #eee; }
         
-        /* Shimmer effect para carga */
-        .loading { text-align: center; padding: 50px; }
+        /* Botón de Acceso Dueño */
+        .btn-owner { display: inline-block; background: #2c3e50; color: white; padding: 10px 20px; border-radius: 10px; text-decoration: none; font-weight: bold; margin-top: 15px; font-size: 14px; transition: 0.3s; border: none; cursor: pointer; }
+        .btn-owner:hover { background: #1a252f; }
+
+        .loading { text-align: center; padding: 100px 20px; }
     </style>
 </head>
 <body>
@@ -48,7 +54,7 @@
 
 <div id="profile-view" class="profile-card" style="display: none;">
     <div class="photo-container">
-        <img id="pet-photo" src="https://images.unsplash.com/photo-1543466835-00a7907e9de1?auto=format&fit=crop&q=80&w=1000" alt="Mascota">
+        <img id="pet-photo" src="assets/img/default-pet.jpg" alt="Mascota">
         <div class="status-badge">🛡️ Protegido por Huellitas</div>
     </div>
 
@@ -57,8 +63,13 @@
         <span class="breed">Placa ID: <span id="display-id">---</span></span>
 
         <div class="emergency-box">
-            <span>⚠️ NOTA DEL DUEÑO:</span>
+            <span id="label-mensaje">MENSAJE DE MI MASCOTA:</span>
             <p id="pet-msg" style="margin: 0; font-size: 15px;">Si me encuentras, por favor contacta a mi familia lo antes posible. ¡Gracias!</p>
+        </div>
+
+        <div class="medical-box">
+            <span>🩺 OBSERVACIONES Y NOTAS MÉDICAS:</span>
+            <p id="pet-medical" style="margin: 0; font-size: 15px; color: #2d3748;">Sin observaciones registradas.</p>
         </div>
 
         <div class="actions">
@@ -75,7 +86,8 @@
         <img src="assets/img/logo.png" width="30" style="margin-bottom: 10px; filter: grayscale(1);"><br>
         <b>Huellitas Digitales</b><br>
         ¿Quieres una placa como esta? Visita nuestro sitio.<br>
-        <a href="admin.html" style="color: #ccc; text-decoration: none; margin-top: 10px; display: inline-block;">Acceso Admin</a>
+        
+        <button onclick="ownerAccess()" class="btn-owner">⚙️ GESTIONAR MI PERFIL (DUEÑO)</button>
     </footer>
 </div>
 
@@ -95,12 +107,14 @@
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
 
+    let savedPin = ""; // Para validar el acceso
+
     async function loadProfile() {
         const urlParams = new URLSearchParams(window.location.search);
         const id = urlParams.get('id');
 
         if (!id) {
-            window.location.href = "404.html";
+            document.body.innerHTML = "<h2 style='text-align:center; margin-top:50px;'>ID de placa no encontrado.</h2>";
             return;
         }
 
@@ -110,12 +124,14 @@
 
             if (docSnap.exists() && docSnap.data().activa) {
                 const data = docSnap.data();
+                savedPin = data.pin; // Guardamos el PIN para el acceso dueño
                 
                 // Llenar datos
                 document.getElementById("pet-name").innerText = data.mascota;
                 document.getElementById("display-id").innerText = id.toUpperCase();
+                document.getElementById("label-mensaje").innerText = `MENSAJE DE ${data.mascota.toUpperCase()}:`;
                 
-                if(data.mensaje) document.getElementById("pet-msg").innerText = data.mensaje;
+                if(data.notas) document.getElementById("pet-medical").innerText = data.notas;
                 if(data.foto) document.getElementById("pet-photo").src = data.foto;
 
                 // Configurar enlaces de contacto
@@ -126,13 +142,24 @@
                 document.getElementById("loading-view").style.display = "none";
                 document.getElementById("profile-view").style.display = "block";
             } else {
-                window.location.href = "404.html";
+                document.body.innerHTML = "<h2 style='text-align:center; margin-top:50px;'>Esta placa aún no ha sido activada.</h2>";
             }
         } catch (e) {
             console.error(e);
             alert("Error al cargar los datos.");
         }
     }
+
+    // Función de Acceso Dueño con PIN
+    window.ownerAccess = () => {
+        const pinInput = prompt("Introduce tu PIN de 4 dígitos para editar:");
+        if (pinInput === savedPin) {
+            const id = new URLSearchParams(window.location.search).get('id');
+            window.location.href = `editar.html?id=${id}`;
+        } else if (pinInput !== null) {
+            alert("❌ PIN incorrecto. Acceso denegado.");
+        }
+    };
 
     loadProfile();
 </script>
