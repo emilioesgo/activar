@@ -107,8 +107,6 @@
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
 
-    let savedPin = ""; // Para validar el acceso
-
     async function loadProfile() {
         const urlParams = new URLSearchParams(window.location.search);
         const id = urlParams.get('id');
@@ -124,7 +122,6 @@
 
             if (docSnap.exists() && docSnap.data().activa) {
                 const data = docSnap.data();
-                savedPin = data.pin; // Guardamos el PIN para el acceso dueño
                 
                 // Llenar datos
                 document.getElementById("pet-name").innerText = data.mascota;
@@ -150,15 +147,10 @@
         }
     }
 
-    // Función de Acceso Dueño con PIN
+    // Función de Acceso Dueño directa
     window.ownerAccess = () => {
-        const pinInput = prompt("Introduce tu PIN de 4 dígitos para editar:");
-        if (pinInput === savedPin) {
-            const id = new URLSearchParams(window.location.search).get('id');
-            window.location.href = `editar.html?id=${id}`;
-        } else if (pinInput !== null) {
-            alert("❌ PIN incorrecto. Acceso denegado.");
-        }
+        const id = new URLSearchParams(window.location.search).get('id');
+        window.location.href = `editar.html?id=${id}`;
     };
 
     loadProfile();
