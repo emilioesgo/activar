@@ -4,251 +4,173 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Activar Placa | Huellitas Digitales</title>
+    <link rel="icon" type="image/png" href="assets/img/favicon.png">
     <style>
-        :root { --primary: #2bb673; --bg: #f4f7f6; --text: #333; --error: #e74c3c; }
-        body { font-family: 'Segoe UI', sans-serif; background: var(--bg); margin: 0; display: flex; justify-content: center; padding: 20px; }
-        .card { background: white; padding: 30px; border-radius: 24px; box-shadow: 0 15px 35px rgba(0,0,0,0.1); width: 100%; max-width: 400px; }
-        h2 { text-align: center; color: var(--text); margin-bottom: 20px; }
-        .id-badge { background: #e8f5e9; color: var(--primary); padding: 8px; text-align: center; border-radius: 12px; font-weight: bold; margin-bottom: 20px; border: 1px dashed var(--primary); }
+        :root { --primary: #2bb673; --dark: #2c3e50; --bg: #f8f9fa; }
+        body { font-family: 'Segoe UI', sans-serif; background: var(--bg); margin: 0; padding: 20px; color: var(--dark); display: flex; justify-content: center; align-items: center; min-height: 100vh; }
         
-        .photo-upload-container { text-align: center; margin-bottom: 20px; }
-        #preview-img { width: 110px; height: 110px; border-radius: 50%; object-fit: cover; border: 3px solid var(--primary); display: none; margin: 0 auto 10px; background: #eee; }
-        .custom-file-upload { display: inline-block; padding: 10px 20px; cursor: pointer; background: #f0f0f0; border-radius: 10px; font-size: 14px; color: #666; font-weight: bold; border: 1px solid #ddd; }
+        .container { max-width: 400px; width: 100%; background: white; padding: 30px; border-radius: 25px; box-shadow: 0 10px 30px rgba(0,0,0,0.08); position: relative; }
+        .logo-header { text-align: center; margin-bottom: 20px; }
+        .logo-header img { width: 60px; }
         
-        label { display: block; margin-bottom: 5px; font-size: 13px; color: #666; font-weight: 600; }
-        input, select, textarea { width: 100%; padding: 12px; margin-bottom: 15px; border: 1.5px solid #eee; border-radius: 10px; box-sizing: border-box; font-size: 16px; transition: 0.3s; }
-        input:focus, select:focus { border-color: var(--primary); outline: none; background: #f9fffb; }
-        
-        .pin-group { display: flex; gap: 10px; }
-        .pin-hint { font-size: 11px; color: #888; margin-top: -12px; margin-bottom: 15px; display: block; }
+        h2 { text-align: center; margin: 5px 0; font-size: 22px; }
+        p.subtitle { text-align: center; color: #777; font-size: 14px; margin-bottom: 25px; }
 
-        .captcha-container { background: #f9f9f9; padding: 15px; border-radius: 12px; border: 1px solid #eee; margin-bottom: 15px; text-align: center; }
-        #captcha-code { font-family: 'Courier New', monospace; font-size: 24px; font-weight: bold; letter-spacing: 5px; background: #333; color: #fff; padding: 8px; border-radius: 8px; display: inline-block; margin-bottom: 10px; text-decoration: line-through; }
-        #btn-refresh-captcha { background: none; border: none; color: var(--primary); cursor: pointer; font-size: 12px; text-decoration: underline; display: block; margin: 0 auto 10px; }
-
-        button#btnActivar { width: 100%; padding: 16px; background: var(--primary); color: white; border: none; border-radius: 12px; font-size: 16px; font-weight: bold; cursor: pointer; transition: 0.3s; }
-        button:disabled { background: #ccc; cursor: not-allowed; }
+        .form-group { margin-bottom: 15px; }
+        label { display: block; margin-bottom: 6px; font-weight: bold; font-size: 12px; color: #555; text-transform: uppercase; }
         
-        #status { text-align: center; font-weight: bold; margin-top: 15px; font-size: 14px; line-height: 1.4; }
-        .loader { border: 3px solid #f3f3f3; border-top: 3px solid var(--primary); border-radius: 50%; width: 18px; height: 18px; animation: spin 1s linear infinite; display: inline-block; vertical-align: middle; margin-right: 8px; }
+        input { width: 100%; padding: 12px; border: 2px solid #eee; border-radius: 12px; font-size: 16px; box-sizing: border-box; transition: 0.3s; }
+        input:focus { border-color: var(--primary); outline: none; background: #f0fff4; }
+        
+        .id-input { background: #f1f3f2; font-family: monospace; font-weight: bold; text-align: center; text-transform: uppercase; letter-spacing: 2px; color: var(--primary); }
+
+        .btn-submit { width: 100%; background: var(--primary); color: white; border: none; padding: 16px; border-radius: 12px; font-weight: bold; font-size: 17px; cursor: pointer; margin-top: 10px; box-shadow: 0 5px 15px rgba(43,182,115,0.3); transition: 0.3s; }
+        .btn-submit:active { transform: scale(0.98); }
+
+        /* PANTALLA DE CARGA */
+        #loader { display: none; position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(255,255,255,0.9); border-radius: 25px; flex-direction: column; justify-content: center; align-items: center; z-index: 10; }
+        .spinner { width: 40px; height: 40px; border: 4px solid #f3f3f3; border-top: 4px solid var(--primary); border-radius: 50%; animation: spin 1s linear infinite; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-        
-        .lock-screen { text-align: center; padding: 20px; }
-        .lock-icon { font-size: 50px; margin-bottom: 10px; }
+
+        #msg { margin-top: 15px; padding: 12px; border-radius: 10px; text-align: center; display: none; font-size: 13px; font-weight: bold; }
+        .err { background: #ffebee; color: #c62828; border: 1px solid #ffcdd2; }
     </style>
 </head>
 <body>
 
-<div class="card" id="main-card">
-    <div id="placa-id-display" class="id-badge">ID: Cargando...</div>
-    
-    <div id="form-content">
-        <h2>Activar Mascota</h2>
-        
-        <div class="photo-upload-container">
-            <img id="preview-img" src="#" alt="Vista previa">
-            <label for="foto-input" class="custom-file-upload">📸 Foto de la Mascota</label>
-            <input id="foto-input" type="file" accept="image/*" style="display: none;">
-        </div>
-
-        <label>Nombre de la Mascota:</label>
-        <input id="mascota" type="text" placeholder="Ej: Max">
-
-        <div class="pin-group">
-            <div style="width: 50%;">
-                <label>PIN (4 dígitos):</label>
-                <input id="pin" type="tel" maxlength="4" placeholder="1234">
-            </div>
-            <div style="width: 50%;">
-                <label>Confirmar PIN:</label>
-                <input id="pin-confirm" type="tel" maxlength="4" placeholder="1234">
-            </div>
-        </div>
-        <span class="pin-hint">Indispensable para editar el perfil después.</span>
-
-        <label>Correo Electrónico:</label>
-        <input id="correo" type="email" placeholder="tu@correo.com">
-
-        <label>Teléfono Celular:</label>
-        <div style="display: flex; gap: 8px;">
-            <select id="codigo-pais" style="width: 45%;">
-                <option value="52">🇲🇽 +52</option>
-                <option value="1">🇺🇸 +1</option>
-                <option value="34">🇪🇸 +34</option>
-                <option value="57">🇨🇴 +57</option>
-                <option value="54">🇦🇷 +54</option>
-                <option value="56">🇨🇱 +56</option>
-                <option value="51">🇵🇪 +51</option>
-            </select>
-            <input id="telefono" type="tel" placeholder="10 dígitos" style="width: 55%;">
-        </div>
-
-        <label>Notas Médicas:</label>
-        <textarea id="mensaje" rows="2" placeholder="Alergias, medicinas..."></textarea>
-
-        <div class="captcha-container">
-            <label>Verificación:</label>
-            <div id="captcha-code"></div>
-            <button id="btn-refresh-captcha" type="button">🔄 Cambiar código</button>
-            <input id="captcha-input" type="text" placeholder="Escribe el código" style="text-align:center; text-transform:uppercase;">
-        </div>
-        
-        <button id="btnActivar">Activar Ahora</button>
+<div class="container">
+    <div id="loader">
+        <div class="spinner"></div>
+        <p style="margin-top: 15px; font-weight: bold; color: var(--primary);">Guardando Huellita...</p>
     </div>
-    <div id="status"></div>
-</div>
 
-<script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
+    <div class="logo-header">
+        <img src="assets/img/logo.png" alt="Logo">
+        <h2>¡Hola! 🐾</h2>
+        <p class="subtitle">Registra tu placa para empezar.</p>
+    </div>
+
+    <div class="form-group">
+        <label>ID de la Placa</label>
+        <input type="text" id="placaId" class="id-input" maxlength="6" placeholder="ABC123">
+    </div>
+
+    <div class="form-group">
+        <label>Nombre de tu Mascota</label>
+        <input type="text" id="nombreMascota" placeholder="Nombre de tu perrito o gatito">
+    </div>
+
+    <div class="form-group">
+        <label>WhatsApp de contacto</label>
+        <input type="tel" id="telefono" placeholder="+52 1 123 456 7890">
+    </div>
+
+    <div class="form-group">
+        <label>PIN (4 números)</label>
+        <input type="password" id="pin" maxlength="4" placeholder="****" inputmode="numeric">
+        <small style="color: #999; font-size: 10px; display: block; margin-top: 5px;">Úsalo para editar el perfil en el futuro.</small>
+    </div>
+
+    <button id="btnRegistrar" class="btn-submit">Activar Ahora</button>
+
+    <div id="msg"></div>
+</div>
 
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-    import { getFirestore, doc, getDoc, updateDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
-    import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-storage.js";
+    import { getFirestore, doc, getDoc, updateDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
     const firebaseConfig = {
         apiKey: "AIzaSyCqROIzmp2guo2XLbdYrSW3ujlUBc7ngOc",
         authDomain: "huellitas-digitales.firebaseapp.com",
         projectId: "huellitas-digitales",
-        storageBucket: "huellitas-digitales.firebasestorage.app", 
+        storageBucket: "huellitas-digitales.firebasestorage.app",
         messagingSenderId: "523935942496",
         appId: "1:523935942496:web:0bb3ad3b28c189345fc005"
     };
 
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
-    const storage = getStorage(app);
-    emailjs.init("TWeQlV3AV77UPCLZ6");
 
-    let currentCaptcha = "";
-    const urlParams = new URLSearchParams(window.location.search);
-    const placaId = urlParams.get('id')?.toUpperCase();
-    const statusDiv = document.getElementById("status");
+    const inputId = document.getElementById("placaId");
+    const loader = document.getElementById("loader");
+    const msg = document.getElementById("msg");
 
-    function generateCaptcha() {
-        const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
-        let result = "";
-        for (let i = 0; i < 6; i++) result += chars.charAt(Math.floor(Math.random() * chars.length));
-        currentCaptcha = result;
-        document.getElementById("captcha-code").innerText = result;
-    }
+    // Detectar ID desde la URL
+    window.addEventListener('DOMContentLoaded', () => {
+        const urlParams = new URLSearchParams(window.location.search);
+        const idDesdeUrl = urlParams.get('id');
+        if (idDesdeUrl) {
+            inputId.value = idDesdeUrl.toUpperCase().trim();
+        }
+    });
 
-    // --- 1. VERIFICACIÓN INICIAL (EL CANDADO) ---
-    async function inicializar() {
-        if(!placaId) {
-            statusDiv.innerHTML = "❌ ID de placa no detectado.";
+    document.getElementById("btnRegistrar").addEventListener("click", async () => {
+        const id = inputId.value.trim().toUpperCase();
+        const nombre = document.getElementById("nombreMascota").value.trim();
+        const tel = document.getElementById("telefono").value.trim();
+        const pinValue = document.getElementById("pin").value.trim();
+
+        if (!id || !nombre || !tel || pinValue.length < 4) {
+            alert("Rellena todos los campos. El PIN debe ser de 4 dígitos.");
             return;
         }
-        document.getElementById("placa-id-display").innerText = "ID PLACA: " + placaId;
-        generateCaptcha();
+
+        // Mostrar pantalla de carga
+        loader.style.display = "flex";
+        msg.style.display = "none";
 
         try {
-            const docSnap = await getDoc(doc(db, "placas", placaId));
+            const docRef = doc(db, "placas", id);
+            const docSnap = await getDoc(docRef);
+
             if (!docSnap.exists()) {
-                statusDiv.innerHTML = "❌ Esta placa no existe en nuestro sistema.";
-                document.getElementById("form-content").style.display = "none";
+                mostrarError("❌ Este ID no existe.");
                 return;
             }
 
             const data = docSnap.data();
 
-            // VERIFICAR SI ESTÁ PAGADA
-            if (data.pagada !== true) {
-                document.getElementById("form-content").style.display = "none";
-                statusDiv.innerHTML = `
-                    <div class="lock-screen">
-                        <div class="lock-icon">🚫</div>
-                        <h3 style="color:var(--error)">Placa no habilitada</h3>
-                        <p>Esta placa no ha sido autorizada para su venta. Por favor, acuda al punto de compra.</p>
-                    </div>`;
+            // Candados de seguridad sincronizados con cajero.html
+            if (data.vendida !== true) {
+                mostrarError("🚫 Esta placa no ha sido habilitada en tienda.");
+                return;
+            }
+            if (data.activa === true) {
+                mostrarError("⚠️ Esta placa ya está registrada.");
                 return;
             }
 
-            // VERIFICAR SI YA ESTÁ ACTIVA
-            if (data.activa === true) {
-                document.getElementById("form-content").style.display = "none";
-                statusDiv.innerHTML = "⚠️ Esta placa ya está activada.<br>Redirigiendo al perfil...";
-                setTimeout(() => window.location.href = `perfil.html?id=${placaId}`, 2000);
-            }
-        } catch (e) { statusDiv.innerHTML = "Error de conexión."; }
-    }
-
-    inicializar();
-    document.getElementById("btn-refresh-captcha").onclick = generateCaptcha;
-
-    // Vista previa
-    document.getElementById("foto-input").onchange = (e) => {
-        const file = e.target.files[0];
-        if (file) {
-            const reader = new FileReader();
-            reader.onload = (ev) => {
-                const img = document.getElementById("preview-img");
-                img.src = ev.target.result;
-                img.style.display = "block";
-            }
-            reader.readAsDataURL(file);
-        }
-    };
-
-    // --- 2. PROCESO DE ACTIVACIÓN ---
-    document.getElementById("btnActivar").onclick = async () => {
-        const pin = document.getElementById("pin").value;
-        const pinConfirm = document.getElementById("pin-confirm").value;
-        const captchaInput = document.getElementById("captcha-input").value.toUpperCase();
-        const numLocal = document.getElementById("telefono").value.replace(/\D/g,'');
-        const codigoPais = document.getElementById("codigo-pais").value;
-
-        if (pin.length !== 4 || pin !== pinConfirm) {
-            statusDiv.innerHTML = "❌ Los PIN deben ser iguales y de 4 dígitos.";
-            return;
-        }
-        if (captchaInput !== currentCaptcha) {
-            statusDiv.innerHTML = "❌ Captcha incorrecto.";
-            generateCaptcha();
-            return;
-        }
-        if (numLocal.length < 8) {
-            statusDiv.innerHTML = "❌ Teléfono inválido.";
-            return;
-        }
-
-        try {
-            statusDiv.innerHTML = '<div class="loader"></div> Procesando...';
-            document.getElementById("btnActivar").disabled = true;
-
-            let fotoUrl = "";
-            const file = document.getElementById("foto-input").files[0];
-            if(file) {
-                const sRef = ref(storage, `fotos/${placaId}`);
-                await uploadBytes(sRef, file);
-                fotoUrl = await getDownloadURL(sRef);
-            }
-
-            await updateDoc(doc(db, "placas", placaId), {
-                mascota: document.getElementById("mascota").value,
-                correo: document.getElementById("correo").value,
-                telefono: codigoPais + numLocal,
-                pin: pin,
-                mensaje: document.getElementById("mensaje").value,
-                foto: fotoUrl,
+            // Guardar datos en Firebase
+            await updateDoc(docRef, {
+                mascota: nombre,
+                telefono: tel,
+                pin: pinValue,
                 activa: true,
-                fechaActivacion: serverTimestamp()
+                fechaActivacion: new Date().toISOString()
             });
 
-            emailjs.send("service_xwx9czt", "template_zgl2oii", {
-                to_email: document.getElementById("correo").value,
-                nombre_mascota: document.getElementById("mascota").value,
-                pin: pin,
-                placa_id: placaId
-            });
-
-            statusDiv.innerHTML = "✅ ¡Activación exitosa!";
-            setTimeout(() => window.location.href = `perfil.html?id=${placaId}`, 1500);
+            // Redirigir al perfil
+            window.location.href = `perfil.html?id=${id}`;
 
         } catch (e) {
-            statusDiv.innerHTML = "❌ Error: " + e.message;
-            document.getElementById("btnActivar").disabled = false;
+            console.error(e);
+            mostrarError("⚠️ Error de conexión. Intenta de nuevo.");
+        } finally {
+            // Si hay error, quitamos el loader para dejar corregir
+            if (msg.style.display === "block") {
+                loader.style.display = "none";
+            }
         }
-    };
+    });
+
+    function mostrarError(texto) {
+        msg.innerText = texto;
+        msg.className = "err";
+        msg.style.display = "block";
+        loader.style.display = "none";
+    }
 </script>
+
 </body>
 </html>
