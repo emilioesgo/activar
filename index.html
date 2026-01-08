@@ -9,41 +9,27 @@
     <style>
         :root { --primary: #2bb673; --dark: #2c3e50; --bg: #f8f9fa; }
         body { font-family: 'Segoe UI', sans-serif; background: var(--bg); margin: 0; padding: 20px; color: var(--dark); display: flex; justify-content: center; }
-        
         .container { max-width: 500px; width: 100%; background: white; padding: 30px; border-radius: 25px; box-shadow: 0 10px 30px rgba(0,0,0,0.08); position: relative; }
         .logo-header { text-align: center; margin-bottom: 20px; }
         .logo-header img { width: 50px; }
-        
         h2 { text-align: center; margin: 5px 0; font-size: 22px; color: var(--primary); }
         p.subtitle { text-align: center; color: #666; font-size: 14px; margin-bottom: 25px; }
-
-        /* Foto y Previsualización */
         .photo-upload { text-align: center; margin-bottom: 20px; }
         #preview { width: 130px; height: 130px; border-radius: 50%; object-fit: cover; border: 4px solid var(--primary); display: none; margin: 10px auto; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
         .custom-file-upload { background: #e8f5e9; color: var(--primary); padding: 10px 20px; border-radius: 50px; cursor: pointer; display: inline-block; font-size: 14px; font-weight: bold; border: 1px dashed var(--primary); }
-
         .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
         .full { grid-column: span 2; }
-
         .form-group { margin-bottom: 15px; position: relative; }
         label { display: block; margin-bottom: 6px; font-weight: bold; font-size: 12px; color: #555; text-transform: uppercase; }
-        
         input, textarea, select { width: 100%; padding: 12px; border: 2px solid #eee; border-radius: 12px; font-size: 15px; box-sizing: border-box; transition: 0.3s; }
         input:focus, textarea:focus { border-color: var(--primary); outline: none; background: #f9fffb; }
-        
         .id-input { background: #f1f3f2; font-family: monospace; font-weight: bold; text-align: center; text-transform: uppercase; color: var(--primary); font-size: 18px; letter-spacing: 2px; }
-
-        /* Botón ver PIN */
         .toggle-pin { position: absolute; right: 12px; top: 33px; cursor: pointer; background: none; border: none; font-size: 18px; color: #999; }
-
         .btn-submit { width: 100%; background: var(--primary); color: white; border: none; padding: 18px; border-radius: 15px; font-weight: bold; font-size: 18px; cursor: pointer; margin-top: 20px; box-shadow: 0 6px 20px rgba(43,182,115,0.4); transition: 0.3s; }
         .btn-submit:hover { background: #24a163; transform: translateY(-2px); }
-
-        /* Loader */
         #loader { display: none; position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(255,255,255,0.95); border-radius: 25px; flex-direction: column; justify-content: center; align-items: center; z-index: 100; }
         .spinner { width: 50px; height: 50px; border: 5px solid #f3f3f3; border-top: 5px solid var(--primary); border-radius: 50%; animation: spin 1s linear infinite; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-
         #msg { margin-top: 15px; padding: 12px; border-radius: 10px; text-align: center; display: none; font-size: 14px; font-weight: bold; }
         .err { background: #ffebee; color: #c62828; border: 1px solid #ffcdd2; }
     </style>
@@ -53,7 +39,7 @@
 <div class="container">
     <div id="loader">
         <div class="spinner"></div>
-        <p style="margin-top: 15px; font-weight: bold; color: var(--primary);">Creando Perfil Digital...</p>
+        <p style="margin-top: 15px; font-weight: bold; color: var(--primary);">Subiendo información y foto...</p>
     </div>
 
     <div class="logo-header">
@@ -66,7 +52,7 @@
         <img id="preview" src="#" alt="Foto de mascota">
         <label class="custom-file-upload">
             <input type="file" id="fotoInput" accept="image/*" style="display:none">
-            📸 Subir foto de mi mascota
+            📸 Subir foto (Máx 5MB)
         </label>
     </div>
 
@@ -75,51 +61,37 @@
             <label>ID de la Placa</label>
             <input type="text" id="placaId" class="id-input" maxlength="6" placeholder="EJ: A12B34">
         </div>
-
         <div class="form-group full">
             <label>Nombre de la Mascota</label>
-            <input type="text" id="nombreMascota" placeholder="¿Cómo se llama tu peludo?">
+            <input type="text" id="nombreMascota" placeholder="¿Cómo se llama?">
         </div>
-
         <div class="form-group">
             <label>País</label>
             <select id="paisCod">
-                <option value="52">🇲🇽 +52 (MX)</option>
-                <option value="1">🇺🇸 +1 (US)</option>
-                <option value="57">🇨🇴 +57 (CO)</option>
-                <option value="34">🇪🇸 +34 (ES)</option>
-                <option value="54">🇦🇷 +54 (AR)</option>
-                <option value="56">🇨🇱 +56 (CL)</option>
+                <option value="52">🇲🇽 +52</option>
+                <option value="1">🇺🇸 +1</option>
+                <option value="57">🇨🇴 +57</option>
             </select>
         </div>
         <div class="form-group">
             <label>WhatsApp</label>
             <input type="tel" id="telefono" placeholder="1234567890">
         </div>
-
         <div class="form-group full">
-            <label>Correo Electrónico del Dueño</label>
+            <label>Email</label>
             <input type="email" id="email" placeholder="ejemplo@correo.com">
         </div>
-        <div class="form-group full">
-            <label>Confirmar Correo Electrónico</label>
-            <input type="email" id="emailConf" placeholder="Repite tu correo">
-        </div>
-
         <div class="form-group">
-            <label>PIN de Seguridad (4 números)</label>
+            <label>PIN (4 dígitos)</label>
             <input type="password" id="pin" maxlength="4" placeholder="****">
-            <button type="button" class="toggle-pin" onclick="toggleVisibility('pin')">👁️</button>
         </div>
         <div class="form-group">
             <label>Confirmar PIN</label>
             <input type="password" id="pinConf" maxlength="4" placeholder="****">
-            <button type="button" class="toggle-pin" onclick="toggleVisibility('pinConf')">👁️</button>
         </div>
-
         <div class="form-group full">
-            <label>Notas Médicas / Observaciones</label>
-            <textarea id="observaciones" rows="3" placeholder="Ej: Es alérgico, toma medicina X, es muy miedoso..."></textarea>
+            <label>Notas Médicas</label>
+            <textarea id="observaciones" rows="2" placeholder="Alergias, medicinas..."></textarea>
         </div>
     </div>
 
@@ -130,8 +102,8 @@
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
     import { getFirestore, doc, getDoc, updateDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+    import { getStorage, ref, uploadString, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-storage.js";
 
-    // Inicializar EmailJS con tu Public Key
     emailjs.init("TWeQlV3AV77UPCLZ6");
 
     const firebaseConfig = {
@@ -145,16 +117,16 @@
 
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
+    const storage = getStorage(app);
 
-    // --- Manejo de Foto ---
+    let base64Image = "";
     const fotoInput = document.getElementById("fotoInput");
     const preview = document.getElementById("preview");
-    let base64Image = "";
 
     fotoInput.onchange = e => {
         const file = e.target.files[0];
-        if (file && file.size > 1000000) { // Límite 1MB
-            alert("La imagen es muy pesada. Máximo 1MB.");
+        if (file && file.size > 5242880) { // 5MB en bytes
+            alert("⚠️ La imagen supera los 5MB permitidos.");
             fotoInput.value = "";
             return;
         }
@@ -167,39 +139,18 @@
         if (file) reader.readAsDataURL(file);
     };
 
-    // --- Ver/Ocultar PIN ---
-    window.toggleVisibility = (id) => {
-        const x = document.getElementById(id);
-        x.type = x.type === "password" ? "text" : "password";
-    };
-
-    // --- ID desde URL ---
-    window.addEventListener('DOMContentLoaded', () => {
-        const urlParams = new URLSearchParams(window.location.search);
-        const idUrl = urlParams.get('id');
-        if (idUrl) document.getElementById("placaId").value = idUrl.toUpperCase().trim();
-    });
-
-    // --- Registro ---
     document.getElementById("btnRegistrar").onclick = async () => {
         const id = document.getElementById("placaId").value.trim().toUpperCase();
         const nombre = document.getElementById("nombreMascota").value.trim();
         const email = document.getElementById("email").value.trim();
-        const emailConf = document.getElementById("emailConf").value.trim();
         const pin = document.getElementById("pin").value.trim();
         const pinConf = document.getElementById("pinConf").value.trim();
-        const telInput = document.getElementById("telefono").value.trim();
-        const codPais = document.getElementById("paisCod").value;
-        const telFinal = `+${codPais}${telInput}`;
-        const notas = document.getElementById("observaciones").value.trim();
+        const tel = `+${document.getElementById("paisCod").value}${document.getElementById("telefono").value.trim()}`;
 
-        if (!id || !nombre || !email || !pin || !telInput) {
-            alert("⚠️ Por favor completa los campos obligatorios.");
+        if (!id || !nombre || !email || !pin || pin !== pinConf) {
+            alert("Revisa los datos y que los PIN coincidan.");
             return;
         }
-        if (email !== emailConf) return alert("❌ Los correos electrónicos no coinciden.");
-        if (pin !== pinConf) return alert("❌ Los PIN de seguridad no coinciden.");
-        if (pin.length < 4) return alert("❌ El PIN debe ser de 4 dígitos.");
 
         document.getElementById("loader").style.display = "flex";
 
@@ -207,47 +158,41 @@
             const docRef = doc(db, "placas", id);
             const docSnap = await getDoc(docRef);
 
-            if (docSnap.exists()) {
-                const data = docSnap.data();
-
-                if (data.vendida !== true) {
-                    mostrarError("🚫 Esta placa no ha sido habilitada en tienda.");
-                    return;
-                }
-                if (data.activa === true) {
-                    mostrarError("⚠️ Esta placa ya está registrada.");
-                    return;
+            if (docSnap.exists() && docSnap.data().vendida === true) {
+                
+                let urlFoto = "";
+                // Subir a Storage si hay foto
+                if (base64Image) {
+                    const storageRef = ref(storage, `fotos_mascotas/${id}.jpg`);
+                    await uploadString(storageRef, base64Image, 'data_url');
+                    urlFoto = await getDownloadURL(storageRef);
                 }
 
-                // Guardar en Firestore
                 await updateDoc(docRef, {
                     mascota: nombre,
-                    telefono: telFinal,
+                    telefono: tel,
                     email: email,
                     pin: pin,
-                    notas: notas,
-                    foto: base64Image,
+                    notas: document.getElementById("observaciones").value.trim(),
+                    foto: urlFoto,
                     activa: true,
                     fechaActivacion: new Date().toISOString()
                 });
 
-                // Enviar Correo con EmailJS
                 await emailjs.send("service_xwx9czt", "template_zgl2oii", {
                     pet_name: nombre,
                     user_email: email,
                     placa_id: id,
-                    user_pin: pin,
-                    owner_phone: telFinal
+                    user_pin: pin
                 });
 
                 window.location.href = `perfil.html?id=${id}`;
-
             } else {
-                mostrarError("❌ El ID de placa no existe.");
+                mostrarError("Placa no válida o no activada en tienda.");
             }
         } catch (e) {
             console.error(e);
-            mostrarError("Error de conexión. Intenta de nuevo.");
+            mostrarError("Error al registrar. Revisa tu conexión.");
         }
     };
 
@@ -259,6 +204,5 @@
         document.getElementById("loader").style.display = "none";
     }
 </script>
-
 </body>
 </html>
