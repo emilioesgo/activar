@@ -11,12 +11,14 @@
         
         .profile-card { background: white; width: 100%; max-width: 450px; min-height: 100vh; position: relative; box-shadow: 0 0 20px rgba(0,0,0,0.1); }
         
-        .photo-container { width: 100%; height: 350px; background: #ddd; position: relative; overflow: hidden; }
+        .photo-container { width: 100%; height: 350px; background: #fff; position: relative; overflow: hidden; display: flex; align-items: center; justify-content: center; }
         #pet-photo { width: 100%; height: 100%; object-fit: cover; }
+        /* Estilo especial por si el logo se ve muy grande al ser fallback */
+        .img-logo-fallback { width: 60% !important; height: auto !important; object-fit: contain !important; opacity: 0.8; }
         
-        .status-badge { position: absolute; bottom: 20px; left: 20px; background: var(--primary); color: white; padding: 8px 15px; border-radius: 20px; font-weight: bold; font-size: 14px; box-shadow: 0 4px 10px rgba(0,0,0,0.2); }
+        .status-badge { position: absolute; bottom: 20px; left: 20px; background: var(--primary); color: white; padding: 8px 15px; border-radius: 20px; font-weight: bold; font-size: 14px; box-shadow: 0 4px 10px rgba(0,0,0,0.2); z-index: 10; }
 
-        .info-content { padding: 30px; border-radius: 30px 30px 0 0; background: white; margin-top: -30px; position: relative; }
+        .info-content { padding: 30px; border-radius: 30px 30px 0 0; background: white; margin-top: -30px; position: relative; z-index: 20; }
         h1 { margin: 0; font-size: 32px; }
         .breed { color: #888; font-size: 16px; margin-bottom: 20px; display: block; }
 
@@ -31,7 +33,6 @@
         .btn-call { background: var(--primary); box-shadow: 0 5px 15px rgba(43,182,115,0.3); }
         .btn-wa { background: var(--whatsapp); box-shadow: 0 5px 15px rgba(37,211,102,0.3); }
 
-        /* Estilos Vistas de Estado */
         .status-container { text-align: center; padding: 60px 30px; }
         .btn-activate { background: var(--primary); color: white; padding: 20px; border-radius: 15px; text-decoration: none; font-weight: bold; display: block; font-size: 18px; margin-top: 25px; box-shadow: 0 5px 15px rgba(43,182,115,0.3); }
 
@@ -52,7 +53,7 @@
     <div class="status-container">
         <img src="assets/img/logo.png" width="100" style="margin-bottom: 30px;">
         <h2 style="color: var(--text);">Placa no disponible</h2>
-        <p style="color: #666; line-height: 1.6;">Esta placa de <b>Huellitas Digitales</b> aún no ha sido habilitada para su venta o activación. Por favor, contacta con soporte o con tu punto de venta.</p>
+        <p style="color: #666; line-height: 1.6;">Esta placa aún no ha sido habilitada para su venta. Por favor, contacta con tu punto de venta.</p>
     </div>
 </div>
 
@@ -67,7 +68,7 @@
 
 <div id="profile-view" class="profile-card" style="display: none;">
     <div class="photo-container">
-        <img id="pet-photo" src="assets/img/default-pet.jpg" alt="Mascota">
+        <img id="pet-photo" src="" alt="Mascota">
         <div class="status-badge">🛡️ Protegido por Huellitas</div>
     </div>
     <div class="info-content">
@@ -128,12 +129,20 @@
                 const data = docSnap.data();
 
                 if (data.activa) {
-                    // 1. PLACA ACTIVA: Mostrar perfil completo
                     document.getElementById("pet-name").innerText = data.mascota;
                     document.getElementById("display-id").innerText = id.toUpperCase();
                     document.getElementById("label-mensaje").innerText = `MENSAJE DE ${data.mascota.toUpperCase()}:`;
                     if(data.notas) document.getElementById("pet-medical").innerText = data.notas;
-                    if(data.foto) document.getElementById("pet-photo").src = data.foto;
+                    
+                    // Lógica de Foto o Logo
+                    const imgElement = document.getElementById("pet-photo");
+                    if(data.foto && data.foto !== "") {
+                        imgElement.src = data.foto;
+                        imgElement.classList.remove("img-logo-fallback");
+                    } else {
+                        imgElement.src = "assets/img/logo.png"; // Ruta de tu logo
+                        imgElement.classList.add("img-logo-fallback");
+                    }
 
                     document.getElementById("call-link").href = `tel:${data.telefono}`;
                     document.getElementById("wa-link").href = `https://wa.me/${data.telefono.replace(/\+/g, '').replace(/\s/g, '')}?text=Hola,%20encontré%20a%20tu%20mascota%20${data.mascota}.`;
@@ -141,16 +150,13 @@
                     document.getElementById("profile-view").style.display = "block";
                 } 
                 else if (data.vendida) {
-                    // 2. VENDIDA PERO NO ACTIVA: Mostrar botón de activación
                     document.getElementById("btn-activar-link").href = `index.html?id=${id.toUpperCase()}`;
                     document.getElementById("not-active-view").style.display = "block";
                 } 
                 else {
-                    // 3. NO VENDIDA: Mensaje restrictivo sin botón
                     document.getElementById("not-sold-view").style.display = "block";
                 }
             } else {
-                // ID NO EXISTE
                 document.getElementById("not-sold-view").style.display = "block";
             }
         } catch (e) {
