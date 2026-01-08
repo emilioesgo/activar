@@ -1,15 +1,30 @@
-const CACHE_NAME = 'huellitas-v1';
-const assets = [
+const CACHE_NAME = 'huellitas-cache-v1';
+const ASSETS = [
   './admin.html',
   './admin/cajero.html',
-  './assets/img/logo.png',
+  './manifest.json',
   './assets/img/favicon.png'
 ];
 
-self.addEventListener('install', e => {
-  e.waitUntil(caches.open(CACHE_NAME).then(cache => cache.addAll(assets)));
+// Instalación del Service Worker
+self.addEventListener('install', event => {
+  event.waitUntil(
+    caches.open(CACHE_NAME)
+      .then(cache => cache.addAll(ASSETS))
+      .then(() => self.skipWaiting())
+  );
 });
 
-self.addEventListener('fetch', e => {
-  e.respondWith(caches.match(e.request).then(res => res || fetch(e.request)));
+// Activación y limpieza de caches antiguos
+self.addEventListener('activate', event => {
+  event.waitUntil(self.clients.claim());
+});
+
+// Estrategia de carga: Red primero, si falla usa el Cache
+self.addEventListener('fetch', event => {
+  event.respondWith(
+    fetch(event.request).catch(() => {
+      return caches.match(event.request);
+    })
+  );
 });
