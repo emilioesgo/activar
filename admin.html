@@ -95,9 +95,11 @@
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
 
+        // --- CONFIGURACIÓN DE GOOGLE SHEETS ---
+        const URL_SHEETS = "TU_URL_DE_APPS_SCRIPT_AQUI"; 
+
         const PIN_MAESTRO = "2026"; 
 
-        // Hacer las funciones accesibles globalmente para los onclick de los botones
         window.checkPin = function() {
             const input = document.getElementById("admin-pin").value;
             if (input === PIN_MAESTRO) {
@@ -116,9 +118,8 @@
             }
         };
 
-        // FUNCIÓN DE RESETEO PROFESIONAL
         window.resetearPlaca = async function() {
-            const id = prompt("Ingrese el ID de la placa a RESETEAR:");
+            const id = prompt("Ingrese el ID de la placa a RESETEAR:").toUpperCase().trim();
             if (!id) return;
 
             const confirmPin = prompt("SEGURIDAD: Ingrese el PIN MAESTRO para confirmar el borrado:");
@@ -127,11 +128,11 @@
                 return;
             }
 
-            const confirmFinal = confirm(`¿ESTÁS SEGURO?\n\nSe borrarán permanentemente todos los datos de la mascota y del dueño asociados al ID: ${id.toUpperCase()}.\n\nEsta acción no se puede deshacer.`);
+            const confirmFinal = confirm(`¿ESTÁS SEGURO?\n\nSe borrarán permanentemente todos los datos de la mascota y del dueño asociados al ID: ${id}.\n\nEsta acción no se puede deshacer.`);
             
             if (confirmFinal) {
                 try {
-                    const docRef = doc(db, "placas", id.toUpperCase().trim());
+                    const docRef = doc(db, "placas", id);
                     const docSnap = await getDoc(docRef);
 
                     if (!docSnap.exists()) {
@@ -139,19 +140,32 @@
                         return;
                     }
 
-                    // Resetear los campos a valores iniciales
+                    // Resetear en Firebase
                     await updateDoc(docRef, {
                         activa: false,
-                        vendida: false, // Opcional: poner false si quieres que pase de nuevo por cajero
+                        vendida: false,
                         mascota: "Nueva Mascota",
                         notas: "",
                         foto: "",
                         telefono: "",
                         email: "",
-                        pin: "1234" // PIN por defecto para el siguiente dueño
+                        pin: "1234"
                     });
 
-                    alert("✅ Placa reseteada con éxito. Ahora está lista para ser vendida y activada nuevamente.");
+                    // --- ACTUALIZAR GOOGLE SHEETS ---
+                    fetch(URL_SHEETS, {
+                        method: 'POST',
+                        mode: 'no-cors',
+                        body: JSON.stringify({
+                            id: id,
+                            status: "DISPONIBLE (RESET)",
+                            mascota: "---",
+                            contacto: "---"
+                        })
+                    }).catch(err => console.log("Error Sheets:", err));
+                    // --------------------------------
+
+                    alert("✅ Placa reseteada con éxito en Firebase y Google Sheets.");
                 } catch (error) {
                     console.error("Error al resetear:", error);
                     alert("Ocurrió un error al intentar resetear la placa.");
@@ -159,7 +173,6 @@
             }
         };
 
-        // Soporte para tecla Enter
         document.getElementById("admin-pin").addEventListener("keypress", (e) => { if(e.key === "Enter") window.checkPin(); });
     </script>
 </body>
