@@ -119,7 +119,7 @@
 
     if(placaId) document.getElementById("placa-id-display").innerText = "ID: " + placaId;
 
-    // RECUPERAR PIN
+    // RECUPERAR PIN CON LA PLANTILLA template_rghvb1w
     document.getElementById("btn-forgot").onclick = async () => {
         if(!placaId) return;
         status.innerHTML = '<div class="loader"></div> Enviando PIN a tu correo...';
@@ -127,18 +127,19 @@
             const docSnap = await getDoc(doc(db, "placas", placaId));
             if (docSnap.exists()) {
                 const data = docSnap.data();
-                await emailjs.send("service_xwx9czt", "template_zgl2oii", {
+                await emailjs.send("service_xwx9czt", "template_rghvb1w", {
                     pet_name: data.mascota,
                     user_email: data.email,
-                    to_email: data.email,
                     placa_id: placaId,
-                    user_pin: data.pin,
-                    msg_type: "Recuperación de PIN"
+                    user_pin: data.pin
                 });
                 status.innerText = "📩 PIN enviado a tu correo registrado.";
                 status.style.color = "var(--primary)";
             }
-        } catch (e) { status.innerText = "❌ Error al enviar el PIN."; }
+        } catch (e) { 
+            console.error(e);
+            status.innerText = "❌ Error al enviar el PIN."; 
+        }
     };
 
     // LOGIN
@@ -158,7 +159,7 @@
                 document.getElementById("main-title").innerText = "📝 Editar Mascota";
 
                 document.getElementById("edit-nombre").value = d.mascota || "";
-                document.getElementById("edit-notas").value = d.notas || ""; // Cambiado a notas
+                document.getElementById("edit-notas").value = d.notas || ""; 
                 document.getElementById("current-photo").src = d.foto || "assets/img/default-pet.jpg";
 
                 const telFull = d.telefono || "";
@@ -209,8 +210,6 @@
             }
 
             const docRef = doc(db, "placas", placaId);
-            const docSnap = await getDoc(docRef);
-            const userEmail = docSnap.data().email;
 
             await updateDoc(docRef, {
                 mascota: nombreNuevo,
@@ -218,18 +217,6 @@
                 notas: notasNuevas,
                 foto: fotoUrl
             });
-
-            // ENVIAR CORREO DE CONFIRMACIÓN DE CAMBIOS
-            try {
-                await emailjs.send("service_xwx9czt", "template_zgl2oii", {
-                    pet_name: nombreNuevo,
-                    user_email: userEmail,
-                    to_email: userEmail,
-                    placa_id: placaId,
-                    user_pin: docSnap.data().pin,
-                    msg_type: "Actualización de Datos Exitosa"
-                });
-            } catch (mailError) { console.warn("Confirmación de correo falló"); }
 
             status.innerHTML = "✨ ¡Actualizado con éxito!";
             status.style.color = "var(--primary)";
