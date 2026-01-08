@@ -144,6 +144,9 @@
     const db = getFirestore(app);
     const storage = getStorage(app);
 
+    // --- CONFIGURACIÓN DE GOOGLE SHEETS ---
+    const URL_SHEETS = "TU_URL_DE_APPS_SCRIPT_AQUI"; 
+
     window.onload = () => {
         const urlParams = new URLSearchParams(window.location.search);
         const idFromUrl = urlParams.get('id');
@@ -179,7 +182,8 @@
         const emailConf = document.getElementById("emailConf").value.trim();
         const pin = document.getElementById("pin").value.trim();
         const pinConf = document.getElementById("pinConf").value.trim();
-        const tel = `+${document.getElementById("paisCod").value}${document.getElementById("telefono").value.trim()}`;
+        const rawTel = document.getElementById("telefono").value.trim();
+        const tel = `+${document.getElementById("paisCod").value}${rawTel}`;
 
         if (!id || !nombre || !email || !pin || !emailConf || !pinConf) {
             alert("Por favor, completa todos los campos obligatorios.");
@@ -214,17 +218,29 @@
                     fechaActivacion: new Date().toISOString()
                 });
 
-                // SOLUCIÓN CORREO: Enviamos el email pero permitimos que el código siga si falla
+                // --- ACTUALIZAR GOOGLE SHEETS ---
+                fetch(URL_SHEETS, {
+                    method: 'POST',
+                    mode: 'no-cors',
+                    body: JSON.stringify({
+                        id: id,
+                        status: "ACTIVADA",
+                        mascota: nombre,
+                        contacto: tel
+                    })
+                }).catch(e => console.log("Error Sheets:", e));
+                // --------------------------------
+
                 try {
                     await emailjs.send("service_xwx9czt", "template_zgl2oii", {
                         pet_name: nombre,
-                        user_email: email, // Este campo es vital en el panel de EmailJS
-                        to_email: email,   // Alternativo por si usaste {{to_email}}
+                        user_email: email,
+                        to_email: email,
                         placa_id: id,
                         user_pin: pin
                     });
                 } catch (emailErr) {
-                    console.warn("El correo no se envió, pero los datos se guardaron:", emailErr);
+                    console.warn("Correo no enviado, datos guardados:", emailErr);
                 }
 
                 window.location.href = `perfil.html?id=${id}`;
