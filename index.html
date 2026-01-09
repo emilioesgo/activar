@@ -154,7 +154,6 @@
         }
     };
 
-    // --- FUNCIÓN DE COMPRESIÓN ---
     async function comprimirImagen(archivo) {
         return new Promise((resolve) => {
             const reader = new FileReader();
@@ -222,7 +221,6 @@
                 
                 let urlFoto = "";
                 if (selectedFile) {
-                    // COMPRESIÓN ANTES DE SUBIR
                     const fotoComprimida = await comprimirImagen(selectedFile);
                     const storageRef = ref(storage, `fotos_mascotas/${id}.jpg`);
                     await uploadBytes(storageRef, fotoComprimida);
@@ -251,13 +249,15 @@
                     })
                 }).catch(e => console.log("Error Sheets:", e));
 
+                // CORRECCIÓN: Envío de todos los campos a EmailJS
                 try {
                     await emailjs.send("service_xwx9czt", "template_zgl2oii", {
                         pet_name: nombre,
-                        user_email: email,
-                        to_email: email,
+                        user_phone: tel,
+                        user_pin: pin,
                         placa_id: id,
-                        user_pin: pin
+                        user_email: email,
+                        to_email: email
                     });
                 } catch (emailErr) {
                     console.warn("Correo no enviado:", emailErr);
