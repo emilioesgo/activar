@@ -119,7 +119,34 @@
 
     if(placaId) document.getElementById("placa-id-display").innerText = "ID: " + placaId;
 
-    // RECUPERAR PIN CON LA PLANTILLA template_rghvb1w
+    // --- FUNCIÓN DE COMPRESIÓN AGREGADA ---
+    async function comprimirImagen(archivo) {
+        return new Promise((resolve) => {
+            const reader = new FileReader();
+            reader.readAsDataURL(archivo);
+            reader.onload = (event) => {
+                const img = new Image();
+                img.src = event.target.result;
+                img.onload = () => {
+                    const canvas = document.createElement('canvas');
+                    const MAX_WIDTH = 800; // Ancho máximo de 800px
+                    const scaleSize = MAX_WIDTH / img.width;
+                    
+                    canvas.width = MAX_WIDTH;
+                    canvas.height = img.height * scaleSize;
+
+                    const ctx = canvas.getContext('2d');
+                    ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+
+                    canvas.toBlob((blob) => {
+                        resolve(blob);
+                    }, 'image/jpeg', 0.7); // 70% de calidad
+                };
+            };
+        });
+    }
+
+    // RECUPERAR PIN
     document.getElementById("btn-forgot").onclick = async () => {
         if(!placaId) return;
         status.innerHTML = '<div class="loader"></div> Enviando PIN a tu correo...';
@@ -189,7 +216,7 @@
         reader.readAsDataURL(e.target.files[0]);
     };
 
-    // GUARDAR CAMBIOS
+    // GUARDAR CAMBIOS (CON COMPRESIÓN)
     document.getElementById("btn-guardar").onclick = async () => {
         const btn = document.getElementById("btn-guardar");
         const file = document.getElementById("new-photo").files[0];
@@ -199,13 +226,17 @@
         const notasNuevas = document.getElementById("edit-notas").value;
         
         btn.disabled = true;
-        status.innerHTML = '<div class="loader"></div> Guardando cambios...';
+        status.innerHTML = '<div class="loader"></div> Procesando imagen y guardando...';
 
         try {
             let fotoUrl = document.getElementById("current-photo").src;
+            
             if(file) {
+                // AQUÍ OCURRE LA MAGIA: Comprimimos antes de subir
+                const fotoComprimida = await comprimirImagen(file);
+                
                 const sRef = ref(storage, `fotos_mascotas/${placaId}.jpg`);
-                await uploadBytes(sRef, file);
+                await uploadBytes(sRef, fotoComprimida); // Subimos el blob comprimido
                 fotoUrl = await getDownloadURL(sRef);
             }
 
@@ -222,6 +253,7 @@
             status.style.color = "var(--primary)";
             setTimeout(() => window.location.href = `perfil.html?id=${placaId}`, 1500);
         } catch (e) {
+            console.error(e);
             status.innerText = "❌ Error al guardar.";
             btn.disabled = false;
         }
