@@ -19,8 +19,8 @@
         .hidden { display: none; }
 
         /* Estilo Modo Extravío */
-        .lost-mode-box { background: #fff5f5; border: 2px solid #feb2b2; padding: 15px; border-radius: 15px; margin-bottom: 20px; text-align: center; }
-        .lost-mode-box.active { background: var(--lost); border-color: #ff6b81; color: white; }
+        .lost-mode-box { background: #fff5f5; border: 2px solid #feb2b2; padding: 15px; border-radius: 15px; margin-bottom: 20px; text-align: center; transition: 0.3s; }
+        .lost-mode-box.active { background: var(--lost); border-color: #ff6b81; color: white; border-style: dashed; }
         .switch-container { display: flex; align-items: center; justify-content: space-between; margin-top: 10px; }
 
         /* Centro de Rastreo */
@@ -31,22 +31,21 @@
         .track-google { background: #4285F4; box-shadow: 0 4px 12px rgba(66,133,244,0.3); }
         .track-apple { background: #000000; box-shadow: 0 4px 12px rgba(0,0,0,0.2); }
 
-        /* Foto y Formulario */
+        /* Formulario y Foto */
         .photo-edit-section { text-align: center; margin-bottom: 20px; }
         .current-photo-preview { width: 120px; height: 120px; border-radius: 60px; object-fit: cover; border: 3px solid var(--primary); margin-bottom: 10px; background: #eee; }
         
         label { display: block; margin-bottom: 6px; font-size: 13px; color: #666; font-weight: 600; text-transform: uppercase; }
-        input, select, textarea { width: 100%; padding: 12px; margin-bottom: 18px; border: 1.5px solid #eee; border-radius: 12px; box-sizing: border-box; font-size: 15px; transition: 0.3s; }
+        input, select, textarea { width: 100%; padding: 12px; margin-bottom: 18px; border: 1.5px solid #eee; border-radius: 12px; box-sizing: border-box; font-size: 15px; }
         
         button { width: 100%; padding: 16px; background: var(--primary); color: white; border: none; border-radius: 12px; font-size: 16px; font-weight: bold; cursor: pointer; transition: 0.3s; margin-bottom: 10px; }
         .btn-poster { background: #ff7f50; box-shadow: 0 4px 12px rgba(255,127,80,0.3); }
         .btn-secondary { background: #f0f0f0; color: #666; }
 
-        /* Plantilla de Póster (Oculta) */
+        /* Plantilla Cartel Oculta */
         #poster-template { width: 600px; height: 850px; background: white; position: fixed; left: -9999px; top: 0; display: flex; flex-direction: column; align-items: center; padding: 40px; text-align: center; border: 20px solid var(--lost); }
         .poster-title { font-size: 65px; color: var(--lost); font-weight: 900; margin: 0; }
         .poster-img { width: 450px; height: 450px; object-fit: cover; border-radius: 25px; margin: 30px 0; border: 8px solid #f0f0f0; }
-        .poster-name { font-size: 55px; color: var(--primary); margin: 10px 0; }
 
         #status { text-align: center; margin-top: 15px; font-size: 14px; font-weight: 500; }
         .loader { border: 3px solid #f3f3f3; border-top: 3px solid var(--primary); border-radius: 50%; width: 18px; height: 18px; animation: spin 1s linear infinite; display: inline-block; vertical-align: middle; margin-right: 8px; }
@@ -64,13 +63,11 @@
     <div class="content">
         <div id="seccion-login">
             <label>PIN de Seguridad (4 dígitos):</label>
-            <input id="login-pin" type="password" maxlength="4" placeholder="Ingresa tu PIN">
+            <input id="login-pin" type="password" maxlength="4" placeholder="****">
             <button id="btn-verificar">Acceder al Panel</button>
-            <a id="btn-forgot" style="display:block; text-align:center; color:#888; text-decoration:none; font-size:13px; cursor:pointer;">Olvidé mi PIN</a>
         </div>
 
         <div id="seccion-editor" class="hidden">
-            
             <div id="lost-status-box" class="lost-mode-box">
                 <strong>¿Tu mascota se perdió?</strong>
                 <div class="switch-container">
@@ -82,12 +79,10 @@
             <span class="section-label">Sistemas de Rastreo</span>
             <div class="tracking-hub">
                 <a href="https://www.google.com/android/find" target="_blank" class="btn-track track-google">
-                    <img src="https://upload.wikimedia.org/wikipedia/commons/c/c1/Google_Find_My_Device_logo.svg" alt="Google">
-                    Google Find
+                    <img src="https://upload.wikimedia.org/wikipedia/commons/c/c1/Google_Find_My_Device_logo.svg" alt="Google"> Google Find
                 </a>
                 <a href="https://www.icloud.com/find" target="_blank" class="btn-track track-apple">
-                    <img src="https://upload.wikimedia.org/wikipedia/commons/f/fa/Apple_logo_black.svg" alt="Apple" style="filter: invert(1);">
-                    Apple Find
+                    <img src="https://upload.wikimedia.org/wikipedia/commons/f/fa/Apple_logo_black.svg" alt="Apple" style="filter: invert(1);"> Apple Find
                 </a>
             </div>
 
@@ -96,22 +91,22 @@
             <hr style="border:0; border-top:1px solid #eee; margin:25px 0;">
 
             <div class="photo-edit-section">
-                <img id="current-photo" class="current-photo-preview" src="" alt="Foto Mascota">
-                <label for="new-photo" style="color: var(--primary); cursor: pointer;">📸 Cambiar Foto</label>
+                <img id="current-photo" class="current-photo-preview" src="" alt="Foto">
+                <label for="new-photo" style="color: var(--primary); cursor: pointer; display: block;">📸 Cambiar Foto</label>
                 <input id="new-photo" type="file" accept="image/*" style="display: none;">
             </div>
 
             <label>Nombre de la Mascota:</label>
-            <input id="edit-nombre" type="text" placeholder="Nombre">
+            <input id="edit-nombre" type="text">
 
-            <label>Mensaje de Emergencia (En Perfil):</label>
-            <textarea id="edit-mensaje" rows="2" placeholder="Ej: Soy asustadizo, no me grites."></textarea>
+            <label>Mensaje de Emergencia (Aparece en Perfil):</label>
+            <textarea id="edit-mensaje" rows="2" placeholder="Ej: Soy asustadizo, por favor llama a mi mamá."></textarea>
 
             <label>Celular de Contacto:</label>
-            <input id="edit-num-local" type="tel" placeholder="Número con código de país">
+            <input id="edit-num-local" type="tel">
 
-            <label>Notas Médicas:</label>
-            <textarea id="edit-notas" rows="3" placeholder="Alergias o medicinas"></textarea>
+            <label>Notas Médicas / Observaciones:</label>
+            <textarea id="edit-notas" rows="3"></textarea>
 
             <button id="btn-guardar">Guardar Cambios</button>
             <button onclick="window.location.reload()" class="btn-secondary">Cerrar Sesión</button>
@@ -124,11 +119,11 @@
 <div id="poster-template">
     <h1 class="poster-title">¡BUSCO A MI FAMILIA!</h1>
     <img id="poster-photo" class="poster-img" src="">
-    <h2 id="poster-pet-name" class="poster-name">NOMBRE</h2>
-    <p style="font-size: 26px; color: #333; font-weight: bold;">Si me ves, por favor escanea mi placa QR</p>
+    <h2 id="poster-pet-name" style="font-size: 55px; color: #2bb673; margin: 10px 0;">NOMBRE</h2>
+    <p style="font-size: 26px; color: #333; font-weight: bold;">Si me ves, escanea mi placa QR</p>
     <p style="font-size: 20px; color: #666;">ID DE PLACA: <span id="poster-id"></span></p>
-    <div style="margin-top:40px; border: 4px solid var(--lost); padding: 15px; border-radius: 15px; width: 80%;">
-        <span style="font-size: 30px; color: var(--lost); font-weight: 900;">HUELLITAS DIGITALES</span>
+    <div style="margin-top:40px; border: 4px solid #ff4757; padding: 15px; border-radius: 15px; width: 80%;">
+        <span style="font-size: 30px; color: #ff4757; font-weight: 900;">HUELLITAS DIGITALES</span>
     </div>
 </div>
 
@@ -157,13 +152,12 @@
 
     if(placaId) document.getElementById("placa-id-display").innerText = "ID: " + placaId;
 
-    // LOGIN
+    // LOGIN POR PIN
     document.getElementById("btn-verificar").onclick = async () => {
         const pin = document.getElementById("login-pin").value;
-        status.innerHTML = '<div class="loader"></div> Verificando...';
+        status.innerHTML = '<div class="loader"></div> Verificando acceso...';
         try {
-            const docRef = doc(db, "placas", placaId);
-            const docSnap = await getDoc(docRef);
+            const docSnap = await getDoc(doc(db, "placas", placaId));
             if (docSnap.exists() && docSnap.data().pin === pin) {
                 const d = docSnap.data();
                 status.innerText = "";
@@ -180,33 +174,109 @@
         } catch (e) { status.innerText = "Error de conexión."; }
     };
 
+    // FUNCIÓN ACTUALIZAR INTERFAZ PERDIDO
     function actualizarInterfazPerdido() {
         const box = document.getElementById("lost-status-box");
-        const txt = document.getElementById("lost-text");
-        const btn = document.getElementById("btn-toggle-lost");
         const header = document.getElementById("header-bg");
+        const btn = document.getElementById("btn-toggle-lost");
+        const txt = document.getElementById("lost-text");
         if(isLostLocal) {
-            box.classList.add("active");
-            txt.innerText = "MODO EXTRAVÍO ACTIVADO";
-            btn.innerText = "DESACTIVAR";
-            header.style.background = "var(--lost)";
+            box.classList.add("active"); header.style.background = "var(--lost)";
+            txt.innerText = "MODO EXTRAVÍO ACTIVADO"; btn.innerText = "DESACTIVAR";
         } else {
-            box.classList.remove("active");
-            txt.innerText = "Modo Extravío Desactivado";
-            btn.innerText = "ACTIVAR";
-            header.style.background = "var(--primary)";
+            box.classList.remove("active"); header.style.background = "var(--primary)";
+            txt.innerText = "Modo Extravío Desactivado"; btn.innerText = "ACTIVAR";
         }
     }
 
+    // BOTÓN MODO EXTRAVÍO CON CONFIRMACIÓN
     document.getElementById("btn-toggle-lost").onclick = async () => {
-        isLostLocal = !isLostLocal;
-        actualizarInterfazPerdido();
-        await updateDoc(doc(db, "placas", placaId), { extraviado: isLostLocal });
+        const accion = isLostLocal ? "desactivar" : "ACTIVAR";
+        const confirmacion = confirm(`¿Estás seguro que deseas ${accion} el Modo Extravío?\n\n${isLostLocal ? "El banner rojo desaparecerá del perfil." : "Se activará una alerta roja en el perfil público."}`);
+        
+        if (confirmacion) {
+            isLostLocal = !isLostLocal;
+            actualizarInterfazPerdido();
+            try {
+                await updateDoc(doc(db, "placas", placaId), { extraviado: isLostLocal });
+                status.innerText = `Modo Extravío ${isLostLocal ? 'activado' : 'desactivado'} correctamente.`;
+                setTimeout(() => status.innerText = "", 3000);
+            } catch (e) { status.innerText = "Error al actualizar estado."; }
+        }
     };
 
-    // GENERADOR DE CARTEL
-    document.getElementById("btn-generar-poster").onclick = async () => {
-        status.innerHTML = '<div class="loader"></div> Creando cartel de alta resolución...';
+    // OPTIMIZACIÓN DE IMAGEN (CANVAS)
+    async function comprimirImagen(archivo) {
+        return new Promise((resolve) => {
+            const reader = new FileReader();
+            reader.readAsDataURL(archivo);
+            reader.onload = (e) => {
+                const img = new Image();
+                img.src = e.target.result;
+                img.onload = () => {
+                    const canvas = document.createElement('canvas');
+                    const MAX_WIDTH = 800;
+                    const scale = MAX_WIDTH / img.width;
+                    canvas.width = MAX_WIDTH;
+                    canvas.height = img.height * scale;
+                    const ctx = canvas.getContext('2d');
+                    ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+                    canvas.toBlob((blob) => resolve(blob), 'image/jpeg', 0.7);
+                };
+            };
+        });
+    }
+
+    // PREVISUALIZACIÓN DE FOTO SELECCIONADA
+    document.getElementById("new-photo").onchange = (e) => {
+        const file = e.target.files[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = () => document.getElementById("current-photo").src = reader.result;
+            reader.readAsDataURL(file);
+        }
+    };
+
+    // BOTÓN GUARDAR CAMBIOS (CON SUBIDA OPTIMIZADA)
+    document.getElementById("btn-guardar").onclick = async () => {
+        const btn = document.getElementById("btn-guardar");
+        const fileInput = document.getElementById("new-photo");
+        const file = fileInput.files[0];
+        
+        btn.disabled = true;
+        status.innerHTML = '<div class="loader"></div> Guardando y optimizando...';
+
+        try {
+            let fotoUrl = document.getElementById("current-photo").src;
+
+            if (file) {
+                const fotoComprimida = await comprimirImagen(file);
+                const storageRef = ref(storage, `fotos_mascotas/${placaId}.jpg`);
+                await uploadBytes(storageRef, fotoComprimida);
+                fotoUrl = await getDownloadURL(storageRef);
+            }
+
+            await updateDoc(doc(db, "placas", placaId), {
+                mascota: document.getElementById("edit-nombre").value,
+                mensaje: document.getElementById("edit-mensaje").value,
+                notas: document.getElementById("edit-notas").value,
+                telefono: document.getElementById("edit-num-local").value,
+                foto: fotoUrl
+            });
+
+            status.innerHTML = "✨ ¡Cambios guardados con éxito!";
+            btn.disabled = false;
+            fileInput.value = "";
+        } catch (e) {
+            console.error(e);
+            status.innerText = "❌ Error al guardar cambios.";
+            btn.disabled = false;
+        }
+    };
+
+    // GENERADOR DE CARTEL (HTML2CANVAS)
+    document.getElementById("btn-generar-poster").onclick = () => {
+        status.innerHTML = '<div class="loader"></div> Generando cartel de alta resolución...';
         document.getElementById("poster-pet-name").innerText = document.getElementById("edit-nombre").value;
         document.getElementById("poster-id").innerText = placaId;
         document.getElementById("poster-photo").src = document.getElementById("current-photo").src;
@@ -215,25 +285,11 @@
             html2canvas(document.querySelector("#poster-template"), { useCORS: true, scale: 2 }).then(canvas => {
                 const link = document.createElement('a');
                 link.download = `BUSCANDO_A_${document.getElementById("edit-nombre").value}.png`;
-                link.href = canvas.toDataURL();
+                link.href = canvas.toDataURL("image/png");
                 link.click();
-                status.innerText = "✅ Cartel descargado correctamente.";
+                status.innerText = "✅ Cartel descargado con éxito.";
             });
         }, 1000);
-    };
-
-    // GUARDAR CAMBIOS
-    document.getElementById("btn-guardar").onclick = async () => {
-        status.innerHTML = '<div class="loader"></div> Guardando cambios...';
-        try {
-            await updateDoc(doc(db, "placas", placaId), {
-                mascota: document.getElementById("edit-nombre").value,
-                mensaje: document.getElementById("edit-mensaje").value,
-                notas: document.getElementById("edit-notas").value,
-                telefono: document.getElementById("edit-num-local").value
-            });
-            status.innerText = "✅ Cambios actualizados.";
-        } catch (e) { status.innerText = "❌ Error al guardar."; }
     };
 </script>
 </body>
