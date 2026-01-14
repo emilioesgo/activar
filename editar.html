@@ -5,12 +5,13 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Panel de Control | Huellitas Digitales</title>
     <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <style>
         :root { --primary: #2bb673; --bg: #f4f7f6; --text: #333; --error: #e74c3c; --lost: #ff4757; }
         body { font-family: 'Segoe UI', sans-serif; background: var(--bg); margin: 0; display: flex; justify-content: center; padding: 20px; }
         .card { background: white; padding: 0; border-radius: 24px; box-shadow: 0 15px 35px rgba(0,0,0,0.1); width: 100%; max-width: 450px; overflow: hidden; }
         
-        .header { background: var(--primary); color: white; padding: 25px; text-align: center; }
+        .header { background: var(--primary); color: white; padding: 25px; text-align: center; transition: 0.3s; }
         .header h2 { margin: 0; font-size: 20px; }
         .id-badge { display: inline-block; background: rgba(255,255,255,0.2); padding: 4px 12px; border-radius: 20px; font-size: 12px; margin-top: 8px; }
 
@@ -22,22 +23,30 @@
         .lost-mode-box.active { background: var(--lost); border-color: #ff6b81; color: white; }
         .switch-container { display: flex; align-items: center; justify-content: space-between; margin-top: 10px; }
 
+        /* Centro de Rastreo */
+        .section-label { font-size: 11px; color: #999; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 10px; display: block; text-align: center; }
+        .tracking-hub { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin: 15px 0; }
+        .btn-track { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 15px 10px; border-radius: 16px; border: none; color: white; font-size: 13px; font-weight: 600; cursor: pointer; transition: 0.3s; text-decoration: none; gap: 8px; }
+        .btn-track img { width: 24px; height: 24px; }
+        .track-google { background: #4285F4; box-shadow: 0 4px 12px rgba(66,133,244,0.3); }
+        .track-apple { background: #000000; box-shadow: 0 4px 12px rgba(0,0,0,0.2); }
+
+        /* Foto y Formulario */
         .photo-edit-section { text-align: center; margin-bottom: 20px; }
         .current-photo-preview { width: 120px; height: 120px; border-radius: 60px; object-fit: cover; border: 3px solid var(--primary); margin-bottom: 10px; background: #eee; }
         
         label { display: block; margin-bottom: 6px; font-size: 13px; color: #666; font-weight: 600; text-transform: uppercase; }
         input, select, textarea { width: 100%; padding: 12px; margin-bottom: 18px; border: 1.5px solid #eee; border-radius: 12px; box-sizing: border-box; font-size: 15px; transition: 0.3s; }
-        input:focus, select:focus, textarea:focus { border-color: var(--primary); outline: none; background: #f9fffb; }
         
-        .phone-group { display: flex; gap: 8px; margin-bottom: 18px; }
-        .phone-group select { width: 45%; margin-bottom: 0; }
-        .phone-group input { width: 55%; margin-bottom: 0; }
-
         button { width: 100%; padding: 16px; background: var(--primary); color: white; border: none; border-radius: 12px; font-size: 16px; font-weight: bold; cursor: pointer; transition: 0.3s; margin-bottom: 10px; }
-        .btn-hub { background: #4285F4; } /* Azul Google */
-        .btn-lost { background: var(--lost); }
-        button:hover { filter: brightness(0.9); transform: translateY(-1px); }
+        .btn-poster { background: #ff7f50; box-shadow: 0 4px 12px rgba(255,127,80,0.3); }
         .btn-secondary { background: #f0f0f0; color: #666; }
+
+        /* Plantilla de Póster (Oculta) */
+        #poster-template { width: 600px; height: 850px; background: white; position: fixed; left: -9999px; top: 0; display: flex; flex-direction: column; align-items: center; padding: 40px; text-align: center; border: 20px solid var(--lost); }
+        .poster-title { font-size: 65px; color: var(--lost); font-weight: 900; margin: 0; }
+        .poster-img { width: 450px; height: 450px; object-fit: cover; border-radius: 25px; margin: 30px 0; border: 8px solid #f0f0f0; }
+        .poster-name { font-size: 55px; color: var(--primary); margin: 10px 0; }
 
         #status { text-align: center; margin-top: 15px; font-size: 14px; font-weight: 500; }
         .loader { border: 3px solid #f3f3f3; border-top: 3px solid var(--primary); border-radius: 50%; width: 18px; height: 18px; animation: spin 1s linear infinite; display: inline-block; vertical-align: middle; margin-right: 8px; }
@@ -70,9 +79,21 @@
                 </div>
             </div>
 
-            <button onclick="window.open('https://www.google.com/android/find', '_blank')" class="btn-hub">📍 Abrir Google Find Hub</button>
+            <span class="section-label">Sistemas de Rastreo</span>
+            <div class="tracking-hub">
+                <a href="https://www.google.com/android/find" target="_blank" class="btn-track track-google">
+                    <img src="https://upload.wikimedia.org/wikipedia/commons/c/c1/Google_Find_My_Device_logo.svg" alt="Google">
+                    Google Find
+                </a>
+                <a href="https://www.icloud.com/find" target="_blank" class="btn-track track-apple">
+                    <img src="https://upload.wikimedia.org/wikipedia/commons/f/fa/Apple_logo_black.svg" alt="Apple" style="filter: invert(1);">
+                    Apple Find
+                </a>
+            </div>
 
-            <hr style="border:0; border-top:1px solid #eee; margin:20px 0;">
+            <button id="btn-generar-poster" class="btn-poster">📢 Generar Cartel de Extravío</button>
+
+            <hr style="border:0; border-top:1px solid #eee; margin:25px 0;">
 
             <div class="photo-edit-section">
                 <img id="current-photo" class="current-photo-preview" src="" alt="Foto Mascota">
@@ -83,18 +104,11 @@
             <label>Nombre de la Mascota:</label>
             <input id="edit-nombre" type="text" placeholder="Nombre">
 
-            <label>Mensaje en Perfil (Si se pierde):</label>
-            <textarea id="edit-mensaje" rows="2" placeholder="Ej: Estoy asustado, llámale a mi mamá."></textarea>
+            <label>Mensaje de Emergencia (En Perfil):</label>
+            <textarea id="edit-mensaje" rows="2" placeholder="Ej: Soy asustadizo, no me grites."></textarea>
 
             <label>Celular de Contacto:</label>
-            <div class="phone-group">
-                <select id="edit-codigo">
-                    <option value="52">🇲🇽 +52</option>
-                    <option value="1">🇺🇸 +1</option>
-                    <option value="34">🇪🇸 +34</option>
-                </select>
-                <input id="edit-num-local" type="tel" placeholder="Número local">
-            </div>
+            <input id="edit-num-local" type="tel" placeholder="Número con código de país">
 
             <label>Notas Médicas:</label>
             <textarea id="edit-notas" rows="3" placeholder="Alergias o medicinas"></textarea>
@@ -104,6 +118,17 @@
         </div>
 
         <div id="status"></div>
+    </div>
+</div>
+
+<div id="poster-template">
+    <h1 class="poster-title">¡BUSCO A MI FAMILIA!</h1>
+    <img id="poster-photo" class="poster-img" src="">
+    <h2 id="poster-pet-name" class="poster-name">NOMBRE</h2>
+    <p style="font-size: 26px; color: #333; font-weight: bold;">Si me ves, por favor escanea mi placa QR</p>
+    <p style="font-size: 20px; color: #666;">ID DE PLACA: <span id="poster-id"></span></p>
+    <div style="margin-top:40px; border: 4px solid var(--lost); padding: 15px; border-radius: 15px; width: 80%;">
+        <span style="font-size: 30px; color: var(--lost); font-weight: 900;">HUELLITAS DIGITALES</span>
     </div>
 </div>
 
@@ -136,31 +161,22 @@
     document.getElementById("btn-verificar").onclick = async () => {
         const pin = document.getElementById("login-pin").value;
         status.innerHTML = '<div class="loader"></div> Verificando...';
-
         try {
             const docRef = doc(db, "placas", placaId);
             const docSnap = await getDoc(docRef);
-            const d = docSnap.data();
-
-            if (docSnap.exists() && d.pin === pin) {
+            if (docSnap.exists() && docSnap.data().pin === pin) {
+                const d = docSnap.data();
                 status.innerText = "";
                 document.getElementById("seccion-login").classList.add("hidden");
                 document.getElementById("seccion-editor").classList.remove("hidden");
-                
-                // Cargar datos
                 document.getElementById("edit-nombre").value = d.mascota || "";
                 document.getElementById("edit-notas").value = d.notas || "";
                 document.getElementById("edit-mensaje").value = d.mensaje || "";
+                document.getElementById("edit-num-local").value = d.telefono || "";
                 document.getElementById("current-photo").src = d.foto || "assets/img/logo.png";
                 isLostLocal = d.extraviado || false;
                 actualizarInterfazPerdido();
-
-                // Separar teléfono
-                const telFull = d.telefono || "";
-                document.getElementById("edit-num-local").value = telFull.substring(3);
-            } else {
-                status.innerText = "❌ PIN incorrecto.";
-            }
+            } else { status.innerText = "❌ PIN incorrecto."; }
         } catch (e) { status.innerText = "Error de conexión."; }
     };
 
@@ -169,7 +185,6 @@
         const txt = document.getElementById("lost-text");
         const btn = document.getElementById("btn-toggle-lost");
         const header = document.getElementById("header-bg");
-
         if(isLostLocal) {
             box.classList.add("active");
             txt.innerText = "MODO EXTRAVÍO ACTIVADO";
@@ -183,28 +198,41 @@
         }
     }
 
-    // TOGGLE EXTRAVÍO
     document.getElementById("btn-toggle-lost").onclick = async () => {
         isLostLocal = !isLostLocal;
         actualizarInterfazPerdido();
         await updateDoc(doc(db, "placas", placaId), { extraviado: isLostLocal });
     };
 
+    // GENERADOR DE CARTEL
+    document.getElementById("btn-generar-poster").onclick = async () => {
+        status.innerHTML = '<div class="loader"></div> Creando cartel de alta resolución...';
+        document.getElementById("poster-pet-name").innerText = document.getElementById("edit-nombre").value;
+        document.getElementById("poster-id").innerText = placaId;
+        document.getElementById("poster-photo").src = document.getElementById("current-photo").src;
+        
+        setTimeout(() => {
+            html2canvas(document.querySelector("#poster-template"), { useCORS: true, scale: 2 }).then(canvas => {
+                const link = document.createElement('a');
+                link.download = `BUSCANDO_A_${document.getElementById("edit-nombre").value}.png`;
+                link.href = canvas.toDataURL();
+                link.click();
+                status.innerText = "✅ Cartel descargado correctamente.";
+            });
+        }, 1000);
+    };
+
     // GUARDAR CAMBIOS
     document.getElementById("btn-guardar").onclick = async () => {
-        status.innerHTML = '<div class="loader"></div> Guardando...';
-        const numLocal = document.getElementById("edit-num-local").value;
-        const codigo = document.getElementById("edit-codigo").value;
-
+        status.innerHTML = '<div class="loader"></div> Guardando cambios...';
         try {
             await updateDoc(doc(db, "placas", placaId), {
                 mascota: document.getElementById("edit-nombre").value,
                 mensaje: document.getElementById("edit-mensaje").value,
                 notas: document.getElementById("edit-notas").value,
-                telefono: "+" + codigo + numLocal
+                telefono: document.getElementById("edit-num-local").value
             });
-            status.innerText = "✅ ¡Cambios guardados!";
-            setTimeout(() => status.innerText = "", 2000);
+            status.innerText = "✅ Cambios actualizados.";
         } catch (e) { status.innerText = "❌ Error al guardar."; }
     };
 </script>
