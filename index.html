@@ -227,6 +227,7 @@
                     urlFoto = await getDownloadURL(storageRef);
                 }
 
+                // MEJORA: Se agregaron extraviado y mensaje para compatibilidad con el Hub
                 await updateDoc(docRef, {
                     mascota: nombre,
                     telefono: tel,
@@ -235,6 +236,8 @@
                     notas: document.getElementById("observaciones").value.trim(),
                     foto: urlFoto,
                     activa: true,
+                    extraviado: false,
+                    mensaje: "",
                     fechaActivacion: new Date().toISOString()
                 });
 
@@ -249,7 +252,6 @@
                     })
                 }).catch(e => console.log("Error Sheets:", e));
 
-                // CORRECCIÓN: Envío de todos los campos a EmailJS
                 try {
                     await emailjs.send("service_xwx9czt", "template_zgl2oii", {
                         pet_name: nombre,
