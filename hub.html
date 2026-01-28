@@ -68,6 +68,69 @@
     </div>
 
     <div id="seccion-lista" class="hidden">
+        <div id="seccion-servicios" style="margin-top: 40px;">
+    <h2 style="font-size: 20px; color: var(--text); margin-bottom: 15px; padding-left: 5px;">Servicios para tu mascota</h2>
+    
+    <div class="grid-servicios" style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+        
+        <div class="service-card" onclick="window.open('https://tu-tienda.com/alimentos', '_blank')">
+            <div class="service-icon">🛒</div>
+            <h3>Tienda de Alimento</h3>
+            <p>Descuentos exclusivos</p>
+        </div>
+
+        <div class="service-card" onclick="window.open('https://tu-tienda.com/paseos', '_blank')">
+            <div class="service-icon">🦮</div>
+            <h3>Paseadores</h3>
+            <p>Personal verificado</p>
+        </div>
+
+        <div class="service-card" onclick="window.open('https://tu-tienda.com/veterinaria', '_blank')">
+            <div class="service-icon">🏥</div>
+            <h3>Tele-Vet 24/7</h3>
+            <p>Consulta en línea</p>
+        </div>
+
+        <div class="service-card" onclick="window.open('https://tu-tienda.com/estetica', '_blank')">
+            <div class="service-icon">✂️</div>
+            <h3>Estética Canina</h3>
+            <p>Reserva tu cita</p>
+        </div>
+
+    </div>
+</div>
+
+<style>
+    .service-card {
+        background: white;
+        padding: 20px;
+        border-radius: 20px;
+        text-align: center;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.04);
+        border: 1px solid #f0f0f0;
+        cursor: pointer;
+        transition: 0.3s;
+    }
+    .service-card:hover {
+        transform: translateY(-5px);
+        border-color: var(--primary);
+        box-shadow: 0 10px 20px rgba(43,182,115,0.1);
+    }
+    .service-icon {
+        font-size: 28px;
+        margin-bottom: 10px;
+    }
+    .service-card h3 {
+        font-size: 14px;
+        margin: 0;
+        color: var(--text);
+    }
+    .service-card p {
+        font-size: 10px;
+        color: #999;
+        margin: 5px 0 0;
+    }
+</style>
         <div class="grid-mascotas" id="lista-mascotas"></div>
         <button onclick="localStorage.clear(); location.reload();" style="margin-top:40px; border:none; background:none; color:#bbb; cursor:pointer; width:100%; text-decoration:underline; font-size:13px;">Cerrar Sesión</button>
     </div>
