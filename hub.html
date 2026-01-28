@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Panel de Control | Huellitas Digitales</title>
+    <style>
+        :root { --primary: #2bb673; --bg: #f4f7f6; --text: #333; --lost: #ff4757; }
+        body { font-family: 'Segoe UI', sans-serif; background: var(--bg); margin: 0; padding: 20px; display: flex; justify-content: center; color: var(--text); }
+        .container { max-width: 600px; width: 100%; }
+        
+        .header-hub { text-align: center; margin-bottom: 30px; }
+        .header-hub h1 { color: var(--primary); margin: 0; font-size: 32px; }
+        .header-hub p { color: #888; margin-top: 5px; }
+        
+        /* Caja de Login Directo */
+        .login-box { background: white; padding: 30px; border-radius: 28px; box-shadow: 0 10px 30px rgba(0,0,0,0.05); text-align: center; }
+        label { display: block; text-align: left; font-size: 13px; font-weight: 700; color: #666; margin-bottom: 5px; margin-left: 5px; text-transform: uppercase; }
+        input { width: 100%; padding: 15px; margin-bottom: 20px; border: 2px solid #eee; border-radius: 15px; box-sizing: border-box; font-size: 16px; outline: none; transition: 0.3s; }
+        input:focus { border-color: var(--primary); }
+        .pin-input { letter-spacing: 8px; text-align: center; font-weight: bold; }
+
+        .btn-login { background: var(--primary); color: white; border: none; padding: 16px; border-radius: 15px; font-weight: bold; cursor: pointer; width: 100%; font-size: 16px; transition: 0.3s; }
+        .btn-login:hover { transform: translateY(-2px); box-shadow: 0 5px 15px rgba(43,182,115,0.3); }
+
+        /* Grid de Mascotas */
+        .grid-mascotas { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 20px; margin-top: 25px; }
+        .pet-card { background: white; border-radius: 24px; overflow: hidden; box-shadow: 0 10px 20px rgba(0,0,0,0.05); text-align: center; position: relative; border: 1px solid #f0f0f0; transition: 0.3s; }
+        .pet-card:hover { transform: translateY(-8px); }
+        .pet-card img { width: 100%; height: 140px; object-fit: cover; background: #f9f9f9; }
+
+        .status-badge { position: absolute; top: 10px; right: 10px; padding: 5px 10px; border-radius: 20px; font-size: 10px; font-weight: bold; color: white; text-transform: uppercase; }
+        .status-lost { background: var(--lost); animation: pulse 2s infinite; }
+        .status-safe { background: var(--primary); }
+
+        .pet-info { padding: 15px; }
+        .pet-info h3 { margin: 0; font-size: 17px; font-weight: 700; }
+        .pet-info p { font-size: 11px; color: #a0a0a0; margin: 5px 0 15px; }
+
+        .btn-manage { background: #f8f9fa; color: var(--primary); border: 1.5px solid var(--primary); padding: 8px 0; border-radius: 12px; font-size: 12px; font-weight: bold; cursor: pointer; width: 100%; transition: 0.3s; }
+        .btn-manage:hover { background: var(--primary); color: white; }
+
+        .hidden { display: none; }
+        @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.7; } 100% { opacity: 1; } }
+        
+        #status-msg { margin-top: 15px; font-size: 14px; font-weight: 500; }
+        .loader { border: 3px solid #f3f3f3; border-top: 3px solid var(--primary); border-radius: 50%; width: 18px; height: 18px; animation: spin 1s linear infinite; display: inline-block; vertical-align: middle; margin-right: 8px; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="header-hub">
+        <h1>🐾 Mis Mascotas</h1>
+        <p id="hub-subtitle">Acceso Propietario</p>
+    </div>
+
+    <div id="seccion-auth" class="login-box">
+        <label>Correo Electrónico</label>
+        <input type="email" id="auth-email" placeholder="ejemplo@correo.com">
+        
+        <label>PIN de Seguridad (Cualquier placa)</label>
+        <input type="password" id="auth-pin" class="pin-input" maxlength="4" placeholder="****">
+        
+        <button class="btn-login" id="btn-entrar">Acceder al Panel</button>
+        <div id="status-msg"></div>
+    </div>
+
+    <div id="seccion-lista" class="hidden">
+        <div class="grid-mascotas" id="lista-mascotas"></div>
+        <button onclick="localStorage.clear(); location.reload();" style="margin-top:40px; border:none; background:none; color:#bbb; cursor:pointer; width:100%; text-decoration:underline; font-size:13px;">Cerrar Sesión</button>
+    </div>
+</div>
+
+<script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+    import { getFirestore, collection, query, where, getDocs } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+    const firebaseConfig = {
+        apiKey: "AIzaSyCqROIzmp2guo2XLbdYrSW3ujlUBc7ngOc",
+        authDomain: "huellitas-digitales.firebaseapp.com",
+        projectId: "huellitas-digitales",
+        storageBucket: "huellitas-digitales.firebasestorage.app",
+        messagingSenderId: "523935942496",
+        appId: "1:523935942496:web:0bb3ad3b28c189345fc005"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+
+    const btnEntrar = document.getElementById("btn-entrar");
+    const statusMsg = document.getElementById("status-msg");
+
+    // Verificar si ya inició sesión antes
+    if (localStorage.getItem("userEmail") && localStorage.getItem("hubAuth") === "true") {
+        mostrarHub(localStorage.getItem("userEmail"));
+    }
+
+    btnEntrar.onclick = async () => {
+        const email = document.getElementById("auth-email").value.trim().toLowerCase();
+        const pin = document.getElementById("auth-pin").value;
+
+        if (!email || !pin) {
+            statusMsg.innerHTML = "⚠️ Completa ambos campos.";
+            return;
+        }
+
+        statusMsg.innerHTML = '<div class="loader"></div> Verificando identidad...';
+        
+        try {
+            // Buscamos placas que coincidan con el email
+            const q = query(collection(db, "placas"), where("email", "==", email));
+            const querySnapshot = await getDocs(q);
+            
+            let loginExitoso = false;
+
+            if (!querySnapshot.empty) {
+                // Verificamos si el PIN coincide con alguna de las placas de ese correo
+                querySnapshot.forEach((doc) => {
+                    if (doc.data().pin === pin) {
+                        loginExitoso = true;
+                    }
+                });
+            }
+
+            if (loginExitoso) {
+                localStorage.setItem("userEmail", email);
+                localStorage.setItem("hubAuth", "true");
+                mostrarHub(email);
+            } else {
+                statusMsg.innerHTML = "❌ Datos incorrectos. Revisa tu correo o PIN.";
+                statusMsg.style.color = "var(--lost)";
+            }
+        } catch (e) {
+            statusMsg.innerHTML = "❌ Error de conexión.";
+        }
+    };
+
+    async function mostrarHub(email) {
+        document.getElementById("seccion-auth").classList.add("hidden");
+        document.getElementById("seccion-lista").classList.remove("hidden");
+        document.getElementById("hub-subtitle").innerHTML = "Bienvenido de nuevo";
+
+        const q = query(collection(db, "placas"), where("email", "==", email));
+        const querySnapshot = await getDocs(q);
+        const lista = document.getElementById("lista-mascotas");
+        lista.innerHTML = "";
+
+        querySnapshot.forEach((doc) => {
+            const pet = doc.data();
+            const esPerdido = pet.extraviado || false;
+            
+            lista.innerHTML += `
+                <div class="pet-card">
+                    <div class="status-badge ${esPerdido ? 'status-lost' : 'status-safe'}">
+                        ${esPerdido ? 'PERDIDO' : 'A SALVO'}
+                    </div>
+                    <img src="${pet.foto || 'assets/img/logo.png'}">
+                    <div class="pet-info">
+                        <h3>${pet.mascota || 'Sin nombre'}</h3>
+                        <p>Placa: ${doc.id}</p>
+                        <button class="btn-manage" onclick="window.location.href='editar.html?id=${doc.id}'">GESTIONAR</button>
+                    </div>
+                </div>
+            `;
+        });
+    }
+</script>
+</body>
+</html>
