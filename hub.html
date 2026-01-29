@@ -160,14 +160,19 @@
     const statusMsg = document.getElementById("status-msg");
     const CINCO_HORAS = 5 * 60 * 60 * 1000;
 
-    // --- Lógica PWA ---
+    // --- Lógica PWA Mejorada ---
     let deferredPrompt;
-    
-    // 2. REGISTRAR SERVICE WORKER CON VERSIÓN PARA EL HUB
+    const pwaBanner = document.getElementById('pwa-install-banner');
+
+    // Ocultar si ya está en modo APP instalada
+    if (window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true) {
+        pwaBanner.classList.add('hidden');
+    }
+
     if ('serviceWorker' in navigator) {
         window.addEventListener('load', () => {
             navigator.serviceWorker.register('sw.js?v=hub_v2').then(reg => {
-                console.log("SW del Hub actualizado");
+                console.log("SW del Hub listo");
             });
         });
     }
@@ -175,7 +180,10 @@
     window.addEventListener('beforeinstallprompt', (e) => {
         e.preventDefault();
         deferredPrompt = e;
-        document.getElementById('pwa-install-banner').classList.remove('hidden');
+        // Solo mostrar si no es modo standalone
+        if (!window.matchMedia('(display-mode: standalone)').matches) {
+            pwaBanner.classList.remove('hidden');
+        }
     });
 
     document.getElementById('btn-pwa-install').addEventListener('click', async () => {
@@ -183,15 +191,18 @@
             deferredPrompt.prompt();
             const { outcome } = await deferredPrompt.userChoice;
             if (outcome === 'accepted') {
-                document.getElementById('pwa-install-banner').classList.add('hidden');
+                pwaBanner.classList.add('hidden');
             }
             deferredPrompt = null;
         }
     });
 
+    window.addEventListener('appinstalled', () => {
+        pwaBanner.classList.add('hidden');
+    });
+
     // --- Lógica de Sesión ---
     window.buscarEnMapa = (termino) => {
-        // Corrección de URL de Mapas
         window.open(`https://www.google.com/maps/search/${encodeURIComponent(termino)}/`, '_blank');
     };
 
