@@ -6,49 +6,62 @@
     <title>Mi Hub | Huellitas Digitales</title>
     
     <link rel="icon" type="image/png" href="assets/img/logo.png">
+    <link rel="manifest" href="manifest.json">
 
     <style>
         :root { --primary: #2bb673; --bg: #f4f7f6; --text: #333; --lost: #ff4757; }
         body { font-family: 'Segoe UI', sans-serif; background: var(--bg); margin: 0; padding: 20px; display: flex; justify-content: center; color: var(--text); }
         .container { max-width: 600px; width: 100%; }
         
+        /* Encabezado */
         .header-hub { text-align: center; margin-bottom: 30px; }
         .header-hub h1 { color: var(--primary); margin: 0; font-size: 32px; }
         .header-hub p { color: #888; margin-top: 5px; }
         
+        /* Auth Box */
         .login-box { background: white; padding: 30px; border-radius: 28px; box-shadow: 0 10px 30px rgba(0,0,0,0.05); text-align: center; }
-        label { display: block; text-align: left; font-size: 13px; font-weight: 700; color: #666; margin-bottom: 5px; text-transform: uppercase; }
-        input { width: 100%; padding: 15px; margin-bottom: 20px; border: 2px solid #eee; border-radius: 15px; box-sizing: border-box; font-size: 16px; outline: none; }
+        label { display: block; text-align: left; font-size: 11px; font-weight: 800; color: #aaa; margin-bottom: 5px; text-transform: uppercase; letter-spacing: 1px; }
+        input { width: 100%; padding: 15px; margin-bottom: 20px; border: 2px solid #eee; border-radius: 15px; box-sizing: border-box; font-size: 16px; outline: none; transition: 0.3s; }
+        input:focus { border-color: var(--primary); }
         .pin-input { letter-spacing: 8px; text-align: center; font-weight: bold; }
 
-        .btn-login { background: var(--primary); color: white; border: none; padding: 16px; border-radius: 15px; font-weight: bold; cursor: pointer; width: 100%; font-size: 16px; transition: 0.3s; }
-        .btn-login:hover { transform: translateY(-2px); box-shadow: 0 5px 15px rgba(43,182,115,0.3); }
+        .btn-login { background: var(--primary); color: white; border: none; padding: 16px; border-radius: 15px; font-weight: bold; cursor: pointer; width: 100%; font-size: 16px; box-shadow: 0 4px 12px rgba(43,182,115,0.2); }
+
+        /* Banner PWA */
+        #pwa-install-banner { background: white; padding: 15px; border-radius: 18px; margin-bottom: 20px; border: 2px solid var(--primary); display: flex; align-items: center; justify-content: space-between; }
+
+        /* Secciones */
+        .section-title { font-size: 18px; font-weight: 700; margin: 30px 0 15px; display: flex; align-items: center; gap: 8px; }
 
         /* Mascotas */
-        .grid-mascotas { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 20px; margin-top: 25px; }
-        .pet-card { background: white; border-radius: 24px; overflow: hidden; box-shadow: 0 10px 20px rgba(0,0,0,0.05); text-align: center; position: relative; border: 1px solid #f0f0f0; transition: 0.3s; }
-        .pet-card img { width: 100%; height: 140px; object-fit: cover; }
-        .status-badge { position: absolute; top: 10px; right: 10px; padding: 5px 10px; border-radius: 20px; font-size: 10px; font-weight: bold; color: white; }
+        .grid-mascotas { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 15px; }
+        .pet-card { background: white; border-radius: 24px; overflow: hidden; box-shadow: 0 8px 20px rgba(0,0,0,0.04); text-align: center; position: relative; border: 1px solid #f0f0f0; }
+        .pet-card img { width: 100%; height: 130px; object-fit: cover; }
+        .status-badge { position: absolute; top: 10px; right: 10px; padding: 4px 10px; border-radius: 20px; font-size: 9px; font-weight: bold; color: white; text-transform: uppercase; }
         .status-lost { background: var(--lost); animation: pulse 2s infinite; }
         .status-safe { background: var(--primary); }
 
+        /* Carrusel Salud */
+        .health-scroll { display: flex; gap: 12px; overflow-x: auto; padding-bottom: 10px; scrollbar-width: none; }
+        .health-card { min-width: 130px; background: white; padding: 15px; border-radius: 22px; border: 1px solid #eee; text-align: center; }
+        .health-card .icon { font-size: 24px; margin-bottom: 5px; }
+        .health-card .val { font-size: 11px; font-weight: bold; color: var(--primary); }
+
         /* Botones de Servicio */
-        .grid-servicios { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 15px; }
+        .grid-servicios { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
         .btn-servicio { 
             background: white; border: 1px solid #eee; padding: 15px; border-radius: 20px; 
-            display: flex; flex-direction: column; align-items: center; gap: 8px; 
-            cursor: pointer; transition: 0.3s; box-shadow: 0 4px 10px rgba(0,0,0,0.02);
-            font-family: inherit;
+            display: flex; flex-direction: column; align-items: center; gap: 5px; 
+            cursor: pointer; transition: 0.3s;
         }
-        .btn-servicio:hover { transform: translateY(-3px); border-color: var(--primary); box-shadow: 0 6px 15px rgba(43,182,115,0.1); }
-        .btn-servicio span.icon { font-size: 24px; }
-        .btn-servicio span.label { font-size: 13px; font-weight: 600; color: #555; }
+        .btn-servicio:hover { transform: translateY(-3px); border-color: var(--primary); }
+        .btn-servicio .icon { font-size: 24px; }
+        .btn-servicio .label { font-size: 12px; font-weight: 700; color: #555; }
         
-        .btn-full { grid-column: span 2; flex-direction: row; justify-content: center; gap: 15px; background: #e8f5e9; border-color: var(--primary); }
-        .btn-buy { background: var(--primary); color: white !important; }
-        .btn-buy span.label { color: white; }
+        .btn-full { grid-column: span 2; flex-direction: row; justify-content: center; background: var(--primary); color: white !important; border: none; }
+        .btn-full .label { color: white !important; }
 
-        .btn-manage { background: #f8f9fa; color: var(--primary); border: 1.5px solid var(--primary); padding: 8px 0; border-radius: 12px; font-size: 12px; font-weight: bold; cursor: pointer; width: 100%; margin-top: 10px; }
+        .btn-manage { background: #f8f9fa; color: var(--primary); border: 1.5px solid var(--primary); padding: 8px 0; border-radius: 12px; font-size: 11px; font-weight: bold; cursor: pointer; width: 90%; margin: 10px auto; }
 
         .hidden { display: none; }
         @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.7; } 100% { opacity: 1; } }
@@ -59,46 +72,71 @@
 
 <div class="container">
     <div class="header-hub">
-        <h1>🐾 Mis Mascotas</h1>
-        <p id="hub-subtitle">Acceso Propietario</p>
+        <h1>🐾 Huellitas Hub</h1>
+        <p id="hub-subtitle">Todo para tu mascota en un solo lugar</p>
+    </div>
+
+    <div id="pwa-install-banner" class="hidden">
+        <div style="display: flex; align-items: center; gap: 10px;">
+            <img src="assets/img/logo.png" width="30">
+            <span style="font-size: 13px; font-weight: bold;">Instalar App Huellitas</span>
+        </div>
+        <button id="btn-pwa-install" style="background: var(--primary); color: white; border: none; padding: 8px 12px; border-radius: 10px; font-size: 11px; font-weight: bold; cursor:pointer;">AÑADIR</button>
     </div>
 
     <div id="seccion-auth" class="login-box">
         <label>Correo Electrónico</label>
-        <input type="email" id="auth-email" placeholder="ejemplo@correo.com">
+        <input type="email" id="auth-email" placeholder="tu@correo.com">
         <label>PIN de Seguridad</label>
         <input type="password" id="auth-pin" class="pin-input" maxlength="4" placeholder="****">
-        <button class="btn-login" id="btn-entrar">Acceder al Panel</button>
+        <button class="btn-login" id="btn-entrar">Acceder a mi Panel</button>
         <div id="status-msg"></div>
     </div>
 
     <div id="seccion-lista" class="hidden">
-        <div class="grid-mascotas" id="lista-mascotas"></div>
         
-        <div style="margin-top: 40px;">
-            <h2 style="font-size: 20px; margin-bottom: 5px;">Servicios Huellitas</h2>
-            <p style="font-size: 13px; color: #888; margin-bottom: 15px;">Encuentra lo mejor cerca de ti</p>
-            
-            <div class="grid-servicios">
-                <button class="btn-servicio" onclick="buscarEnMapa('Veterinarias')">
-                    <span class="icon">🏥</span><span class="label">Veterinarias</span>
-                </button>
-                <button class="btn-servicio" onclick="buscarEnMapa('Estetica canina')">
-                    <span class="icon">✂️</span><span class="label">Estética</span>
-                </button>
-                <button class="btn-servicio" onclick="buscarEnMapa('Hospedaje canino')">
-                    <span class="icon">🏨</span><span class="label">Hospedaje</span>
-                </button>
-                <button class="btn-servicio" onclick="window.open('https://TU-TIENDA-ALIMENTOS.com', '_blank')">
-                    <span class="icon">🦴</span><span class="label">Comprar Alimento</span>
-                </button>
-                <button class="btn-servicio btn-full btn-buy" onclick="window.open('https://TU-WEB.com/tienda', '_blank')">
-                    <span class="icon">🆔</span><span class="label">Adquirir más Placas</span>
-                </button>
+        <div class="section-title">🐕 Mis Mascotas</div>
+        <div class="grid-mascotas" id="lista-mascotas"></div>
+
+        <div class="section-title">🩺 Bienestar y Salud</div>
+        <div class="health-scroll">
+            <div class="health-card">
+                <div class="icon">💉</div>
+                <div style="font-size: 12px;">Vacunas</div>
+                <div class="val">Al día</div>
+            </div>
+            <div class="health-card">
+                <div class="icon">⚖️</div>
+                <div style="font-size: 12px;">Peso Ideal</div>
+                <div class="val">Ver Registro</div>
+            </div>
+            <div class="health-card">
+                <div class="icon">🍎</div>
+                <div style="font-size: 12px;">Ración Diaria</div>
+                <div class="val">Calcular</div>
             </div>
         </div>
 
-        <button onclick="localStorage.clear(); location.reload();" style="margin-top:40px; border:none; background:none; color:#bbb; cursor:pointer; width:100%; text-decoration:underline;">Cerrar Sesión</button>
+        <div class="section-title">🌟 Centro Pet Care</div>
+        <div class="grid-servicios">
+            <button class="btn-servicio" onclick="buscarEnMapa('Veterinarias')">
+                <span class="icon">🏥</span><span class="label">Veterinarias</span>
+            </button>
+            <button class="btn-servicio" onclick="buscarEnMapa('Estetica canina')">
+                <span class="icon">✂️</span><span class="label">Estética</span>
+            </button>
+            <button class="btn-servicio" onclick="buscarEnMapa('Hospedaje canino')">
+                <span class="icon">🏨</span><span class="label">Hospedaje</span>
+            </button>
+            <button class="btn-servicio" onclick="window.open('https://TIENDA.com', '_blank')">
+                <span class="icon">🦴</span><span class="label">Comprar Alimento</span>
+            </button>
+            <button class="btn-servicio btn-full" onclick="window.open('https://TUWEB.com/tienda', '_blank')">
+                <span class="icon">🆔</span><span class="label">Adquirir más Placas Inteligentes</span>
+            </button>
+        </div>
+
+        <button onclick="localStorage.clear(); location.reload();" style="margin-top:50px; border:none; background:none; color:#bbb; cursor:pointer; width:100%; text-decoration:underline; font-size:12px;">Cerrar Sesión de Seguridad</button>
     </div>
 </div>
 
@@ -122,74 +160,72 @@
     const statusMsg = document.getElementById("status-msg");
     const CINCO_HORAS = 5 * 60 * 60 * 1000;
 
-    // Función Global para Mapas
-    window.buscarEnMapa = function(termino) {
-        const url = `https://www.google.com/maps/search/${encodeURIComponent(termino)}`;
-        window.open(url, '_blank');
+    // --- Lógica PWA ---
+    let deferredPrompt;
+    window.addEventListener('beforeinstallprompt', (e) => {
+        e.preventDefault();
+        deferredPrompt = e;
+        document.getElementById('pwa-install-banner').classList.remove('hidden');
+    });
+
+    document.getElementById('btn-pwa-install').addEventListener('click', async () => {
+        if (deferredPrompt) {
+            deferredPrompt.prompt();
+            deferredPrompt = null;
+            document.getElementById('pwa-install-banner').classList.add('hidden');
+        }
+    });
+
+    // --- Lógica de Sesión ---
+    window.buscarEnMapa = (termino) => {
+        window.open(`https://www.google.com/maps/search/${encodeURIComponent(termino)}/`, '_blank');
     };
 
     function verificarSesion() {
         const userEmail = localStorage.getItem("userEmail");
-        const hubAuth = localStorage.getItem("hubAuth");
         const loginTimestamp = localStorage.getItem("loginTimestamp");
         const ahora = new Date().getTime();
 
-        if (userEmail && hubAuth === "true" && loginTimestamp) {
-            if (ahora - loginTimestamp < CINCO_HORAS) {
-                mostrarHub(userEmail);
-            } else {
-                localStorage.clear();
-                statusMsg.innerText = "⏰ Sesión expirada por seguridad.";
-            }
+        if (userEmail && loginTimestamp && (ahora - loginTimestamp < CINCO_HORAS)) {
+            mostrarHub(userEmail);
+        } else {
+            localStorage.clear();
         }
     }
-
-    verificarSesion();
 
     btnEntrar.onclick = async () => {
         const email = document.getElementById("auth-email").value.trim().toLowerCase();
         const pin = document.getElementById("auth-pin").value;
 
-        if (!email || !pin) {
-            statusMsg.innerText = "⚠️ Completa los campos.";
-            return;
-        }
-
-        statusMsg.innerText = "Verificando...";
+        if (!email || !pin) { statusMsg.innerText = "⚠️ Escribe correo y PIN."; return; }
+        statusMsg.innerText = "⌛ Validando...";
         
         try {
             const q = query(collection(db, "placas"), where("email", "==", email));
-            const querySnapshot = await getDocs(q);
-            let loginExitoso = false;
+            const snap = await getDocs(q);
+            let ok = false;
+            snap.forEach(doc => { if(doc.data().pin === pin) ok = true; });
 
-            querySnapshot.forEach((doc) => {
-                if (doc.data().pin === pin) loginExitoso = true;
-            });
-
-            if (loginExitoso) {
+            if (ok) {
                 localStorage.setItem("userEmail", email);
-                localStorage.setItem("hubAuth", "true");
                 localStorage.setItem("loginTimestamp", new Date().getTime());
                 mostrarHub(email);
             } else {
-                statusMsg.innerText = "❌ Correo o PIN incorrectos.";
+                statusMsg.innerText = "❌ Datos incorrectos.";
             }
-        } catch (e) {
-            statusMsg.innerText = "❌ Error de conexión.";
-        }
+        } catch (e) { statusMsg.innerText = "❌ Error de red."; }
     };
 
     async function mostrarHub(email) {
         document.getElementById("seccion-auth").classList.add("hidden");
         document.getElementById("seccion-lista").classList.remove("hidden");
-        document.getElementById("hub-subtitle").innerHTML = "Bienvenido: <b>" + email + "</b>";
         
         const q = query(collection(db, "placas"), where("email", "==", email));
-        const querySnapshot = await getDocs(q);
+        const snap = await getDocs(q);
         const lista = document.getElementById("lista-mascotas");
         lista.innerHTML = "";
 
-        querySnapshot.forEach((doc) => {
+        snap.forEach((doc) => {
             const pet = doc.data();
             lista.innerHTML += `
                 <div class="pet-card">
@@ -197,15 +233,15 @@
                         ${pet.extraviado ? 'Perdido' : 'A salvo'}
                     </div>
                     <img src="${pet.foto || 'assets/img/logo.png'}">
-                    <div class="pet-info">
-                        <h3>${pet.mascota || 'Sin nombre'}</h3>
-                        <p>ID: ${doc.id}</p>
+                    <div style="padding:10px;">
+                        <h3 style="margin:0; font-size:15px;">${pet.mascota}</h3>
                         <button class="btn-manage" onclick="window.location.href='editar.html?id=${doc.id}'">GESTIONAR</button>
                     </div>
-                </div>
-            `;
+                </div>`;
         });
     }
+
+    verificarSesion();
 </script>
 </body>
 </html>
