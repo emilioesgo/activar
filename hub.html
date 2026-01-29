@@ -6,7 +6,7 @@
     <title>Mi Hub | Huellitas Digitales</title>
     
     <link rel="icon" type="image/png" href="assets/img/logo.png">
-    <link rel="manifest" href="manifest.json">
+    <link rel="manifest" href="manifest-hub.json">
 
     <style>
         :root { --primary: #2bb673; --bg: #f4f7f6; --text: #333; --lost: #ff4757; }
@@ -162,6 +162,16 @@
 
     // --- Lógica PWA ---
     let deferredPrompt;
+    
+    // 2. REGISTRAR SERVICE WORKER CON VERSIÓN PARA EL HUB
+    if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+            navigator.serviceWorker.register('sw.js?v=hub_v2').then(reg => {
+                console.log("SW del Hub actualizado");
+            });
+        });
+    }
+
     window.addEventListener('beforeinstallprompt', (e) => {
         e.preventDefault();
         deferredPrompt = e;
@@ -171,13 +181,17 @@
     document.getElementById('btn-pwa-install').addEventListener('click', async () => {
         if (deferredPrompt) {
             deferredPrompt.prompt();
+            const { outcome } = await deferredPrompt.userChoice;
+            if (outcome === 'accepted') {
+                document.getElementById('pwa-install-banner').classList.add('hidden');
+            }
             deferredPrompt = null;
-            document.getElementById('pwa-install-banner').classList.add('hidden');
         }
     });
 
     // --- Lógica de Sesión ---
     window.buscarEnMapa = (termino) => {
+        // Corrección de URL de Mapas
         window.open(`https://www.google.com/maps/search/${encodeURIComponent(termino)}/`, '_blank');
     };
 
