@@ -52,7 +52,7 @@
         .btn-servicio { 
             background: white; border: 1px solid #eee; padding: 15px; border-radius: 20px; 
             display: flex; flex-direction: column; align-items: center; gap: 5px; 
-            cursor: pointer; transition: 0.3s;
+            cursor: pointer; transition: 0.3s; text-decoration: none;
         }
         .btn-servicio:hover { transform: translateY(-3px); border-color: var(--primary); }
         .btn-servicio .icon { font-size: 24px; }
@@ -119,15 +119,15 @@
 
         <div class="section-title">🌟 Centro Pet Care</div>
         <div class="grid-servicios">
-            <button class="btn-servicio" onclick="buscarEnMapa('Veterinarias')">
+            <a href="veterinarias.html" class="btn-servicio">
                 <span class="icon">🏥</span><span class="label">Veterinarias</span>
-            </button>
-            <button class="btn-servicio" onclick="buscarEnMapa('Estetica canina')">
+            </a>
+            <a href="esteticas.html" class="btn-servicio">
                 <span class="icon">✂️</span><span class="label">Estética</span>
-            </button>
-<button class="btn-servicio" onclick="window.location.href='hospedaje.html'">
-    <span class="icon">🏨</span><span class="label">Hospedaje</span>
-</button>
+            </a>
+            <a href="hospedaje.html" class="btn-servicio">
+                <span class="icon">🏨</span><span class="label">Hospedaje</span>
+            </a>
             <button class="btn-servicio" onclick="window.open('https://TIENDA.com', '_blank')">
                 <span class="icon">🦴</span><span class="label">Comprar Alimento</span>
             </button>
@@ -160,18 +160,17 @@
     const statusMsg = document.getElementById("status-msg");
     const CINCO_HORAS = 5 * 60 * 60 * 1000;
 
-    // --- Lógica PWA Mejorada ---
+    // --- Lógica PWA ---
     let deferredPrompt;
     const pwaBanner = document.getElementById('pwa-install-banner');
 
-    // Ocultar si ya está en modo APP instalada
     if (window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true) {
         pwaBanner.classList.add('hidden');
     }
 
     if ('serviceWorker' in navigator) {
         window.addEventListener('load', () => {
-            navigator.serviceWorker.register('sw.js?v=hub_v2').then(reg => {
+            navigator.serviceWorker.register('sw.js?v=hub_v3').then(reg => {
                 console.log("SW del Hub listo");
             });
         });
@@ -180,7 +179,6 @@
     window.addEventListener('beforeinstallprompt', (e) => {
         e.preventDefault();
         deferredPrompt = e;
-        // Solo mostrar si no es modo standalone
         if (!window.matchMedia('(display-mode: standalone)').matches) {
             pwaBanner.classList.remove('hidden');
         }
@@ -197,15 +195,7 @@
         }
     });
 
-    window.addEventListener('appinstalled', () => {
-        pwaBanner.classList.add('hidden');
-    });
-
-    // --- Lógica de Sesión ---
-    window.buscarEnMapa = (termino) => {
-        window.open(`https://www.google.com/maps/search/${encodeURIComponent(termino)}/`, '_blank');
-    };
-
+    // --- Lógica de Sesión y Hub ---
     function verificarSesion() {
         const userEmail = localStorage.getItem("userEmail");
         const loginTimestamp = localStorage.getItem("loginTimestamp");
