@@ -4,51 +4,62 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Carnet Digital | Huellitas</title>
+    <link rel="icon" type="image/png" href="assets/img/logo.png">
     <style>
-        :root { --primary: #2bb673; --accent: #4a90e2; --bg: #f0f4f8; --danger: #ff4757; --history: #6c757d; }
-        body { font-family: 'Segoe UI', sans-serif; background: var(--bg); margin: 0; padding: 20px; padding-top: 70px; }
+        :root { --primary: #2bb673; --bg: #f4f7f6; --text: #333; --lost: #ff4757; }
+        body { font-family: 'Segoe UI', sans-serif; background: var(--bg); margin: 0; padding: 20px; color: var(--text); }
+        .container { max-width: 600px; margin: 0 auto; padding-top: 60px; }
         
+        /* Navbar */
         .navbar { position: fixed; top: 0; left: 0; right: 0; background: white; padding: 15px; display: flex; align-items: center; box-shadow: 0 2px 10px rgba(0,0,0,0.1); z-index: 100; }
-        .btn-back { background: #eee; border: none; padding: 8px 12px; border-radius: 10px; cursor: pointer; text-decoration: none; color: #333; font-weight: bold; margin-right: 15px; }
+        .btn-back { background: #eee; border: none; padding: 8px 12px; border-radius: 10px; cursor: pointer; text-decoration: none; color: #333; font-weight: bold; font-size: 14px; }
 
-        .carnet-container { max-width: 500px; margin: 0 auto; }
+        /* Tarjeta de Carnet */
+        .card-carnet { background: white; border-radius: 28px; padding: 20px; margin-bottom: 25px; box-shadow: 0 8px 25px rgba(0,0,0,0.05); border: 1px solid #f0f0f0; }
+        .pet-header { display: flex; align-items: center; gap: 15px; margin-bottom: 20px; }
+        .pet-photo { width: 70px; height: 70px; border-radius: 50%; object-fit: cover; border: 3px solid var(--primary); }
         
-        .pet-header { 
-            background: white; border-radius: 25px 25px 0 0; padding: 20px; 
-            display: flex; align-items: center; gap: 15px; border-bottom: 2px dashed #eee;
+        /* Línea de Tiempo de Vacunas */
+        .vacunas-timeline { margin-top: 15px; padding-left: 15px; border-left: 2px solid #f0f0f0; }
+        .vacuna-item { 
+            position: relative; padding: 12px 15px; border-radius: 18px; margin-bottom: 12px; 
+            display: flex; justify-content: space-between; align-items: center; 
         }
-        .pet-photo { width: 80px; height: 80px; border-radius: 50%; object-fit: cover; border: 3px solid var(--primary); }
-        .pet-info h2 { margin: 0; color: #333; font-size: 22px; }
+        .vacuna-item::before { 
+            content: ''; position: absolute; left: -22px; top: 50%; transform: translateY(-50%); 
+            width: 12px; height: 12px; border-radius: 50%; border: 3px solid white; 
+        }
         
-        .vaccine-list { background: white; padding: 20px; box-shadow: 0 5px 15px rgba(0,0,0,0.05); }
-        .section-label { font-size: 11px; font-weight: bold; color: #aaa; text-transform: uppercase; margin-bottom: 10px; display: block; }
+        .vacuna-done { background: #f0fdf4; border: 1px solid #dcfce7; }
+        .vacuna-done::before { background: var(--primary); }
+        .vacuna-pending { background: #fffbeb; border: 1px solid #fef3c7; }
+        .vacuna-pending::before { background: #fbbf24; }
 
-        .vaccine-item { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid #f9f9f9; }
-        .v-info { display: flex; flex-direction: column; }
-        .v-name { font-weight: bold; font-size: 14px; color: #444; }
-        .v-date { font-size: 12px; color: #888; }
-        
-        .v-counter { background: #e8f5e9; color: var(--primary); padding: 4px 10px; border-radius: 10px; font-size: 10px; font-weight: 800; }
-        .v-urgent { background: #ffebee; color: var(--danger); }
-        .v-applied { background: #f0f0f0; color: var(--history); }
+        .vacuna-info b { font-size: 14px; color: #444; display: block; }
+        .vacuna-info span { font-size: 11px; color: #888; }
+        .vacuna-status { font-size: 10px; font-weight: 800; padding: 4px 10px; border-radius: 10px; background: white; }
 
-        .add-form { background: #fff; padding: 20px; border-radius: 0 0 25px 25px; margin-bottom: 30px; border: 1px solid #eee; }
-        input, select { width: 100%; padding: 12px; margin-bottom: 10px; border: 1px solid #ddd; border-radius: 12px; box-sizing: border-box; font-size: 14px; }
-        .btn-add { background: var(--primary); color: white; border: none; width: 100%; padding: 12px; border-radius: 12px; font-weight: bold; cursor: pointer; }
+        .btn-action-pet { 
+            width: 100%; background: #f8f9fa; color: var(--primary); border: 1.5px dashed var(--primary); 
+            padding: 12px; border-radius: 15px; font-size: 12px; font-weight: bold; 
+            cursor: pointer; margin-top: 15px; transition: 0.3s;
+        }
+        .btn-action-pet:hover { background: #e8f5e9; }
     </style>
 </head>
 <body>
 
     <nav class="navbar">
         <a href="hub.html" class="btn-back">⬅ Volver</a>
-        <h1 style="font-size: 18px; margin: 0;">📋 Carnet y Agenda Canina</h1>
+        <h1 style="font-size: 18px; margin-left: 15px; color: var(--primary);">📋 Carnet de Salud</h1>
     </nav>
 
-    <div class="carnet-container" id="main-container"></div>
+    <div class="container" id="main-container">
+        </div>
 
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-    import { getFirestore, collection, query, where, getDocs, addDoc, deleteDoc, doc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+    import { getFirestore, collection, query, where, getDocs, orderBy, limit } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
     const firebaseConfig = {
         apiKey: "AIzaSyCqROIzmp2guo2XLbdYrSW3ujlUBc7ngOc",
@@ -65,6 +76,8 @@
 
     async function cargarCarnets() {
         const container = document.getElementById("main-container");
+        if (!email) { window.location.href = "hub.html"; return; }
+
         const qMascotas = query(collection(db, "placas"), where("email", "==", email));
         const snapMascotas = await getDocs(qMascotas);
         
@@ -74,99 +87,83 @@
             const pet = petDoc.data();
             const petId = petDoc.id;
 
+            // --- Lógica de Peso Conectada ---
+            const qPeso = query(
+                collection(db, "historial_peso"), 
+                where("petId", "==", petId), 
+                orderBy("timestamp", "desc"),
+                limit(1)
+            );
+            const snapPeso = await getDocs(qPeso);
+            let htmlPeso = `<span style="font-size:11px; color:#aaa;">Sin registro de peso</span>`;
+
+            if (!snapPeso.empty) {
+                const p = snapPeso.docs[0].data();
+                let colorP = "#2bb673";
+                if (p.bcs >= 7) colorP = "#ff4757";
+                if (p.bcs <= 3) colorP = "#ffa502";
+                htmlPeso = `<b style="color:${colorP}; font-size:13px;">⚖️ ${p.peso}kg - Condición: ${p.bcs}/9</b>`;
+            }
+
             container.innerHTML += `
-                <div id="carnet-${petId}">
+                <div class="card-carnet">
                     <div class="pet-header">
                         <img src="${pet.foto || 'assets/img/logo.png'}" class="pet-photo">
-                        <div class="pet-info">
-                            <h2>${pet.mascota}</h2>
+                        <div>
+                            <h2 style="margin:0; font-size:20px;">${pet.mascota}</h2>
+                            ${htmlPeso}
                         </div>
                     </div>
                     
-                    <div class="vaccine-list">
-                        <span class="section-label">📅 Agenda (Próximas Citas)</span>
-                        <div id="agenda-${petId}"></div>
-                        
-                        <span class="section-label" style="margin-top:20px;">✅ Historial (Ya puestas)</span>
-                        <div id="historial-${petId}"></div>
+                    <div id="lista-vacunas-${petId}">
+                        <p style="text-align:center; font-size:12px; color:#ccc;">Cargando historial...</p>
                     </div>
-                    
-                    <div class="add-form">
-                        <p style="margin:0 0 10px 0; font-size:13px; font-weight:bold;">Registrar nueva entrada</p>
-                        <select id="tipo-${petId}">
-                            <option value="agenda">Próxima Cita / Vacuna</option>
-                            <option value="historial">Vacuna ya Aplicada</option>
-                        </select>
-                        <input type="text" id="name-${petId}" placeholder="¿Qué vacuna o tratamiento?">
-                        <input type="date" id="date-${petId}">
-                        <button class="btn-add" onclick="window.guardarEntrada('${petId}', '${pet.mascota}')">Guardar en Carnet</button>
-                    </div>
-                </div>`;
+
+                    <button class="btn-action-pet" onclick="window.location.href='peso.html'">
+                        📊 VER GRÁFICA O ACTUALIZAR PESO
+                    </button>
+                </div>
+            `;
             
             await cargarRegistrosMascota(petId);
         }
     }
 
     async function cargarRegistrosMascota(petId) {
-        const agendaDiv = document.getElementById(`agenda-${petId}`);
-        const historialDiv = document.getElementById(`historial-${petId}`);
+        const listaDiv = document.getElementById(`lista-vacunas-${petId}`);
+        const q = query(collection(db, "recordatorios"), where("petId", "==", petId), orderBy("fecha", "asc"));
+        const snap = await getDocs(q);
         
-        const qVax = query(collection(db, "recordatorios"), where("petId", "==", petId));
-        const snapVax = await getDocs(qVax);
-        
-        agendaDiv.innerHTML = historialDiv.innerHTML = "";
-        
-        snapVax.forEach(vDoc => {
-            const v = vDoc.data();
-            const hoy = new Date();
-            const fechaVax = new Date(v.fecha);
-            const diffDays = Math.ceil((fechaVax - hoy) / (1000 * 60 * 60 * 24));
+        if (snap.empty) {
+            listaDiv.innerHTML = `<p style="font-size:12px; color:#bbb; text-align:center; padding:10px;">No hay vacunas registradas.</p>`;
+            return;
+        }
+
+        let html = `<div class="vacunas-timeline">`;
+        snap.forEach(doc => {
+            const v = doc.data();
+            const esDone = v.estado === "completado";
             
-            let badge = "";
-            if (v.tipo === "historial") {
-                badge = `<span class="v-counter v-applied">Aplicada</span>`;
-            } else {
-                badge = diffDays < 0 ? `<span class="v-counter v-urgent">Vencida</span>` : `<span class="v-counter">Faltan ${diffDays} días</span>`;
-            }
-
-            const itemHtml = `
-                <div class="vaccine-item">
-                    <div class="v-info">
-                        <span class="v-name">${v.tipo === 'agenda' ? '🕒' : '💉'} ${v.vacuna}</span>
-                        <span class="v-date">${v.fecha}</span>
+            html += `
+                <div class="vacuna-item ${esDone ? 'vacuna-done' : 'vacuna-pending'}">
+                    <div class="vacuna-info">
+                        <b>${v.vacuna}</b>
+                        <span>📅 ${formatearFecha(v.fecha)}</span>
                     </div>
-                    <div style="display:flex; align-items:center; gap:10px;">
-                        ${badge}
-                        <button onclick="window.borrarRegistro('${vDoc.id}', '${petId}')" style="background:none; border:none; color:#ccc; cursor:pointer;">✕</button>
+                    <div class="vacuna-status" style="color: ${esDone ? '#2bb673' : '#d97706'};">
+                        ${esDone ? '✅ APLICADA' : '⏳ PENDIENTE'}
                     </div>
-                </div>`;
-
-            if (v.tipo === "historial") historialDiv.innerHTML += itemHtml;
-            else agendaDiv.innerHTML += itemHtml;
+                </div>
+            `;
         });
+        html += `</div>`;
+        listaDiv.innerHTML = html;
     }
 
-    window.guardarEntrada = async (petId, petName) => {
-        const tipo = document.getElementById(`tipo-${petId}`).value;
-        const nombre = document.getElementById(`name-${petId}`).value;
-        const fecha = document.getElementById(`date-${petId}`).value;
-
-        if(!nombre || !fecha) return alert("Completa los datos");
-
-        await addDoc(collection(db, "recordatorios"), {
-            petId, petName, userEmail: email, vacuna: nombre, fecha, tipo
-        });
-        
-        document.getElementById(`name-${petId}`).value = "";
-        cargarRegistrosMascota(petId);
-    };
-
-    window.borrarRegistro = async (id, petId) => {
-        if(confirm("¿Eliminar este dato del carnet?")) {
-            await deleteDoc(doc(db, "recordatorios", id));
-            cargarRegistrosMascota(petId);
-        }
-    };
+    function formatearFecha(f) {
+        const d = new Date(f + "T00:00:00");
+        return d.toLocaleDateString('es-ES', { day: 'numeric', month: 'short', year: 'numeric' });
+    }
 
     cargarCarnets();
 </script>
