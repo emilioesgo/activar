@@ -20,8 +20,7 @@
             position: relative; border: 2px solid transparent; animation: fadeIn 0.5s ease;
         }
 
-        /* Estilo Destacados */
-        .premium { border-color: var(--gold); background: #fffdf5; order: -1; } /* Siempre arriba */
+        .premium { border-color: var(--gold); background: #fffdf5; order: -1; }
         .badge-premium { 
             position: absolute; top: -10px; right: 15px; 
             background: var(--gold); color: black; font-size: 10px; 
@@ -60,7 +59,6 @@
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
     import { getFirestore, collection, getDocs, query, where } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
-    // --- CONFIGURACIÓN (Usa tus datos reales) ---
     const firebaseConfig = {
         apiKey: "AIzaSyCqROIzmp2guo2XLbdYrSW3ujlUBc7ngOc",
         authDomain: "huellitas-digitales.firebaseapp.com",
@@ -74,7 +72,6 @@
     const db = getFirestore(app);
     const container = document.getElementById('lista-hospedajes');
 
-    // 1. CARGAR DESTACADOS DESDE FIREBASE
     async function cargarDestacados() {
         try {
             const q = query(collection(db, "negocios"), where("tipo", "==", "hospedaje"), where("destacado", "==", true));
@@ -100,7 +97,6 @@
         } catch (e) { console.error("Error Firebase:", e); }
     }
 
-    // 2. CARGAR DESDE GOOGLE MAPS
     function buscarEnGoogle() {
         if (navigator.geolocation) {
             navigator.geolocation.getCurrentPosition(pos => {
@@ -109,12 +105,14 @@
 
                 const request = {
                     location: userLoc,
-                    radius: '5000', // 5km a la redonda
+                    radius: '5000',
                     keyword: 'hospedaje canino hotel mascotas'
                 };
 
                 service.nearbySearch(request, (results, status) => {
-                    document.getElementById('main-loader').classList.add('hidden');
+                    const loader = document.getElementById('main-loader');
+                    if(loader) loader.classList.add('hidden');
+                    
                     if (status === google.maps.places.PlacesServiceStatus.OK) {
                         results.forEach(place => {
                             const photo = place.photos ? place.photos[0].getUrl() : 'assets/img/logo.png';
@@ -126,18 +124,19 @@
                                         <div class="stars">⭐ ${place.rating || 'N/A'} (${place.user_ratings_total || 0} reseñas)</div>
                                         <p>📍 ${place.vicinity}</p>
                                         <div class="actions">
-                                            <button class="btn-map" onclick="window.open('https://www.google.com/maps/search/?api=1&query=Google&query_place_id=${place.place_id}')">📍 Ver en Maps</button>
+                                            <button class="btn-map" onclick="window.open('https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(place.name)}&query_place_id=${place.place_id}')">📍 Ver en Maps</button>
                                         </div>
                                     </div>
                                 </div>`;
                         });
                     }
                 });
+            }, () => {
+                document.getElementById('main-loader').innerText = "Por favor, activa la ubicación para ver lugares cercanos.";
             });
         }
     }
 
-    // Ejecutar todo
     cargarDestacados().then(() => {
         buscarEnGoogle();
     });
