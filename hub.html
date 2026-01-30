@@ -119,10 +119,23 @@
                 <div style="font-size: 12px;">Mi Carnet</div>
                 <div class="val" id="vax-status">Consultar</div>
             </div>
-            <div class="health-card" id="btn-peso-ideal" onclick=window.location.href='peso.html'">
-                <div class="icon">⚖️</div>
-                <div style="font-size: 12px;">Peso Ideal</div>
-                <div class="val">Ver Registro</div>
+           <div class="health-card" 
+     id="btn-peso-ideal" 
+     onclick="window.location.href='peso.html'" 
+     style="cursor: pointer; transition: transform 0.1s active;">
+    
+    <div class="icon">⚖️</div>
+    <div style="font-size: 12px; color: #666;">Peso de Mascota</div>
+    <div class="val" style="color: var(--primary); font-weight: bold;">Ver Registro</div>
+</div>
+
+<style>
+    /* Efecto de pulsación para que se sienta profesional */
+    .health-card:active {
+        transform: scale(0.95);
+        background-color: #f0f0f0;
+    }
+</style>
             </div>
             <div class="health-card">
                 <div class="icon">🍎</div>
