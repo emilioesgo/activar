@@ -18,15 +18,38 @@
         .header-hub h1 { color: var(--primary); margin: 0; font-size: 32px; }
         .header-hub p { color: #888; margin-top: 5px; }
 
-        /* Banner de Notificación Urgente */
-        .notif-urgente { 
-            background: #fff0f0; border: 1px solid #ffccd2; border-left: 5px solid var(--lost);
-            padding: 12px 15px; border-radius: 15px; margin-bottom: 20px;
-            display: flex; align-items: center; gap: 10px; animation: slideIn 0.5s ease;
-            cursor: pointer;
+        /* --- MEJORA: BANNER DE VENTA LLAMATIVO --- */
+        .promo-tienda {
+            background: white;
+            padding: 25px;
+            border-radius: 30px;
+            box-shadow: 0 10px 30px rgba(43, 182, 115, 0.15);
+            border: 2px solid #e8f5e9;
+            margin-bottom: 25px;
+            text-align: center;
         }
-        @keyframes slideIn { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
-        
+        .btn-buy-now {
+            background: linear-gradient(45deg, #2bb673, #2ecc71);
+            color: white;
+            border: none;
+            padding: 16px 30px;
+            border-radius: 50px;
+            font-size: 15px;
+            font-weight: bold;
+            cursor: pointer;
+            box-shadow: 0 6px 20px rgba(46, 204, 113, 0.3);
+            transition: 0.3s;
+            animation: pulse-green 2s infinite;
+            text-decoration: none;
+            display: inline-block;
+            margin-top: 10px;
+        }
+        @keyframes pulse-green {
+            0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(46, 204, 113, 0.7); }
+            70% { transform: scale(1.05); box-shadow: 0 0 0 10px rgba(46, 204, 113, 0); }
+            100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(46, 204, 113, 0); }
+        }
+
         /* Auth Box */
         .login-box { background: white; padding: 30px; border-radius: 28px; box-shadow: 0 10px 30px rgba(0,0,0,0.05); text-align: center; }
         label { display: block; text-align: left; font-size: 11px; font-weight: 800; color: #aaa; margin-bottom: 5px; text-transform: uppercase; letter-spacing: 1px; }
@@ -88,6 +111,13 @@
         <p id="hub-subtitle">Todo para tu mascota en un solo lugar</p>
     </div>
 
+    <div class="promo-tienda">
+        <div style="font-size: 24px;">🏷️</div>
+        <h3 style="margin: 5px 0; font-size: 16px;">¿Aún no tienes tu Placa Inteligente?</h3>
+        <p style="font-size: 12px; color: #777; margin: 0;">Protege a tu mascota con tecnología GPS y Carnet Digital.</p>
+        <a href="https://TUWEB.com/tienda" target="_blank" class="btn-buy-now">ADQUIRIR MÁS PLACAS</a>
+    </div>
+
     <div id="pwa-install-banner" class="hidden">
         <div style="display: flex; align-items: center; gap: 10px;">
             <img src="assets/img/logo.png" width="30">
@@ -112,56 +142,26 @@
         <div class="section-title">🐕 Mis Mascotas</div>
         <div class="grid-mascotas" id="lista-mascotas"></div>
 
-      <div class="section-title">🩺 Bienestar y Salud</div>
+        <div class="section-title">🩺 Bienestar y Salud</div>
 
-<div class="health-scroll" style="display: flex; gap: 15px; overflow-x: auto; padding: 10px 5px; scrollbar-width: none;">
-    
-    <div class="health-card" id="btn-carnet-salud" onclick="window.location.href='carnet.html'" style="min-width: 120px; flex-shrink: 0; cursor: pointer;">
-        <div class="icon">📋</div>
-        <div style="font-size: 12px; color: #666;">Mi Carnet</div>
-        <div class="val" id="vax-status" style="color: var(--primary); font-weight: bold;">Consultar</div>
-    </div>
+        <div class="health-scroll">
+            <div class="health-card" id="btn-carnet-salud" onclick="window.location.href='carnet.html'">
+                <div class="icon">📋</div>
+                <div style="font-size: 12px; color: #666;">Mi Carnet</div>
+                <div class="val" id="vax-status">Consultar</div>
+            </div>
 
-    <div class="health-card" id="btn-peso-ideal" onclick="window.location.href='peso.html'" style="min-width: 120px; flex-shrink: 0; cursor: pointer; transition: transform 0.1s;">
-        <div class="icon">⚖️</div>
-        <div style="font-size: 12px; color: #666;">Peso Mascota</div>
-        <div class="val" style="color: var(--primary); font-weight: bold;">Ver Registro</div>
-    </div>
+            <div class="health-card" id="btn-peso-ideal" onclick="window.location.href='peso.html'">
+                <div class="icon">⚖️</div>
+                <div style="font-size: 12px; color: #666;">Peso Mascota</div>
+                <div class="val">Ver Registro</div>
+            </div>
 
-    <div class="health-card" onclick="window.location.href='peso.html'" style="min-width: 120px; flex-shrink: 0; cursor: pointer; display: flex; flex-direction: column; align-items: center;">
-        <div class="icon">🍎</div>
-        <div style="font-size: 12px; color: #666;">Ración Diaria</div>
-        <div class="val" style="color: var(--primary); font-weight: bold;">Calcular</div>
-    </div>
-</div>
-
-<style>
-    /* Estilo base para todas las tarjetas de salud */
-    .health-card {
-        background: white;
-        padding: 15px;
-        border-radius: 20px;
-        box-shadow: 0 4px 12px rgba(0,0,0,0.05);
-        text-align: center;
-        border: 1px solid #f0f0f0;
-    }
-
-    .health-card .icon {
-        font-size: 24px;
-        margin-bottom: 8px;
-    }
-
-    /* Efecto de pulsación */
-    .health-card:active {
-        transform: scale(0.95);
-        background-color: #f9f9f9;
-    }
-
-    /* Ocultar barra de scroll pero mantener funcionalidad */
-    .health-scroll::-webkit-scrollbar {
-        display: none;
-    }
-</style>
+            <div class="health-card" onclick="window.location.href='peso.html'">
+                <div class="icon">🍎</div>
+                <div style="font-size: 12px; color: #666;">Ración Diaria</div>
+                <div class="val">Calcular</div>
+            </div>
         </div>
 
         <div class="section-title">🌟 Centro Pet Care</div>
@@ -177,9 +177,6 @@
             </a>
             <button class="btn-servicio" onclick="window.open('https://TIENDA.com', '_blank')">
                 <span class="icon">🦴</span><span class="label">Comprar Alimento</span>
-            </button>
-            <button class="btn-servicio btn-full" onclick="window.open('https://TUWEB.com/tienda', '_blank')">
-                <span class="icon">🆔</span><span class="label">Adquirir más Placas Inteligentes</span>
             </button>
         </div>
 
