@@ -4,67 +4,143 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Hospedaje Canino | Huellitas</title>
+    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAk6evIP8g4LVlkFgKRT5B3tO7OIXmHAU8&libraries=places"></script>
+    
     <style>
         :root { --primary: #2bb673; --gold: #ffc107; --bg: #f4f7f6; }
-        body { font-family: 'Segoe UI', sans-serif; background: var(--bg); margin: 0; padding: 20px; }
+        body { font-family: 'Segoe UI', sans-serif; background: var(--bg); margin: 0; padding: 20px; color: #333; }
         .header { display: flex; align-items: center; gap: 15px; margin-bottom: 25px; }
-        .btn-back { background: white; border: none; padding: 10px; border-radius: 50%; cursor: pointer; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+        .btn-back { background: white; border: none; padding: 10px; border-radius: 50%; cursor: pointer; box-shadow: 0 2px 5px rgba(0,0,0,0.1); font-size: 18px; }
         
-        /* Contenedor de la lista */
         #lista-hospedajes { display: flex; flex-direction: column; gap: 15px; }
 
-        /* Estilo de la Tarjeta */
         .place-card { 
             background: white; border-radius: 20px; padding: 15px; 
             display: flex; gap: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.05);
-            position: relative; border: 2px solid transparent;
+            position: relative; border: 2px solid transparent; animation: fadeIn 0.5s ease;
         }
 
-        /* Estilo para Negocios que PAGAN (Destacados) */
-        .premium { border-color: var(--gold); background: #fffdf5; }
+        /* Estilo Destacados */
+        .premium { border-color: var(--gold); background: #fffdf5; order: -1; } /* Siempre arriba */
         .badge-premium { 
             position: absolute; top: -10px; right: 15px; 
             background: var(--gold); color: black; font-size: 10px; 
             font-weight: bold; padding: 4px 10px; border-radius: 10px;
         }
 
-        .place-img { width: 80px; height: 80px; border-radius: 15px; object-fit: cover; background: #eee; }
+        .place-img { width: 90px; height: 90px; border-radius: 15px; object-fit: cover; background: #eee; }
         .place-info { flex: 1; }
-        .place-info h3 { margin: 0 0 5px 0; font-size: 16px; color: #333; }
-        .place-info p { margin: 0; font-size: 13px; color: #777; }
-        .stars { color: #ff9800; font-size: 12px; margin: 5px 0; }
+        .place-info h3 { margin: 0 0 5px 0; font-size: 16px; }
+        .place-info p { margin: 0; font-size: 12px; color: #777; line-height: 1.4; }
+        .stars { color: #ff9800; font-size: 12px; margin: 5px 0; font-weight: bold; }
         
-        .actions { display: flex; gap: 8px; margin-top: 10px; }
-        .btn-call { background: var(--primary); color: white; border: none; padding: 8px 12px; border-radius: 8px; font-size: 12px; font-weight: bold; cursor: pointer; }
-        .btn-map { background: #eee; color: #555; border: none; padding: 8px 12px; border-radius: 8px; font-size: 12px; cursor: pointer; }
+        .actions { display: flex; gap: 8px; margin-top: 12px; }
+        .btn-call { background: var(--primary); color: white; border: none; padding: 8px 15px; border-radius: 10px; font-size: 12px; font-weight: bold; cursor: pointer; }
+        .btn-map { background: #eee; color: #555; border: none; padding: 8px 15px; border-radius: 10px; font-size: 12px; cursor: pointer; }
 
-        .loading { text-align: center; color: #888; margin-top: 50px; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        .loader { text-align: center; padding: 40px; color: #888; font-style: italic; }
+        .hidden { display: none; }
     </style>
 </head>
 <body>
 
     <div class="header">
         <button class="btn-back" onclick="window.history.back()">⬅</button>
-        <h2>Hospedajes Cercanos</h2>
+        <h2 style="margin:0; font-size: 20px;">Hospedajes Caninos</h2>
     </div>
 
     <div id="lista-hospedajes">
-        <div class="place-card premium">
-            <span class="badge-premium">RECOMENDADO</span>
-            <img src="https://via.placeholder.com/80" class="place-img">
-            <div class="place-info">
-                <h3>Hotel Canino "Paws & Play"</h3>
-                <div class="stars">⭐⭐⭐⭐⭐ (4.9)</div>
-                <p>📍 A 500 metros de ti</p>
-                <div class="actions">
-                    <button class="btn-call">Llamar</button>
-                    <button class="btn-map" onclick="window.open('https://maps.google.com')">Cómo llegar</button>
-                </div>
-            </div>
-        </div>
-
-        <div class="loading">Buscando los mejores lugares para tu mascota...</div>
+        <div class="loader" id="main-loader">Buscando los mejores lugares cerca de ti...</div>
     </div>
 
+    <div id="map-temp" class="hidden"></div>
+
+<script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+    import { getFirestore, collection, getDocs, query, where } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+    // --- CONFIGURACIÓN (Usa tus datos reales) ---
+    const firebaseConfig = {
+        apiKey: "AIzaSyCqROIzmp2guo2XLbdYrSW3ujlUBc7ngOc",
+        authDomain: "huellitas-digitales.firebaseapp.com",
+        projectId: "huellitas-digitales",
+        storageBucket: "huellitas-digitales.firebasestorage.app",
+        messagingSenderId: "523935942496",
+        appId: "1:523935942496:web:0bb3ad3b28c189345fc005"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+    const container = document.getElementById('lista-hospedajes');
+
+    // 1. CARGAR DESTACADOS DESDE FIREBASE
+    async function cargarDestacados() {
+        try {
+            const q = query(collection(db, "negocios"), where("tipo", "==", "hospedaje"), where("destacado", "==", true));
+            const snap = await getDocs(q);
+            
+            snap.forEach(doc => {
+                const biz = doc.data();
+                container.innerHTML += `
+                    <div class="place-card premium">
+                        <span class="badge-premium">RECOMENDADO</span>
+                        <img src="${biz.foto || 'assets/img/logo.png'}" class="place-img">
+                        <div class="place-info">
+                            <h3>${biz.nombre}</h3>
+                            <div class="stars">⭐⭐⭐⭐⭐ (Destacado)</div>
+                            <p>📍 ${biz.direccion}</p>
+                            <div class="actions">
+                                <button class="btn-call" onclick="window.open('tel:${biz.telefono}')">Llamar</button>
+                                <button class="btn-map" onclick="window.open('${biz.mapa_url}')">📍 Cómo llegar</button>
+                            </div>
+                        </div>
+                    </div>`;
+            });
+        } catch (e) { console.error("Error Firebase:", e); }
+    }
+
+    // 2. CARGAR DESDE GOOGLE MAPS
+    function buscarEnGoogle() {
+        if (navigator.geolocation) {
+            navigator.geolocation.getCurrentPosition(pos => {
+                const userLoc = new google.maps.LatLng(pos.coords.latitude, pos.coords.longitude);
+                const service = new google.maps.places.PlacesService(document.getElementById('map-temp'));
+
+                const request = {
+                    location: userLoc,
+                    radius: '5000', // 5km a la redonda
+                    keyword: 'hospedaje canino hotel mascotas'
+                };
+
+                service.nearbySearch(request, (results, status) => {
+                    document.getElementById('main-loader').classList.add('hidden');
+                    if (status === google.maps.places.PlacesServiceStatus.OK) {
+                        results.forEach(place => {
+                            const photo = place.photos ? place.photos[0].getUrl() : 'assets/img/logo.png';
+                            container.innerHTML += `
+                                <div class="place-card">
+                                    <img src="${photo}" class="place-img">
+                                    <div class="place-info">
+                                        <h3>${place.name}</h3>
+                                        <div class="stars">⭐ ${place.rating || 'N/A'} (${place.user_ratings_total || 0} reseñas)</div>
+                                        <p>📍 ${place.vicinity}</p>
+                                        <div class="actions">
+                                            <button class="btn-map" onclick="window.open('https://www.google.com/maps/search/?api=1&query=Google&query_place_id=${place.place_id}')">📍 Ver en Maps</button>
+                                        </div>
+                                    </div>
+                                </div>`;
+                        });
+                    }
+                });
+            });
+        }
+    }
+
+    // Ejecutar todo
+    cargarDestacados().then(() => {
+        buscarEnGoogle();
+    });
+</script>
 </body>
 </html>
