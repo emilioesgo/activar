@@ -43,10 +43,23 @@
 
         /* Carrusel Salud */
         .health-scroll { display: flex; gap: 12px; overflow-x: auto; padding-bottom: 10px; scrollbar-width: none; }
-        .health-card { min-width: 130px; background: white; padding: 15px; border-radius: 22px; border: 1px solid #eee; text-align: center; }
+        .health-card { min-width: 130px; background: white; padding: 15px; border-radius: 22px; border: 1px solid #eee; text-align: center; cursor: pointer; transition: 0.3s; }
+        
+        /* Estilos del botón de Alerta Roja */
+        .alert-active { 
+            border: 2px solid var(--lost) !important; 
+            box-shadow: 0 0 15px rgba(255, 71, 87, 0.4); 
+            animation: borderPulse 1.5s infinite;
+        }
+        @keyframes borderPulse { 
+            0% { border-color: #ff4757; } 
+            50% { border-color: #ffcbd1; } 
+            100% { border-color: #ff4757; } 
+        }
+
         .health-card .icon { font-size: 24px; margin-bottom: 5px; }
         .health-card .val { font-size: 11px; font-weight: bold; color: var(--primary); }
-        
+
         /* Botones de Servicio */
         .grid-servicios { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
         .btn-servicio { 
@@ -100,11 +113,12 @@
 
         <div class="section-title">🩺 Bienestar y Salud</div>
         <div class="health-scroll">
-            <div class="health-card">
-                <div class="icon">💉</div>
-                <div style="font-size: 12px;">Vacunas</div>
-                <div class="val">Al día</div>
+            <div class="health-card" id="btn-carnet-salud" onclick="window.location.href='carnet.html'">
+                <div class="icon">📋</div>
+                <div style="font-size: 12px;">Mi Carnet</div>
+                <div class="val" id="vax-status">Consultar</div>
             </div>
+            
             <div class="health-card">
                 <div class="icon">⚖️</div>
                 <div style="font-size: 12px;">Peso Ideal</div>
@@ -128,10 +142,10 @@
             <a href="hospedaje.html" class="btn-servicio">
                 <span class="icon">🏨</span><span class="label">Hospedaje</span>
             </a>
-            <button class="btn-servicio" onclick="window.open('https://www.amazon.com.mx/Nupec-Croquetas-Perros-Adulto-Peque%C3%B1as/dp/B0153V4AOM/ref=asc_df_B0153V4AOM?mcid=c01c0adbf7c93993b064698e21fede68&tag=gledskshopmx-20&linkCode=df0&hvadid=709846066539&hvpos=&hvnetw=g&hvrand=6082101297927955855&hvpone=&hvptwo=&hvqmt=&hvdev=c&hvdvcmdl=&hvlocint=&hvlocphy=9135825&hvtargid=pla-381592374459&psc=1&language=es_MX&gad_source=1', '_blank')">
+            <button class="btn-servicio" onclick="window.open('https://TIENDA.com', '_blank')">
                 <span class="icon">🦴</span><span class="label">Comprar Alimento</span>
             </button>
-            <button class="btn-servicio btn-full" onclick="window.open('https://emilioesgo.github.io/activar/tienda.html', '_blank')">
+            <button class="btn-servicio btn-full" onclick="window.open('https://TUWEB.com/tienda', '_blank')">
                 <span class="icon">🆔</span><span class="label">Adquirir más Placas Inteligentes</span>
             </button>
         </div>
@@ -160,40 +174,35 @@
     const statusMsg = document.getElementById("status-msg");
     const CINCO_HORAS = 5 * 60 * 60 * 1000;
 
-    // --- Lógica PWA ---
-    let deferredPrompt;
-    const pwaBanner = document.getElementById('pwa-install-banner');
+    // --- Lógica de Alerta de Vacunas ---
+    async function verificarAlertasVacunas(email) {
+        const q = query(collection(db, "recordatorios"), where("userEmail", "==", email), where("tipo", "==", "agenda"));
+        const snap = await getDocs(q);
+        const btnCarnet = document.getElementById("btn-carnet-salud");
+        const vaxStatus = document.getElementById("vax-status");
+        
+        let alertaActiva = false;
+        const hoy = new Date();
+        hoy.setHours(0,0,0,0);
 
-    if (window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true) {
-        pwaBanner.classList.add('hidden');
-    }
+        snap.forEach(doc => {
+            const data = doc.data();
+            const fechaCita = new Date(data.fecha + "T00:00:00");
+            const diffTime = fechaCita - hoy;
+            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
 
-    if ('serviceWorker' in navigator) {
-        window.addEventListener('load', () => {
-            navigator.serviceWorker.register('sw.js?v=hub_v3').then(reg => {
-                console.log("SW del Hub listo");
-            });
-        });
-    }
-
-    window.addEventListener('beforeinstallprompt', (e) => {
-        e.preventDefault();
-        deferredPrompt = e;
-        if (!window.matchMedia('(display-mode: standalone)').matches) {
-            pwaBanner.classList.remove('hidden');
-        }
-    });
-
-    document.getElementById('btn-pwa-install').addEventListener('click', async () => {
-        if (deferredPrompt) {
-            deferredPrompt.prompt();
-            const { outcome } = await deferredPrompt.userChoice;
-            if (outcome === 'accepted') {
-                pwaBanner.classList.add('hidden');
+            // Si falta 1 día o es hoy
+            if (diffDays <= 1) {
+                alertaActiva = true;
             }
-            deferredPrompt = null;
+        });
+
+        if (alertaActiva) {
+            btnCarnet.classList.add("alert-active");
+            vaxStatus.innerText = "¡Cita Próxima!";
+            vaxStatus.style.color = "#ff4757";
         }
-    });
+    }
 
     // --- Lógica de Sesión y Hub ---
     function verificarSesion() {
@@ -235,6 +244,9 @@
         document.getElementById("seccion-auth").classList.add("hidden");
         document.getElementById("seccion-lista").classList.remove("hidden");
         
+        // Ejecutar verificación de alertas
+        verificarAlertasVacunas(email);
+
         const q = query(collection(db, "placas"), where("email", "==", email));
         const snap = await getDocs(q);
         const lista = document.getElementById("lista-mascotas");
