@@ -94,17 +94,18 @@
             navigator.geolocation.getCurrentPosition(async (pos) => {
                 try {
                     const { latitude, longitude } = pos.coords;
+                    // Importación necesaria para la versión moderna de Google Places
                     const { Place, SearchNearbyRankPreference } = await google.maps.importLibrary("places");
                     
                     const request = {
-                        // Se cambió 'vicinity' por 'shortFormattedAddress' para evitar el error de la consola
+                        // Lista de campos corregida para evitar errores de consola
                         fields: ["displayName", "location", "rating", "userRatingCount", "shortFormattedAddress", "photos", "id"],
                         locationRestriction: {
                             center: { lat: latitude, lng: longitude },
                             radius: 5000,
                         },
                         includedPrimaryTypes: ["pet_store", "veterinary_care"],
-                        maxResultCount: 10,
+                        maxResultCount: 15,
                         rankPreference: SearchNearbyRankPreference.DISTANCE,
                     };
 
@@ -114,32 +115,41 @@
 
                     if (places && places.length > 0) {
                         places.forEach((place) => {
+                            // Obtención de foto con URI (método moderno)
                             const photoUrl = place.photos && place.photos.length > 0 
-                                ? place.photos[0].getURI({maxWidth: 200}) 
+                                ? place.photos[0].getURI({maxWidth: 200, maxHeight: 200}) 
                                 : 'https://via.placeholder.com/90';
+
+                            // URL de búsqueda universal de Google Maps
+                            const googleMapsUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(place.displayName)}&query_place_id=${place.id}`;
 
                             container.innerHTML += `
                                 <div class="place-card">
                                     <img src="${photoUrl}" class="place-img">
                                     <div class="place-info">
                                         <h3>${place.displayName}</h3>
-                                        <div class="stars">⭐ ${place.rating || '4.0'} (${place.userRatingCount || 0})</div>
-                                        <p>📍 ${place.shortFormattedAddress || 'Dirección no disponible'}</p>
+                                        <div class="stars">⭐ ${place.rating || '4.0'} (${place.userRatingCount || 0} reseñas)</div>
+                                        <p>📍 ${place.shortFormattedAddress || 'Dirección cercana'}</p>
                                         <div class="actions">
-                                            <button class="btn-map" onclick="window.open('https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(place.displayName)}&query_place_id=${place.id}')">📍 Ver en Maps</button>
+                                            <button class="btn-map" onclick="window.open('${googleMapsUrl}')">📍 Ver en Maps</button>
                                         </div>
                                     </div>
                                 </div>`;
                         });
                     }
                 } catch (error) {
-                    console.error("Error Google:", error);
-                    document.getElementById('main-loader').innerText = "Cerca de ti solo encontramos estos resultados destacados.";
+                    console.error("Error Google Detallado:", error);
+                    const loader = document.getElementById('main-loader');
+                    if(loader) loader.innerText = "Habilita 'Places API (New)' en Google Cloud para ver resultados cercanos.";
                 }
+            }, (error) => {
+                console.error("Error Ubicación:", error);
+                document.getElementById('main-loader').innerText = "Por favor, permite el acceso a la ubicación.";
             });
         }
     }
 
+    // Iniciar carga
     cargarDestacados().then(buscarEnGoogle);
 </script>
 </body>
