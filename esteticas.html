@@ -3,33 +3,34 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Estéticas Caninas | Huellitas Digitales</title>
+    <title>Estéticas | Huellitas Digitales</title>
     
     <style>
-        :root { --primary: #ed6ea0; /* Rosa suave para estéticas */ --dark: #2c3e50; --bg: #f8f9fa; }
+        :root { --primary: #ed6ea0; --dark: #2c3e50; --bg: #f8f9fa; }
         body { font-family: 'Segoe UI', sans-serif; background: var(--bg); margin: 0; padding: 20px; padding-top: 80px; }
         
-        /* Navbar Superior */
+        /* Navbar */
         .navbar { position: fixed; top: 0; left: 0; right: 0; background: white; padding: 15px 20px; display: flex; align-items: center; box-shadow: 0 2px 10px rgba(0,0,0,0.05); z-index: 100; }
-        .btn-back { background: #f0f2f5; border: none; padding: 8px 15px; border-radius: 10px; font-weight: bold; cursor: pointer; margin-right: 15px; text-decoration: none; color: var(--dark); }
+        .btn-back { background: #f0f2f5; border: none; padding: 8px 15px; border-radius: 10px; font-weight: bold; cursor: pointer; margin-right: 15px; text-decoration: none; color: var(--dark); font-size: 18px; }
         .navbar h1 { margin: 0; font-size: 18px; color: var(--dark); }
 
-        /* Contenedor de Tarjetas */
+        /* Grid */
         .grid-socios { display: grid; grid-template-columns: 1fr; gap: 20px; max-width: 600px; margin: 0 auto; }
         
-        .socio-card { background: white; border-radius: 20px; overflow: hidden; box-shadow: 0 4px 15px rgba(0,0,0,0.05); transition: 0.3s; position: relative; }
-        .socio-img { width: 100%; height: 180px; object-fit: cover; background: #eee; }
+        .socio-card { background: white; border-radius: 20px; overflow: hidden; box-shadow: 0 4px 15px rgba(0,0,0,0.05); animation: fadeIn 0.5s ease; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        .socio-img { width: 100%; height: 200px; object-fit: cover; background: #eee; }
         
         .socio-info { padding: 20px; }
         .socio-nombre { font-size: 20px; font-weight: bold; color: var(--dark); margin-bottom: 5px; display: block; }
-        .socio-direccion { font-size: 13px; color: #7f8c8d; display: block; margin-bottom: 15px; }
+        .socio-direccion { font-size: 13px; color: #7f8c8d; display: block; margin-bottom: 15px; min-height: 32px; }
         
         .btn-group { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-        .btn-action { text-align: center; padding: 12px; border-radius: 12px; text-decoration: none; font-weight: bold; font-size: 14px; transition: 0.2s; }
-        .btn-maps { background: #e8f5e9; color: #2e7d32; }
+        .btn-action { text-align: center; padding: 12px; border-radius: 12px; text-decoration: none; font-weight: bold; font-size: 14px; }
+        .btn-maps { background: #f0f2f5; color: var(--dark); }
         .btn-call { background: var(--primary); color: white; }
 
-        /* Loader */
         #loader { text-align: center; padding: 50px; color: #95a5a6; }
         .empty-msg { text-align: center; padding: 40px; color: #95a5a6; display: none; }
     </style>
@@ -38,18 +39,17 @@
 
     <nav class="navbar">
         <a href="index.html" class="btn-back">⬅</a>
-        <h1>✂️ Estéticas y Spas</h1>
+        <h1>✂️ Estética de Mascotas</h1>
     </nav>
 
-    <div id="loader">Buscando las mejores estéticas...</div>
-    <div id="empty-msg" class="empty-msg">Próximamente más estéticas cerca de ti.</div>
+    <div id="loader">Buscando estéticas...</div>
+    <div id="empty-msg" class="empty-msg">No se encontraron estéticas registradas aún.</div>
 
-    <div class="grid-socios" id="listaEsteticas">
-        </div>
+    <div class="grid-socios" id="listaEsteticas"></div>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-        import { getFirestore, collection, query, where, onSnapshot } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+        import { getFirestore, collection, onSnapshot } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyCqROIzmp2guo2XLbdYrSW3ujlUBc7ngOc",
@@ -63,10 +63,8 @@
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
 
-        // CONSULTA: Solo negocios tipo "estetica"
-        const q = query(collection(db, "negocios"), where("tipo", "==", "estetica"));
-
-        onSnapshot(q, (snapshot) => {
+        // Traemos todos los negocios y filtramos localmente para mayor flexibilidad
+        onSnapshot(collection(db, "negocios"), (snapshot) => {
             const contenedor = document.getElementById('listaEsteticas');
             const loader = document.getElementById('loader');
             const emptyMsg = document.getElementById('empty-msg');
@@ -74,29 +72,36 @@
             loader.style.display = 'none';
             contenedor.innerHTML = "";
 
-            if (snapshot.empty) {
-                emptyMsg.style.display = 'block';
-                return;
-            }
-
-            emptyMsg.style.display = 'none';
+            let cont = 0;
 
             snapshot.forEach((doc) => {
                 const b = doc.data();
-                contenedor.innerHTML += `
-                    <div class="socio-card">
-                        <img src="${b.foto || 'assets/img/default-estetica.jpg'}" class="socio-img" alt="${b.nombre}">
-                        <div class="socio-info">
-                            <span class="socio-nombre">${b.nombre}</span>
-                            <span class="socio-direccion">📍 ${b.direccion}</span>
-                            <div class="btn-group">
-                                <a href="${b.mapa_url}" target="_blank" class="btn-action btn-maps">📍 Ver Mapa</a>
-                                <a href="https://wa.me/${b.telefono}" class="btn-action btn-call">💬 Agendar</a>
+                const tipo = b.tipo.toLowerCase();
+                
+                // BUSCADOR FLEXIBLE: Si el tipo contiene "estetica", "canina" o "mascotas"
+                if (tipo.includes("estetica") || tipo.includes("canina") || tipo.includes("mascota")) {
+                    cont++;
+                    contenedor.innerHTML += `
+                        <div class="socio-card">
+                            <img src="${b.foto || 'https://via.placeholder.com/400x200?text=Estetica+Canina'}" class="socio-img">
+                            <div class="socio-info">
+                                <span class="socio-nombre">${b.nombre}</span>
+                                <span class="socio-direccion">📍 ${b.direccion}</span>
+                                <div class="btn-group">
+                                    <a href="${b.mapa_url}" target="_blank" class="btn-action btn-maps">Ver Mapa</a>
+                                    <a href="https://wa.me/${b.telefono}" class="btn-action btn-call">WhatsApp</a>
+                                </div>
                             </div>
                         </div>
-                    </div>
-                `;
+                    `;
+                }
             });
+
+            if (cont === 0) {
+                emptyMsg.style.display = 'block';
+            } else {
+                emptyMsg.style.display = 'none';
+            }
         });
     </script>
 </body>
