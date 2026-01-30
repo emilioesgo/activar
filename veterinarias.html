@@ -1,1 +1,147 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Veterinarias | Huellitas</title>
+    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAk6evIP8g4LVlkFgKRT5B3tO7OIXmHAU8&libraries=places" async defer></script>
+    
+    <style>
+        :root { --primary: #2bb673; --gold: #ffc107; --bg: #f4f7f6; }
+        body { font-family: 'Segoe UI', sans-serif; background: var(--bg); margin: 0; padding: 20px; color: #333; }
+        .header { display: flex; align-items: center; gap: 15px; margin-bottom: 25px; }
+        .btn-back { background: white; border: none; padding: 10px; border-radius: 50%; cursor: pointer; box-shadow: 0 2px 5px rgba(0,0,0,0.1); font-size: 18px; }
+        #lista-veterinarias { display: flex; flex-direction: column; gap: 15px; }
+        .place-card { 
+            background: white; border-radius: 20px; padding: 15px; 
+            display: flex; gap: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+            position: relative; border: 2px solid transparent;
+        }
+        .premium { border-color: var(--gold); background: #fffdf5; order: -1; }
+        .badge-premium { 
+            position: absolute; top: -10px; right: 15px; 
+            background: var(--gold); color: black; font-size: 10px; 
+            font-weight: bold; padding: 4px 10px; border-radius: 10px;
+        }
+        .place-img { width: 90px; height: 90px; border-radius: 15px; object-fit: cover; background: #eee; flex-shrink: 0; }
+        .place-info { flex: 1; min-width: 0; }
+        .place-info h3 { margin: 0 0 5px 0; font-size: 16px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .place-info p { margin: 0; font-size: 12px; color: #777; }
+        .stars { color: #ff9800; font-size: 12px; margin: 5px 0; font-weight: bold; }
+        .actions { display: flex; gap: 8px; margin-top: 12px; }
+        .btn-call { background: var(--primary); color: white; border: none; padding: 8px 15px; border-radius: 10px; font-size: 12px; font-weight: bold; cursor: pointer; }
+        .btn-map { background: #eee; color: #555; border: none; padding: 8px 15px; border-radius: 10px; font-size: 12px; cursor: pointer; }
+        .loader { text-align: center; padding: 40px; color: #888; font-style: italic; }
+        .hidden { display: none; }
+    </style>
+</head>
+<body>
 
+    <div class="header">
+        <button class="btn-back" onclick="window.history.back()">⬅</button>
+        <h2 style="margin:0; font-size: 20px;">Veterinarias Cercanas</h2>
+    </div>
+
+    <div id="lista-veterinarias">
+        <div class="loader" id="main-loader">Buscando clínicas veterinarias...</div>
+    </div>
+
+<script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+    import { getFirestore, collection, getDocs, query, where } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+    const firebaseConfig = {
+        apiKey: "AIzaSyCqROIzmp2guo2XLbdYrSW3ujlUBc7ngOc",
+        authDomain: "huellitas-digitales.firebaseapp.com",
+        projectId: "huellitas-digitales",
+        storageBucket: "huellitas-digitales.firebasestorage.app",
+        messagingSenderId: "523935942496",
+        appId: "1:523935942496:web:0bb3ad3b28c189345fc005"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+    const container = document.getElementById('lista-veterinarias');
+    const imgDefault = "https://placehold.co/200x200/2bb673/white?text=Veterinaria";
+
+    async function cargarDestacados() {
+        try {
+            // Filtramos por "tipo == veterinaria" para tus datos de Firebase
+            const q = query(collection(db, "negocios"), where("tipo", "==", "veterinaria"), where("destacado", "==", true));
+            const snap = await getDocs(q);
+            snap.forEach(doc => {
+                const biz = doc.data();
+                const fotoUrl = (biz.foto && biz.foto !== "foto.jpg") ? biz.foto : imgDefault;
+                container.innerHTML += `
+                    <div class="place-card premium">
+                        <span class="badge-premium">DESTACADO</span>
+                        <img src="${fotoUrl}" class="place-img" onerror="this.src='${imgDefault}'">
+                        <div class="place-info">
+                            <h3>${biz.nombre}</h3>
+                            <div class="stars">⭐⭐⭐⭐⭐ (Recomendado)</div>
+                            <p>📍 ${biz.direccion}</p>
+                            <div class="actions">
+                                <button class="btn-call" onclick="window.open('tel:${biz.telefono}')">Llamar</button>
+                                <button class="btn-map" onclick="window.open('${biz.mapa_url}')">📍 Ver Ruta</button>
+                            </div>
+                        </div>
+                    </div>`;
+            });
+        } catch (e) { console.error("Error Firebase:", e); }
+    }
+
+    async function buscarEnGoogle() {
+        if (!navigator.geolocation) return;
+        
+        navigator.geolocation.getCurrentPosition(async (pos) => {
+            try {
+                const { latitude, longitude } = pos.coords;
+                if (!window.google) await new Promise(r => setTimeout(r, 1000));
+                
+                const { Place } = await google.maps.importLibrary("places");
+                
+                const request = {
+                    // Filtro específico para médicos y clínicas veterinarias
+                    textQuery: "veterinary clinic clinicaveterinaria", 
+                    fields: ["displayName", "rating", "userRatingCount", "shortFormattedAddress", "photos", "id"],
+                    locationBias: {
+                        center: { lat: latitude, lng: longitude },
+                        radius: 5000
+                    },
+                    maxResultCount: 15
+                };
+
+                const { places } = await Place.searchByText(request);
+                document.getElementById('main-loader')?.classList.add('hidden');
+
+                if (places && places.length > 0) {
+                    places.forEach((place) => {
+                        const photoUrl = (place.photos && place.photos.length > 0) 
+                            ? place.photos[0].getURI({maxWidth: 200}) 
+                            : imgDefault;
+
+                        container.innerHTML += `
+                            <div class="place-card">
+                                <img src="${photoUrl}" class="place-img" onerror="this.src='${imgDefault}'">
+                                <div class="place-info">
+                                    <h3>${place.displayName}</h3>
+                                    <div class="stars">⭐ ${place.rating || '4.5'} (${place.userRatingCount || 5})</div>
+                                    <p>📍 ${place.shortFormattedAddress}</p>
+                                    <div class="actions">
+                                        <button class="btn-map" onclick="window.open('https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(place.displayName)}&query_place_id=${place.id}')">📍 Ver en Maps</button>
+                                    </div>
+                                </div>
+                            </div>`;
+                    });
+                }
+            } catch (error) {
+                console.error("Error Google:", error);
+                document.getElementById('main-loader').innerText = "Carga de veterinarias finalizada.";
+            }
+        });
+    }
+
+    cargarDestacados().then(buscarEnGoogle);
+</script>
+</body>
+</html>
