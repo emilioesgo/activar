@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestión de Socios | Huellitas</title>
+    <style>
+        :root { --primary: #2bb673; --dark: #2c3e50; --bg: #f4f7f6; --danger: #ff4757; }
+        body { font-family: 'Segoe UI', sans-serif; background: var(--bg); margin: 0; padding: 20px; color: var(--dark); }
+        .container { max-width: 800px; margin: 0 auto; }
+        
+        .header { display: flex; align-items: center; gap: 15px; margin-bottom: 20px; }
+        .btn-back { background: white; border: none; padding: 10px 15px; border-radius: 10px; cursor: pointer; font-weight: bold; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+        
+        .card { background: white; padding: 25px; border-radius: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); margin-bottom: 20px; }
+        h2 { color: var(--primary); margin-top: 0; font-size: 20px; }
+
+        .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+        .full { grid-column: span 2; }
+        
+        label { display: block; font-size: 11px; font-weight: bold; margin-bottom: 5px; color: #666; text-transform: uppercase; }
+        input, select { width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 10px; box-sizing: border-box; font-size: 14px; outline: none; }
+        input:focus { border-color: var(--primary); }
+        
+        #preview { width: 100%; max-width: 200px; height: auto; border-radius: 10px; display: none; margin-top: 10px; border: 2px solid var(--primary); }
+        
+        .btn-save { background: var(--primary); color: white; border: none; padding: 15px; border-radius: 10px; width: 100%; font-weight: bold; cursor: pointer; margin-top: 10px; font-size: 16px; }
+
+        /* Estilos del Buscador */
+        .search-box { position: relative; margin-bottom: 15px; }
+        .search-box input { padding-left: 40px; background: #fff; border: 2px solid #eee; }
+        .search-box::before { content: '🔍'; position: absolute; left: 15px; top: 12px; font-size: 14px; }
+
+        table { width: 100%; border-collapse: collapse; background: white; }
+        th { background: #f8f9fa; padding: 12px; text-align: left; font-size: 12px; color: #888; border-bottom: 2px solid #eee; }
+        td { padding: 12px; border-top: 1px solid #eee; font-size: 14px; vertical-align: middle; }
+        
+        .row-hidden { display: none; } /* Para el buscador */
+        .btn-del { color: var(--danger); border: none; background: #fff1f1; padding: 6px 12px; border-radius: 8px; cursor: pointer; font-weight: bold; }
+        
+        .loading-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(255,255,255,0.9); z-index: 100; justify-content: center; align-items: center; flex-direction: column; font-weight: bold; color: var(--primary); }
+    </style>
+</head>
+<body>
+
+    <div class="loading-overlay" id="loader">
+        <div style="font-size: 40px; margin-bottom: 10px;">⚙️</div>
+        Optimizando y subiendo socio...
+    </div>
+
+    <div class="container">
+        <div class="header">
+            <button class="btn-back" onclick="location.href='admin.html'">⬅ Volver</button>
+            <h1>Socios VIP</h1>
+        </div>
+
+        <div class="card">
+            <h2>✨ Registro de Negocio</h2>
+            <form id="socioForm">
+                <div class="form-grid">
+                    <div class="full">
+                        <label>Nombre Comercial</label>
+                        <input type="text" id="nombre" required placeholder="Ej: Veterinaria Huellitas">
+                    </div>
+                    <div>
+                        <label>Categoría</label>
+                        <select id="tipo">
+                            <option value="hospedaje">Hospedaje</option>
+                            <option value="veterinaria">Veterinaria</option>
+                            <option value="estetica">Estética Canina</option>
+                            <option value="tienda">Pet Shop</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label>WhatsApp / Tel</label>
+                        <input type="tel" id="telefono" required placeholder="9990000000">
+                    </div>
+                    <div class="full">
+                        <label>Dirección</label>
+                        <input type="text" id="direccion" required placeholder="Calle 60 #200...">
+                    </div>
+                    <div class="full">
+                        <label>Foto del local (Auto-optimización)</label>
+                        <input type="file" id="fotoFile" accept="image/*">
+                        <input type="hidden" id="fotoBase64">
+                        <img id="preview">
+                    </div>
+                    <div class="full">
+                        <label>Link Google Maps</label>
+                        <input type="url" id="mapa_url" required placeholder="https://maps.app.goo.gl/...">
+                    </div>
+                    <div class="full">
+                        <label>Sitio Web (opcional)</label>
+                        <input type="url" id="web_url" placeholder="https://www.misitio.com">
+                    </div>
+                </div>
+                <button type="submit" class="btn-save" id="btnSubmit">🚀 Registrar y Publicar</button>
+            </form>
+        </div>
+
+        <div class="card">
+            <h2>📋 Lista de Socios</h2>
+            
+            <div class="search-box">
+                <input type="text" id="searchInput" placeholder="Buscar negocio por nombre..." onkeyup="filtrarSocios()">
+            </div>
+
+            <div style="overflow-x: auto;">
+                <table id="tablaCompleta">
+                    <thead>
+                        <tr><th>Negocio</th><th>Categoría</th><th>Acción</th></tr>
+                    </thead>
+                    <tbody id="tablaSocios"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+<script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+    import { getFirestore, collection, addDoc, onSnapshot, deleteDoc, doc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+    const firebaseConfig = {
+        apiKey: "AIzaSyCqROIzmp2guo2XLbdYrSW3ujlUBc7ngOc",
+        authDomain: "huellitas-digitales.firebaseapp.com",
+        projectId: "huellitas-digitales",
+        storageBucket: "huellitas-digitales.firebasestorage.app",
+        messagingSenderId: "523935942496",
+        appId: "1:523935942496:web:0bb3ad3b28c189345fc005"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+
+    // --- LÓGICA DEL BUSCADOR ---
+    window.filtrarSocios = function() {
+        const input = document.getElementById("searchInput").value.toUpperCase();
+        const rows = document.getElementById("tablaSocios").getElementsByTagName("tr");
+        
+        for (let i = 0; i < rows.length; i++) {
+            const nameCell = rows[i].getElementsByTagName("td")[0];
+            if (nameCell) {
+                const txtValue = nameCell.textContent || nameCell.innerText;
+                if (txtValue.toUpperCase().indexOf(input) > -1) {
+                    rows[i].classList.remove("row-hidden");
+                } else {
+                    rows[i].classList.add("row-hidden");
+                }
+            }
+        }
+    }
+
+    // --- OPTIMIZACIÓN DE IMAGEN ---
+    document.getElementById('fotoFile').addEventListener('change', function(e) {
+        const file = e.target.files[0];
+        if (!file) return;
+
+        const reader = new FileReader();
+        reader.onload = function(event) {
+            const img = new Image();
+            img.onload = function() {
+                const canvas = document.createElement('canvas');
+                const MAX_WIDTH = 800; 
+                let width = img.width;
+                let height = img.height;
+
+                if (width > MAX_WIDTH) {
+                    height *= MAX_WIDTH / width;
+                    width = MAX_WIDTH;
+                }
+                canvas.width = width;
+                canvas.height = height;
+                const ctx = canvas.getContext('2d');
+                ctx.drawImage(img, 0, 0, width, height);
+                
+                const dataUrl = canvas.toDataURL('image/jpeg', 0.6); // Comprimido al 60%
+                document.getElementById('fotoBase64').value = dataUrl;
+                document.getElementById('preview').src = dataUrl;
+                document.getElementById('preview').style.display = 'block';
+            }
+            img.src = event.target.result;
+        }
+        reader.readAsDataURL(file);
+    });
+
+    // --- FIREBASE: GUARDAR ---
+    document.getElementById('socioForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const foto = document.getElementById('fotoBase64').value;
+        if(!foto) return alert("Por favor sube una foto del negocio");
+
+        document.getElementById('loader').style.display = 'flex';
+
+        try {
+            await addDoc(collection(db, "negocios"), {
+                nombre: document.getElementById('nombre').value,
+                tipo: document.getElementById('tipo').value,
+                telefono: document.getElementById('telefono').value,
+                direccion: document.getElementById('direccion').value,
+                foto: foto,
+                mapa_url: document.getElementById('mapa_url').value,
+                web_url: document.getElementById('web_url').value,
+                destacado: true,
+                fecha: new Date().getTime()
+            });
+            document.getElementById('socioForm').reset();
+            document.getElementById('preview').style.display = 'none';
+            alert("¡Socio registrado correctamente!");
+        } catch (error) {
+            alert("Error de conexión con Firebase");
+        }
+        document.getElementById('loader').style.display = 'none';
+    });
+
+    // --- FIREBASE: LISTA EN TIEMPO REAL ---
+    onSnapshot(collection(db, "negocios"), (snap) => {
+        const tabla = document.getElementById('tablaSocios');
+        tabla.innerHTML = "";
+        snap.forEach((docSnap) => {
+            const b = docSnap.data();
+            const tr = document.createElement("tr");
+            tr.innerHTML = `
+                <td><b>${b.nombre}</b><br><small style="color:#888">${b.telefono}</small></td>
+                <td><span style="font-size:11px; padding:3px 8px; border-radius:12px; background:#eee;">${b.tipo}</span></td>
+                <td><button class="btn-del" onclick="window.eliminarSocio('${docSnap.id}')">Borrar</button></td>
+            `;
+            tabla.appendChild(tr);
+        });
+        filtrarSocios(); // Mantener filtro si existe mientras se actualiza
+    });
+
+    window.eliminarSocio = async (id) => {
+        if (confirm("¿Eliminar este socio de la lista pública?")) {
+            await deleteDoc(doc(db, "negocios", id));
+        }
+    };
+</script>
+</body>
+</html>
