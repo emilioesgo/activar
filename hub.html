@@ -112,36 +112,56 @@
         <div class="section-title">🐕 Mis Mascotas</div>
         <div class="grid-mascotas" id="lista-mascotas"></div>
 
-        <div class="section-title">🩺 Bienestar y Salud</div>
-        <div class="health-scroll">
-            <div class="health-card" id="btn-carnet-salud" onclick="window.location.href='carnet.html'">
-                <div class="icon">📋</div>
-                <div style="font-size: 12px;">Mi Carnet</div>
-                <div class="val" id="vax-status">Consultar</div>
-            </div>
-           <div class="health-card" 
-     id="btn-peso-ideal" 
-     onclick="window.location.href='peso.html'" 
-     style="cursor: pointer; transition: transform 0.1s active;">
+      <div class="section-title">🩺 Bienestar y Salud</div>
+
+<div class="health-scroll" style="display: flex; gap: 15px; overflow-x: auto; padding: 10px 5px; scrollbar-width: none;">
     
-    <div class="icon">⚖️</div>
-    <div style="font-size: 12px; color: #666;">Peso de Mascota</div>
-    <div class="val" style="color: var(--primary); font-weight: bold;">Ver Registro</div>
+    <div class="health-card" id="btn-carnet-salud" onclick="window.location.href='carnet.html'" style="min-width: 120px; flex-shrink: 0; cursor: pointer;">
+        <div class="icon">📋</div>
+        <div style="font-size: 12px; color: #666;">Mi Carnet</div>
+        <div class="val" id="vax-status" style="color: var(--primary); font-weight: bold;">Consultar</div>
+    </div>
+
+    <div class="health-card" id="btn-peso-ideal" onclick="window.location.href='peso.html'" style="min-width: 120px; flex-shrink: 0; cursor: pointer; transition: transform 0.1s;">
+        <div class="icon">⚖️</div>
+        <div style="font-size: 12px; color: #666;">Peso Mascota</div>
+        <div class="val" style="color: var(--primary); font-weight: bold;">Ver Registro</div>
+    </div>
+
+    <div class="health-card" onclick="window.location.href='peso.html'" style="min-width: 120px; flex-shrink: 0; cursor: pointer; display: flex; flex-direction: column; align-items: center;">
+        <div class="icon">🍎</div>
+        <div style="font-size: 12px; color: #666;">Ración Diaria</div>
+        <div class="val" style="color: var(--primary); font-weight: bold;">Calcular</div>
+    </div>
 </div>
 
 <style>
-    /* Efecto de pulsación para que se sienta profesional */
+    /* Estilo base para todas las tarjetas de salud */
+    .health-card {
+        background: white;
+        padding: 15px;
+        border-radius: 20px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+        text-align: center;
+        border: 1px solid #f0f0f0;
+    }
+
+    .health-card .icon {
+        font-size: 24px;
+        margin-bottom: 8px;
+    }
+
+    /* Efecto de pulsación */
     .health-card:active {
         transform: scale(0.95);
-        background-color: #f0f0f0;
+        background-color: #f9f9f9;
+    }
+
+    /* Ocultar barra de scroll pero mantener funcionalidad */
+    .health-scroll::-webkit-scrollbar {
+        display: none;
     }
 </style>
-            </div>
-           <div class="health-card wide-card" onclick="window.location.href='peso.html'" style="grid-column: span 2; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 15px; cursor: pointer;">
-    <div class="icon" style="font-size: 24px; margin-bottom: 5px;">🍎</div>
-    <div style="font-size: 12px; color: #666;">Ración Diaria</div>
-    <div class="val" style="color: var(--primary); font-weight: bold; margin-top: 2px;">Calcular</div>
-</div>
         </div>
 
         <div class="section-title">🌟 Centro Pet Care</div>
