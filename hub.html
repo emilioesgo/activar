@@ -17,6 +17,15 @@
         .header-hub { text-align: center; margin-bottom: 30px; }
         .header-hub h1 { color: var(--primary); margin: 0; font-size: 32px; }
         .header-hub p { color: #888; margin-top: 5px; }
+
+        /* Banner de Notificación Urgente */
+        .notif-urgente { 
+            background: #fff0f0; border: 1px solid #ffccd2; border-left: 5px solid var(--lost);
+            padding: 12px 15px; border-radius: 15px; margin-bottom: 20px;
+            display: flex; align-items: center; gap: 10px; animation: slideIn 0.5s ease;
+            cursor: pointer;
+        }
+        @keyframes slideIn { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
         
         /* Auth Box */
         .login-box { background: white; padding: 30px; border-radius: 28px; box-shadow: 0 10px 30px rgba(0,0,0,0.05); text-align: center; }
@@ -45,17 +54,8 @@
         .health-scroll { display: flex; gap: 12px; overflow-x: auto; padding-bottom: 10px; scrollbar-width: none; }
         .health-card { min-width: 130px; background: white; padding: 15px; border-radius: 22px; border: 1px solid #eee; text-align: center; cursor: pointer; transition: 0.3s; }
         
-        /* Estilos del botón de Alerta Roja */
-        .alert-active { 
-            border: 2px solid var(--lost) !important; 
-            box-shadow: 0 0 15px rgba(255, 71, 87, 0.4); 
-            animation: borderPulse 1.5s infinite;
-        }
-        @keyframes borderPulse { 
-            0% { border-color: #ff4757; } 
-            50% { border-color: #ffcbd1; } 
-            100% { border-color: #ff4757; } 
-        }
+        .alert-active { border: 2px solid var(--lost) !important; animation: borderPulse 1.5s infinite; }
+        @keyframes borderPulse { 0% { border-color: #ff4757; } 50% { border-color: #ffcbd1; } 100% { border-color: #ff4757; } }
 
         .health-card .icon { font-size: 24px; margin-bottom: 5px; }
         .health-card .val { font-size: 11px; font-weight: bold; color: var(--primary); }
@@ -72,8 +72,6 @@
         .btn-servicio .label { font-size: 12px; font-weight: 700; color: #555; }
         
         .btn-full { grid-column: span 2; flex-direction: row; justify-content: center; background: var(--primary); color: white !important; border: none; }
-        .btn-full .label { color: white !important; }
-
         .btn-manage { background: #f8f9fa; color: var(--primary); border: 1.5px solid var(--primary); padding: 8px 0; border-radius: 12px; font-size: 11px; font-weight: bold; cursor: pointer; width: 90%; margin: 10px auto; }
 
         .hidden { display: none; }
@@ -108,6 +106,8 @@
 
     <div id="seccion-lista" class="hidden">
         
+        <div id="notif-box"></div>
+
         <div class="section-title">🐕 Mis Mascotas</div>
         <div class="grid-mascotas" id="lista-mascotas"></div>
 
@@ -118,7 +118,6 @@
                 <div style="font-size: 12px;">Mi Carnet</div>
                 <div class="val" id="vax-status">Consultar</div>
             </div>
-            
             <div class="health-card">
                 <div class="icon">⚖️</div>
                 <div style="font-size: 12px;">Peso Ideal</div>
@@ -133,15 +132,15 @@
 
         <div class="section-title">🌟 Centro Pet Care</div>
         <div class="grid-servicios">
-            <a href="veterinarias.html" class="btn-servicio">
+            <button class="btn-servicio" onclick="buscarEnMapa('Veterinarias')">
                 <span class="icon">🏥</span><span class="label">Veterinarias</span>
-            </a>
-            <a href="esteticas.html" class="btn-servicio">
+            </button>
+            <button class="btn-servicio" onclick="buscarEnMapa('Estetica canina')">
                 <span class="icon">✂️</span><span class="label">Estética</span>
-            </a>
-            <a href="hospedaje.html" class="btn-servicio">
+            </button>
+            <button class="btn-servicio" onclick="window.location.href='hospedaje.html'">
                 <span class="icon">🏨</span><span class="label">Hospedaje</span>
-            </a>
+            </button>
             <button class="btn-servicio" onclick="window.open('https://TIENDA.com', '_blank')">
                 <span class="icon">🦴</span><span class="label">Comprar Alimento</span>
             </button>
@@ -174,42 +173,76 @@
     const statusMsg = document.getElementById("status-msg");
     const CINCO_HORAS = 5 * 60 * 60 * 1000;
 
+    // --- Lógica PWA Completa ---
+    let deferredPrompt;
+    const pwaBanner = document.getElementById('pwa-install-banner');
+
+    if (window.matchMedia('(display-mode: standalone)').matches) pwaBanner.classList.add('hidden');
+
+    if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+            navigator.serviceWorker.register('sw.js?v=hub_v3');
+        });
+    }
+
+    window.addEventListener('beforeinstallprompt', (e) => {
+        e.preventDefault();
+        deferredPrompt = e;
+        pwaBanner.classList.remove('hidden');
+    });
+
+    document.getElementById('btn-pwa-install').addEventListener('click', async () => {
+        if (deferredPrompt) {
+            deferredPrompt.prompt();
+            const { outcome } = await deferredPrompt.userChoice;
+            if (outcome === 'accepted') pwaBanner.classList.add('hidden');
+            deferredPrompt = null;
+        }
+    });
+
     // --- Lógica de Alerta de Vacunas ---
     async function verificarAlertasVacunas(email) {
         const q = query(collection(db, "recordatorios"), where("userEmail", "==", email), where("tipo", "==", "agenda"));
         const snap = await getDocs(q);
         const btnCarnet = document.getElementById("btn-carnet-salud");
         const vaxStatus = document.getElementById("vax-status");
+        const notifBox = document.getElementById("notif-box");
         
-        let alertaActiva = false;
         const hoy = new Date();
         hoy.setHours(0,0,0,0);
 
         snap.forEach(doc => {
             const data = doc.data();
             const fechaCita = new Date(data.fecha + "T00:00:00");
-            const diffTime = fechaCita - hoy;
-            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+            const diffDays = Math.ceil((fechaCita - hoy) / (1000 * 60 * 60 * 24));
 
-            // Si falta 1 día o es hoy
             if (diffDays <= 1) {
-                alertaActiva = true;
+                btnCarnet.classList.add("alert-active");
+                vaxStatus.innerText = "¡Cita Próxima!";
+                vaxStatus.style.color = "#ff4757";
+
+                const msg = diffDays === 0 ? "es HOY" : "es MAÑANA";
+                notifBox.innerHTML = `
+                    <div class="notif-urgente" onclick="window.location.href='carnet.html'">
+                        <span>⚠️</span>
+                        <div style="font-size:13px; font-weight:bold; color:#c0392b;">
+                            La cita de <b>${data.petName}</b> (${data.vacuna}) ${msg}.
+                        </div>
+                    </div>`;
             }
         });
-
-        if (alertaActiva) {
-            btnCarnet.classList.add("alert-active");
-            vaxStatus.innerText = "¡Cita Próxima!";
-            vaxStatus.style.color = "#ff4757";
-        }
     }
 
-    // --- Lógica de Sesión y Hub ---
+    // --- Búsqueda en Mapa original ---
+    window.buscarEnMapa = (termino) => {
+        window.open(`https://www.google.com/maps/search/${encodeURIComponent(termino)}/`, '_blank');
+    };
+
+    // --- Lógica de Sesión ---
     function verificarSesion() {
         const userEmail = localStorage.getItem("userEmail");
         const loginTimestamp = localStorage.getItem("loginTimestamp");
         const ahora = new Date().getTime();
-
         if (userEmail && loginTimestamp && (ahora - loginTimestamp < CINCO_HORAS)) {
             mostrarHub(userEmail);
         } else {
@@ -220,45 +253,35 @@
     btnEntrar.onclick = async () => {
         const email = document.getElementById("auth-email").value.trim().toLowerCase();
         const pin = document.getElementById("auth-pin").value;
-
         if (!email || !pin) { statusMsg.innerText = "⚠️ Escribe correo y PIN."; return; }
         statusMsg.innerText = "⌛ Validando...";
-        
         try {
             const q = query(collection(db, "placas"), where("email", "==", email));
             const snap = await getDocs(q);
             let ok = false;
             snap.forEach(doc => { if(doc.data().pin === pin) ok = true; });
-
             if (ok) {
                 localStorage.setItem("userEmail", email);
                 localStorage.setItem("loginTimestamp", new Date().getTime());
                 mostrarHub(email);
-            } else {
-                statusMsg.innerText = "❌ Datos incorrectos.";
-            }
+            } else { statusMsg.innerText = "❌ Datos incorrectos."; }
         } catch (e) { statusMsg.innerText = "❌ Error de red."; }
     };
 
     async function mostrarHub(email) {
         document.getElementById("seccion-auth").classList.add("hidden");
         document.getElementById("seccion-lista").classList.remove("hidden");
-        
-        // Ejecutar verificación de alertas
         verificarAlertasVacunas(email);
 
         const q = query(collection(db, "placas"), where("email", "==", email));
         const snap = await getDocs(q);
         const lista = document.getElementById("lista-mascotas");
         lista.innerHTML = "";
-
         snap.forEach((doc) => {
             const pet = doc.data();
             lista.innerHTML += `
                 <div class="pet-card">
-                    <div class="status-badge ${pet.extraviado ? 'status-lost' : 'status-safe'}">
-                        ${pet.extraviado ? 'Perdido' : 'A salvo'}
-                    </div>
+                    <div class="status-badge ${pet.extraviado ? 'status-lost' : 'status-safe'}">${pet.extraviado ? 'Perdido' : 'A salvo'}</div>
                     <img src="${pet.foto || 'assets/img/logo.png'}">
                     <div style="padding:10px;">
                         <h3 style="margin:0; font-size:15px;">${pet.mascota}</h3>
