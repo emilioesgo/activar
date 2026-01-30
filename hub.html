@@ -50,17 +50,18 @@
         .status-lost { background: var(--lost); animation: pulse 2s infinite; }
         .status-safe { background: var(--primary); }
 
-        /* Carrusel Salud */
+        /* Bienestar Scroll */
         .health-scroll { display: flex; gap: 12px; overflow-x: auto; padding-bottom: 10px; scrollbar-width: none; }
-        .health-card { min-width: 130px; background: white; padding: 15px; border-radius: 22px; border: 1px solid #eee; text-align: center; cursor: pointer; transition: 0.3s; }
+        .health-card { min-width: 130px; background: white; padding: 15px; border-radius: 22px; border: 1px solid #eee; text-align: center; cursor: pointer; }
         
+        /* ALERTA ROJA */
         .alert-active { border: 2px solid var(--lost) !important; animation: borderPulse 1.5s infinite; }
         @keyframes borderPulse { 0% { border-color: #ff4757; } 50% { border-color: #ffcbd1; } 100% { border-color: #ff4757; } }
 
         .health-card .icon { font-size: 24px; margin-bottom: 5px; }
         .health-card .val { font-size: 11px; font-weight: bold; color: var(--primary); }
 
-        /* Botones de Servicio */
+        /* Centro Pet Care */
         .grid-servicios { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
         .btn-servicio { 
             background: white; border: 1px solid #eee; padding: 15px; border-radius: 20px; 
@@ -132,15 +133,15 @@
 
         <div class="section-title">🌟 Centro Pet Care</div>
         <div class="grid-servicios">
-            <button class="btn-servicio" onclick="buscarEnMapa('Veterinarias')">
+            <a href="veterinarias.html" class="btn-servicio">
                 <span class="icon">🏥</span><span class="label">Veterinarias</span>
-            </button>
-            <button class="btn-servicio" onclick="buscarEnMapa('Estetica canina')">
+            </a>
+            <a href="esteticas.html" class="btn-servicio">
                 <span class="icon">✂️</span><span class="label">Estética</span>
-            </button>
-            <button class="btn-servicio" onclick="window.location.href='hospedaje.html'">
+            </a>
+            <a href="hospedaje.html" class="btn-servicio">
                 <span class="icon">🏨</span><span class="label">Hospedaje</span>
-            </button>
+            </a>
             <button class="btn-servicio" onclick="window.open('https://TIENDA.com', '_blank')">
                 <span class="icon">🦴</span><span class="label">Comprar Alimento</span>
             </button>
@@ -169,38 +170,23 @@
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
 
-    const btnEntrar = document.getElementById("btn-entrar");
-    const statusMsg = document.getElementById("status-msg");
-    const CINCO_HORAS = 5 * 60 * 60 * 1000;
-
-    // --- Lógica PWA Completa ---
+    // PWA Logic
     let deferredPrompt;
     const pwaBanner = document.getElementById('pwa-install-banner');
-
-    if (window.matchMedia('(display-mode: standalone)').matches) pwaBanner.classList.add('hidden');
-
-    if ('serviceWorker' in navigator) {
-        window.addEventListener('load', () => {
-            navigator.serviceWorker.register('sw.js?v=hub_v3');
-        });
-    }
-
     window.addEventListener('beforeinstallprompt', (e) => {
         e.preventDefault();
         deferredPrompt = e;
         pwaBanner.classList.remove('hidden');
     });
-
     document.getElementById('btn-pwa-install').addEventListener('click', async () => {
         if (deferredPrompt) {
             deferredPrompt.prompt();
-            const { outcome } = await deferredPrompt.userChoice;
-            if (outcome === 'accepted') pwaBanner.classList.add('hidden');
             deferredPrompt = null;
+            pwaBanner.classList.add('hidden');
         }
     });
 
-    // --- Lógica de Alerta de Vacunas ---
+    // --- ALERTA DE CARNET ---
     async function verificarAlertasVacunas(email) {
         const q = query(collection(db, "recordatorios"), where("userEmail", "==", email), where("tipo", "==", "agenda"));
         const snap = await getDocs(q);
@@ -216,12 +202,12 @@
             const fechaCita = new Date(data.fecha + "T00:00:00");
             const diffDays = Math.ceil((fechaCita - hoy) / (1000 * 60 * 60 * 24));
 
-            if (diffDays <= 1) {
+            if (diffDays <= 1 && diffDays >= -1) {
                 btnCarnet.classList.add("alert-active");
                 vaxStatus.innerText = "¡Cita Próxima!";
                 vaxStatus.style.color = "#ff4757";
 
-                const msg = diffDays === 0 ? "es HOY" : "es MAÑANA";
+                const msg = diffDays === 0 ? "es HOY" : (diffDays === 1 ? "es MAÑANA" : "está VENCIDA");
                 notifBox.innerHTML = `
                     <div class="notif-urgente" onclick="window.location.href='carnet.html'">
                         <span>⚠️</span>
@@ -233,28 +219,18 @@
         });
     }
 
-    // --- Búsqueda en Mapa original ---
-    window.buscarEnMapa = (termino) => {
-        window.open(`https://www.google.com/maps/search/${encodeURIComponent(termino)}/`, '_blank');
-    };
-
-    // --- Lógica de Sesión ---
+    // --- SESIÓN ---
     function verificarSesion() {
         const userEmail = localStorage.getItem("userEmail");
         const loginTimestamp = localStorage.getItem("loginTimestamp");
-        const ahora = new Date().getTime();
-        if (userEmail && loginTimestamp && (ahora - loginTimestamp < CINCO_HORAS)) {
+        if (userEmail && (new Date().getTime() - loginTimestamp < 5 * 60 * 60 * 1000)) {
             mostrarHub(userEmail);
-        } else {
-            localStorage.clear();
         }
     }
 
-    btnEntrar.onclick = async () => {
+    document.getElementById("btn-entrar").onclick = async () => {
         const email = document.getElementById("auth-email").value.trim().toLowerCase();
         const pin = document.getElementById("auth-pin").value;
-        if (!email || !pin) { statusMsg.innerText = "⚠️ Escribe correo y PIN."; return; }
-        statusMsg.innerText = "⌛ Validando...";
         try {
             const q = query(collection(db, "placas"), where("email", "==", email));
             const snap = await getDocs(q);
@@ -264,8 +240,8 @@
                 localStorage.setItem("userEmail", email);
                 localStorage.setItem("loginTimestamp", new Date().getTime());
                 mostrarHub(email);
-            } else { statusMsg.innerText = "❌ Datos incorrectos."; }
-        } catch (e) { statusMsg.innerText = "❌ Error de red."; }
+            } else alert("PIN Incorrecto");
+        } catch (e) { console.error(e); }
     };
 
     async function mostrarHub(email) {
