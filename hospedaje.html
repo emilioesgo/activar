@@ -97,16 +97,57 @@
         } catch (e) { console.error("Error Firebase:", e); }
     }
 
-    function buscarEnGoogle() {
-        if (navigator.geolocation) {
-            navigator.geolocation.getCurrentPosition(pos => {
-                const userLoc = new google.maps.LatLng(pos.coords.latitude, pos.coords.longitude);
-                const service = new google.maps.places.PlacesService(document.getElementById('map-temp'));
+async function buscarEnGoogle() {
+    if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(async (pos) => {
+            const { latitude, longitude } = pos.coords;
+            const center = { lat: latitude, lng: longitude };
 
-                const request = {
-                    location: userLoc,
-                    radius: '5000',
-                    keyword: 'hospedaje canino hotel mascotas'
+            // Importamos la nueva librería de Places
+            const { Place, SearchNearbyRankPreference } = await google.maps.importLibrary("places");
+            
+            const request = {
+                fields: ["displayName", "location", "rating", "userRatingCount", "vicinity", "photos", "id"],
+                locationRestriction: {
+                    center: center,
+                    radius: 5000,
+                },
+                includedPrimaryTypes: ["pet_store", "veterinary_care"], // Filtros de mascotas
+                maxResultCount: 15,
+                rankPreference: SearchNearbyRankPreference.DISTANCE,
+            };
+
+            const { places } = await Place.searchNearby(request);
+
+            const loader = document.getElementById('main-loader');
+            if(loader) loader.classList.add('hidden');
+
+            if (places.length > 0) {
+                places.forEach((place) => {
+                    const photoUrl = place.photos && place.photos.length > 0 
+                        ? place.photos[0].getURI({maxWidth: 400}) 
+                        : 'assets/img/logo.png';
+
+                    container.innerHTML += `
+                        <div class="place-card">
+                            <img src="${photoUrl}" class="place-img">
+                            <div class="place-info">
+                                <h3>${place.displayName}</h3>
+                                <div class="stars">⭐ ${place.rating || 'N/A'} (${place.userRatingCount || 0} reseñas)</div>
+                                <p>📍 ${place.vicinity}</p>
+                                <div class="actions">
+                                    <button class="btn-map" onclick="window.open('https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(place.displayName)}&query_place_id=${place.id}')">📍 Ver en Maps</button>
+                                </div>
+                            </div>
+                        </div>`;
+                });
+            }
+        }, (error) => {
+            console.error("Error de ubicación:", error);
+            document.getElementById('main-loader').innerText = "Por favor, permite el acceso a la ubicación.";
+        });
+    }
+}
                 };
 
                 service.nearbySearch(request, (results, status) => {
