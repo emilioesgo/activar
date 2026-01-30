@@ -3,10 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Carnet Digital | Huellitas</title>
+    <title>Carnet de Salud | Huellitas Digitales</title>
     <link rel="icon" type="image/png" href="assets/img/logo.png">
     <style>
-        :root { --primary: #2bb673; --bg: #f4f7f6; --text: #333; --lost: #ff4757; }
+        :root { --primary: #2bb673; --bg: #f4f7f6; --text: #333; --accent: #fbbf24; }
         body { font-family: 'Segoe UI', sans-serif; background: var(--bg); margin: 0; padding: 20px; color: var(--text); }
         .container { max-width: 600px; margin: 0 auto; padding-top: 60px; }
         
@@ -33,33 +33,59 @@
         .vacuna-done { background: #f0fdf4; border: 1px solid #dcfce7; }
         .vacuna-done::before { background: var(--primary); }
         .vacuna-pending { background: #fffbeb; border: 1px solid #fef3c7; }
-        .vacuna-pending::before { background: #fbbf24; }
+        .vacuna-pending::before { background: var(--accent); }
 
         .vacuna-info b { font-size: 14px; color: #444; display: block; }
         .vacuna-info span { font-size: 11px; color: #888; }
         .vacuna-status { font-size: 10px; font-weight: 800; padding: 4px 10px; border-radius: 10px; background: white; }
 
-        .btn-action-pet { 
-            width: 100%; background: #f8f9fa; color: var(--primary); border: 1.5px dashed var(--primary); 
-            padding: 12px; border-radius: 15px; font-size: 12px; font-weight: bold; 
-            cursor: pointer; margin-top: 15px; transition: 0.3s;
-        }
-        .btn-action-pet:hover { background: #e8f5e9; }
+        /* Botones */
+        .btn-group { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 15px; }
+        .btn-sec { background: #f8f9fa; color: var(--primary); border: 1.5px dashed var(--primary); padding: 12px; border-radius: 15px; font-size: 11px; font-weight: bold; cursor: pointer; }
+        
+        /* Modal Formulario */
+        .modal { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.6); z-index:1000; align-items:center; justify-content:center; backdrop-filter: blur(4px); }
+        .modal-content { background: white; padding: 25px; border-radius: 25px; width: 90%; max-width: 400px; }
+        label { display: block; font-size: 11px; font-weight: 800; color: #aaa; text-transform: uppercase; margin-bottom: 5px; margin-top: 15px; }
+        input, select { width: 100%; padding: 12px; border: 1px solid #eee; border-radius: 12px; box-sizing: border-box; }
+        .btn-save { background: var(--primary); color: white; border: none; width: 100%; padding: 15px; border-radius: 12px; font-weight: bold; margin-top: 20px; cursor: pointer; }
     </style>
 </head>
 <body>
 
     <nav class="navbar">
         <a href="hub.html" class="btn-back">⬅ Volver</a>
-        <h1 style="font-size: 18px; margin-left: 15px; color: var(--primary);">📋 Carnet de Salud</h1>
+        <h1 style="font-size: 18px; margin-left: 15px; color: var(--primary);">📋 Carnet Digital</h1>
     </nav>
 
     <div class="container" id="main-container">
         </div>
 
+    <div id="modal-registro" class="modal">
+        <div class="modal-content">
+            <h2 style="margin:0; color: var(--primary); font-size: 20px;">Nuevo Registro</h2>
+            <input type="hidden" id="form-pet-id">
+            
+            <label>Tipo de Registro</label>
+            <input type="text" id="form-nombre" placeholder="Ej: Vacuna Séxtuple, Desparasitación...">
+            
+            <label>Fecha Programada/Aplicada</label>
+            <input type="date" id="form-fecha">
+            
+            <label>Estado actual</label>
+            <select id="form-estado">
+                <option value="pendiente">⏳ Pendiente / Cita</option>
+                <option value="completado">✅ Ya aplicada</option>
+            </select>
+
+            <button class="btn-save" id="btn-guardar-registro">Guardar en Carnet</button>
+            <button onclick="cerrarModal()" style="background:none; border:none; color:#aaa; width:100%; margin-top:10px; cursor:pointer; font-size:12px;">Cancelar</button>
+        </div>
+    </div>
+
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-    import { getFirestore, collection, query, where, getDocs, orderBy, limit } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+    import { getFirestore, collection, query, where, getDocs, orderBy, limit, addDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
     const firebaseConfig = {
         apiKey: "AIzaSyCqROIzmp2guo2XLbdYrSW3ujlUBc7ngOc",
@@ -74,20 +100,20 @@
     const db = getFirestore(app);
     const email = localStorage.getItem("userEmail");
 
+    // --- CARGAR CARNETS ---
     async function cargarCarnets() {
         const container = document.getElementById("main-container");
         if (!email) { window.location.href = "hub.html"; return; }
 
         const qMascotas = query(collection(db, "placas"), where("email", "==", email));
         const snapMascotas = await getDocs(qMascotas);
-        
         container.innerHTML = "";
 
         for (const petDoc of snapMascotas.docs) {
             const pet = petDoc.data();
             const petId = petDoc.id;
 
-            // --- Lógica de Peso Conectada ---
+            // Buscar último peso de esta mascota específica
             const qPeso = query(
                 collection(db, "historial_peso"), 
                 where("petId", "==", petId), 
@@ -95,14 +121,14 @@
                 limit(1)
             );
             const snapPeso = await getDocs(qPeso);
-            let htmlPeso = `<span style="font-size:11px; color:#aaa;">Sin registro de peso</span>`;
+            let htmlPeso = `<span style="font-size:11px; color:#aaa;">Sin peso registrado</span>`;
 
             if (!snapPeso.empty) {
                 const p = snapPeso.docs[0].data();
                 let colorP = "#2bb673";
                 if (p.bcs >= 7) colorP = "#ff4757";
                 if (p.bcs <= 3) colorP = "#ffa502";
-                htmlPeso = `<b style="color:${colorP}; font-size:13px;">⚖️ ${p.peso}kg - Condición: ${p.bcs}/9</b>`;
+                htmlPeso = `<b style="color:${colorP}; font-size:13px;">⚖️ ${p.peso}kg - BCS: ${p.bcs}/9</b>`;
             }
 
             container.innerHTML += `
@@ -114,28 +140,25 @@
                             ${htmlPeso}
                         </div>
                     </div>
-                    
-                    <div id="lista-vacunas-${petId}">
-                        <p style="text-align:center; font-size:12px; color:#ccc;">Cargando historial...</p>
+                    <div id="lista-vacunas-${petId}"></div>
+                    <div class="btn-group">
+                        <button class="btn-sec" onclick="abrirModal('${petId}')">➕ AGREGAR CITA</button>
+                        <button class="btn-sec" onclick="window.location.href='peso.html'">📈 VER PESO</button>
                     </div>
-
-                    <button class="btn-action-pet" onclick="window.location.href='peso.html'">
-                        📊 VER GRÁFICA O ACTUALIZAR PESO
-                    </button>
                 </div>
             `;
-            
-            await cargarRegistrosMascota(petId);
+            await cargarRegistrosVacunas(petId);
         }
     }
 
-    async function cargarRegistrosMascota(petId) {
+    // --- CARGAR VACUNAS POR MASCOTA ---
+    async function cargarRegistrosVacunas(petId) {
         const listaDiv = document.getElementById(`lista-vacunas-${petId}`);
         const q = query(collection(db, "recordatorios"), where("petId", "==", petId), orderBy("fecha", "asc"));
         const snap = await getDocs(q);
         
         if (snap.empty) {
-            listaDiv.innerHTML = `<p style="font-size:12px; color:#bbb; text-align:center; padding:10px;">No hay vacunas registradas.</p>`;
+            listaDiv.innerHTML = `<p style="font-size:12px; color:#bbb; text-align:center; padding:10px;">Sin historial.</p>`;
             return;
         }
 
@@ -143,7 +166,6 @@
         snap.forEach(doc => {
             const v = doc.data();
             const esDone = v.estado === "completado";
-            
             html += `
                 <div class="vacuna-item ${esDone ? 'vacuna-done' : 'vacuna-pending'}">
                     <div class="vacuna-info">
@@ -151,18 +173,44 @@
                         <span>📅 ${formatearFecha(v.fecha)}</span>
                     </div>
                     <div class="vacuna-status" style="color: ${esDone ? '#2bb673' : '#d97706'};">
-                        ${esDone ? '✅ APLICADA' : '⏳ PENDIENTE'}
+                        ${esDone ? 'APLICADA' : 'PENDIENTE'}
                     </div>
                 </div>
             `;
         });
-        html += `</div>`;
-        listaDiv.innerHTML = html;
+        listaDiv.innerHTML = html + `</div>`;
     }
+
+    // --- LÓGICA MODAL ---
+    window.abrirModal = (id) => {
+        document.getElementById('form-pet-id').value = id;
+        document.getElementById('modal-registro').style.display = 'flex';
+    };
+
+    window.cerrarModal = () => {
+        document.getElementById('modal-registro').style.display = 'none';
+    };
+
+    document.getElementById('btn-guardar-registro').onclick = async () => {
+        const petId = document.getElementById('form-pet-id').value;
+        const vacuna = document.getElementById('form-nombre').value;
+        const fecha = document.getElementById('form-fecha').value;
+        const estado = document.getElementById('form-estado').value;
+
+        if(!vacuna || !fecha) return alert("Completa los datos");
+
+        await addDoc(collection(db, "recordatorios"), {
+            petId, vacuna, fecha, estado,
+            userEmail: email,
+            timestamp: Date.now()
+        });
+        cerrarModal();
+        cargarCarnets();
+    };
 
     function formatearFecha(f) {
         const d = new Date(f + "T00:00:00");
-        return d.toLocaleDateString('es-ES', { day: 'numeric', month: 'short', year: 'numeric' });
+        return d.toLocaleDateString('es-ES', { day: 'numeric', month: 'short' });
     }
 
     cargarCarnets();
