@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hospedaje Canino | Huellitas</title>
+    <style>
+        :root { --primary: #2bb673; --gold: #ffc107; --bg: #f4f7f6; }
+        body { font-family: 'Segoe UI', sans-serif; background: var(--bg); margin: 0; padding: 20px; }
+        .header { display: flex; align-items: center; gap: 15px; margin-bottom: 25px; }
+        .btn-back { background: white; border: none; padding: 10px; border-radius: 50%; cursor: pointer; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+        
+        /* Contenedor de la lista */
+        #lista-hospedajes { display: flex; flex-direction: column; gap: 15px; }
+
+        /* Estilo de la Tarjeta */
+        .place-card { 
+            background: white; border-radius: 20px; padding: 15px; 
+            display: flex; gap: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+            position: relative; border: 2px solid transparent;
+        }
+
+        /* Estilo para Negocios que PAGAN (Destacados) */
+        .premium { border-color: var(--gold); background: #fffdf5; }
+        .badge-premium { 
+            position: absolute; top: -10px; right: 15px; 
+            background: var(--gold); color: black; font-size: 10px; 
+            font-weight: bold; padding: 4px 10px; border-radius: 10px;
+        }
+
+        .place-img { width: 80px; height: 80px; border-radius: 15px; object-fit: cover; background: #eee; }
+        .place-info { flex: 1; }
+        .place-info h3 { margin: 0 0 5px 0; font-size: 16px; color: #333; }
+        .place-info p { margin: 0; font-size: 13px; color: #777; }
+        .stars { color: #ff9800; font-size: 12px; margin: 5px 0; }
+        
+        .actions { display: flex; gap: 8px; margin-top: 10px; }
+        .btn-call { background: var(--primary); color: white; border: none; padding: 8px 12px; border-radius: 8px; font-size: 12px; font-weight: bold; cursor: pointer; }
+        .btn-map { background: #eee; color: #555; border: none; padding: 8px 12px; border-radius: 8px; font-size: 12px; cursor: pointer; }
+
+        .loading { text-align: center; color: #888; margin-top: 50px; }
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <button class="btn-back" onclick="window.history.back()">⬅</button>
+        <h2>Hospedajes Cercanos</h2>
+    </div>
+
+    <div id="lista-hospedajes">
+        <div class="place-card premium">
+            <span class="badge-premium">RECOMENDADO</span>
+            <img src="https://via.placeholder.com/80" class="place-img">
+            <div class="place-info">
+                <h3>Hotel Canino "Paws & Play"</h3>
+                <div class="stars">⭐⭐⭐⭐⭐ (4.9)</div>
+                <p>📍 A 500 metros de ti</p>
+                <div class="actions">
+                    <button class="btn-call">Llamar</button>
+                    <button class="btn-map" onclick="window.open('https://maps.google.com')">Cómo llegar</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="loading">Buscando los mejores lugares para tu mascota...</div>
+    </div>
+
+</body>
+</html>
