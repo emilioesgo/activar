@@ -32,6 +32,7 @@
         .card { background: #f8f9fa; padding: 25px; border-radius: 20px; text-decoration: none; color: var(--dark); transition: 0.3s; border: 1px solid #eee; text-align: center; cursor: pointer; }
         .card:hover { transform: translateY(-5px); border-color: var(--primary); background: #f0fff4; }
         .card.danger:hover { border-color: var(--danger); background: #fff5f5; }
+        .card.sheets:hover { border-color: var(--sheets); background: #e8f5e9; }
         
         .card-icon { font-size: 40px; margin-bottom: 15px; display: block; }
         .card-title { font-weight: bold; font-size: 18px; display: block; margin-bottom: 5px; }
@@ -40,9 +41,8 @@
         .btn { background: var(--primary); color: white; border: none; padding: 12px 25px; border-radius: 10px; font-weight: bold; cursor: pointer; width: 100%; }
         .btn-logout { background: var(--danger); width: auto; font-size: 12px; }
 
-        /* Formulario y Tabla */
         .admin-section { background: #f8f9fa; padding: 25px; border-radius: 20px; border: 1px solid #eee; margin-top: 25px; }
-        .admin-section h2 { margin-top: 0; font-size: 20px; color: var(--primary); display: flex; align-items: center; gap: 10px; }
+        .admin-section h2 { margin-top: 0; font-size: 20px; color: var(--primary); }
         
         .admin-form { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; text-align: left; }
         .admin-form label { font-size: 11px; font-weight: bold; color: var(--dark); margin-bottom: -10px; display: block; }
@@ -51,11 +51,8 @@
         
         .table-container { margin-top: 20px; overflow-x: auto; background: white; border-radius: 15px; border: 1px solid #eee; }
         table { width: 100%; border-collapse: collapse; font-size: 13px; }
-        th { background: #f1f2f6; padding: 12px; text-align: left; color: #57606f; }
+        th { background: #f1f2f6; padding: 12px; text-align: left; }
         td { padding: 12px; border-top: 1px solid #f1f2f6; }
-        .badge { padding: 4px 8px; border-radius: 6px; font-size: 10px; font-weight: bold; text-transform: uppercase; }
-        .badge-vet { background: #e3f2fd; color: #1976d2; }
-        .badge-hosp { background: #f3e5f5; color: #7b1fa2; }
         .btn-del { color: var(--danger); border: none; background: none; cursor: pointer; font-weight: bold; }
 
         .system-status { margin-top: 30px; padding: 15px; background: #f1f2f6; border-radius: 15px; display: flex; justify-content: space-around; font-size: 12px; color: #57606f; }
@@ -82,16 +79,24 @@
                 <span class="card-title">Punto de Venta</span>
                 <span class="card-desc">Habilitar placa recién vendida.</span>
             </a>
+
+            <div class="card" onclick="irARegistro()">
+                <span class="card-icon">📱</span>
+                <span class="card-title">Activación Asistida</span>
+                <span class="card-desc">Configurar perfil al cliente ahora.</span>
+            </div>
+
+            <a href="https://docs.google.com/spreadsheets/d/1CeoOx1GiCAWTbuCKJLlg55FOj_ZRWe9p7LGf0kV2LJc/edit?gid=0#gid=0" target="_blank" class="card sheets">
+                <span class="card-icon">📊</span>
+                <span class="card-title" style="color: var(--sheets);">Base de Datos</span>
+                <span class="card-desc">Abrir hoja de Google Sheets.</span>
+            </a>
+
             <div class="card danger" onclick="resetearPlaca()">
                 <span class="card-icon">🔄</span>
                 <span class="card-title" style="color: var(--danger);">Resetear Placa</span>
                 <span class="card-desc">Borrar datos de una mascota.</span>
             </div>
-            <a href="https://console.firebase.google.com/" target="_blank" class="card">
-                <span class="card-icon">🔥</span>
-                <span class="card-title">Base de Datos</span>
-                <span class="card-desc">Acceso técnico Firestore.</span>
-            </a>
         </div>
 
         <div class="admin-section">
@@ -110,10 +115,6 @@
                     </select>
                 </div>
                 <div class="full-width">
-                    <label>Dirección</label>
-                    <input type="text" id="biz-direccion" placeholder="Calle 20 x 30..." required>
-                </div>
-                <div class="full-width">
                     <label>URL Google Maps</label>
                     <input type="url" id="biz-mapa" placeholder="Link de ubicación..." required>
                 </div>
@@ -122,18 +123,13 @@
         </div>
 
         <div class="admin-section">
-            <h2>📋 Negocios Registrados</h2>
+            <h2>📋 Gestión de Socios</h2>
             <div class="table-container">
                 <table>
                     <thead>
-                        <tr>
-                            <th>Nombre</th>
-                            <th>Tipo</th>
-                            <th>Acción</th>
-                        </tr>
+                        <tr><th>Nombre</th><th>Tipo</th><th>Acción</th></tr>
                     </thead>
-                    <tbody id="tabla-negocios">
-                        </tbody>
+                    <tbody id="tabla-negocios"></tbody>
                 </table>
             </div>
         </div>
@@ -160,63 +156,88 @@
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
 
-        // --- GESTIÓN DE NEGOCIOS (REALTIME) ---
-        const tabla = document.getElementById('tabla-negocios');
-        
-        // Escuchar cambios en la colección 'negocios'
-        onSnapshot(collection(db, "negocios"), (snapshot) => {
+        // --- 1. PIN MAESTRO (CONECTADO A FIREBASE) ---
+        window.checkPin = async function() {
+            const inputField = document.getElementById("admin-pin");
+            const loginScreen = document.getElementById("login-screen");
+            try {
+                const pinRef = doc(db, "configuracion", "seguridad");
+                const pinSnap = await getDoc(pinRef);
+                const pinMaestro = pinSnap.exists() ? pinSnap.data().pin_admin : "2026";
+
+                if (inputField.value === pinMaestro) {
+                    loginScreen.style.display = "none";
+                    document.getElementById("admin-panel").style.display = "block";
+                } else {
+                    loginScreen.classList.add("shake");
+                    setTimeout(() => loginScreen.classList.remove("shake"), 400);
+                    alert("PIN Incorrecto.");
+                    inputField.value = "";
+                }
+            } catch (e) {
+                if (inputField.value === "2026") {
+                    loginScreen.style.display = "none";
+                    document.getElementById("admin-panel").style.display = "block";
+                }
+            }
+        };
+
+        // --- 2. ACTIVACIÓN DE PLACAS (RECUPERADO) ---
+        window.irARegistro = function() {
+            const id = prompt("Ingresa el ID de la placa a configurar:");
+            if (id) {
+                window.location.href = `index.html?id=${id.toUpperCase().trim()}`;
+            }
+        };
+
+        // --- 3. RESETEO DE PLACAS ---
+        window.resetearPlaca = async function() {
+            const id = prompt("Ingrese el ID de la placa a RESETEAR:").toUpperCase().trim();
+            if (!id) return;
+            const confirmPin = prompt("Confirme PIN MAESTRO:");
+            
+            const pinRef = doc(db, "configuracion", "seguridad");
+            const pinSnap = await getDoc(pinRef);
+            const pinMaestro = pinSnap.exists() ? pinSnap.data().pin_admin : "2026";
+
+            if (confirmPin === pinMaestro) {
+                try {
+                    await updateDoc(doc(db, "placas", id), { activa: false, vendida: false });
+                    alert("✅ Placa reseteada.");
+                } catch (e) { alert("Error al resetear."); }
+            }
+        };
+
+        // --- 4. GESTIÓN DE SOCIOS (TABLA + FORM) ---
+        onSnapshot(collection(db, "negocios"), (snap) => {
+            const tabla = document.getElementById('tabla-negocios');
             tabla.innerHTML = "";
-            snapshot.forEach((doc) => {
+            snap.forEach((doc) => {
                 const b = doc.data();
-                const badgeClass = b.tipo === 'veterinaria' ? 'badge-vet' : 'badge-hosp';
                 tabla.innerHTML += `
                     <tr>
                         <td><b>${b.nombre}</b></td>
-                        <td><span class="badge ${badgeClass}">${b.tipo}</span></td>
+                        <td>${b.tipo}</td>
                         <td><button class="btn-del" onclick="eliminarNegocio('${doc.id}')">Eliminar</button></td>
-                    </tr>
-                `;
+                    </tr>`;
             });
         });
 
-        // Función para guardar
         document.getElementById('registroForm').addEventListener('submit', async (e) => {
             e.preventDefault();
-            const btn = document.getElementById('btnGuardarBiz');
-            btn.disabled = true;
-            try {
-                await addDoc(collection(db, "negocios"), {
-                    nombre: document.getElementById('biz-nombre').value,
-                    tipo: document.getElementById('biz-tipo').value,
-                    direccion: document.getElementById('biz-direccion').value,
-                    mapa_url: document.getElementById('biz-mapa').value,
-                    destacado: true,
-                    foto: "" 
-                });
-                document.getElementById('registroForm').reset();
-            } catch (err) { alert("Error al guardar"); }
-            btn.disabled = false;
+            await addDoc(collection(db, "negocios"), {
+                nombre: document.getElementById('biz-nombre').value,
+                tipo: document.getElementById('biz-tipo').value,
+                mapa_url: document.getElementById('biz-mapa').value,
+                destacado: true,
+                direccion: "Consultar en mapa"
+            });
+            document.getElementById('registroForm').reset();
         });
 
-        // Función global para eliminar
         window.eliminarNegocio = async (id) => {
-            if(confirm("¿Seguro que quieres eliminar este negocio?")) {
-                await deleteDoc(doc(db, "negocios", id));
-            }
+            if(confirm("¿Eliminar socio?")) await deleteDoc(doc(db, "negocios", id));
         };
-
-        // --- PIN DE ACCESO ---
-        window.checkPin = async function() {
-            const inputField = document.getElementById("admin-pin");
-            if (inputField.value === "2026") { // PIN rápido o consulta a DB
-                document.getElementById("login-screen").style.display = "none";
-                document.getElementById("admin-panel").style.display = "block";
-            } else {
-                alert("PIN Incorrecto");
-            }
-        };
-
-        // ... (Resto de funciones de reseteo de placa si las necesitas)
     </script>
 </body>
 </html>
