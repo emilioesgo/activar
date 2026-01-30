@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Control de Peso Científico | Huellitas</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        :root { --primary: #2bb673; --bg: #f8fafb; --text: #333; --accent: #2196f3; }
+        body { font-family: 'Segoe UI', sans-serif; background: var(--bg); margin: 0; padding: 20px; padding-top: 70px; color: var(--text); }
+        
+        /* Navbar */
+        .navbar { position: fixed; top: 0; left: 0; right: 0; background: white; padding: 15px; display: flex; align-items: center; box-shadow: 0 2px 10px rgba(0,0,0,0.1); z-index: 100; }
+        .btn-back { background: #eee; border: none; padding: 8px 12px; border-radius: 10px; cursor: pointer; text-decoration: none; color: #333; font-weight: bold; }
+
+        .container { max-width: 500px; margin: 0 auto; }
+        .card { background: white; border-radius: 25px; padding: 20px; margin-bottom: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); }
+        h2 { font-size: 18px; margin: 0 0 15px 0; color: var(--primary); display: flex; align-items: center; gap: 8px; }
+
+        /* Formulario */
+        label { display: block; font-size: 11px; font-weight: 800; color: #aaa; text-transform: uppercase; margin-bottom: 5px; margin-top: 15px; }
+        input, select { width: 100%; padding: 12px; border: 1px solid #eee; border-radius: 12px; box-sizing: border-box; font-size: 15px; background: #fafafa; }
+        
+        /* Escala BCS Visual */
+        .bcs-container { display: flex; overflow-x: auto; gap: 10px; padding: 5px 0 15px; scrollbar-width: none; }
+        .bcs-item { min-width: 110px; padding: 12px; border: 2px solid #f0f0f0; border-radius: 18px; text-align: center; cursor: pointer; transition: 0.2s; background: white; }
+        .bcs-item.active { border-color: var(--primary); background: #e8f5e9; transform: scale(1.05); }
+        .bcs-emoji { font-size: 20px; display: block; margin-bottom: 5px; }
+        .bcs-label { font-size: 10px; font-weight: bold; color: #666; }
+
+        .btn-save { background: var(--primary); color: white; border: none; width: 100%; padding: 16px; border-radius: 15px; font-weight: bold; cursor: pointer; margin-top: 10px; font-size: 15px; }
+        
+        /* Info Boxes */
+        .info-box { background: #e3f2fd; border-radius: 18px; padding: 18px; font-size: 13px; line-height: 1.5; color: #1565c0; border-left: 5px solid var(--accent); }
+        .footer-science { margin-top: 30px; padding: 20px; text-align: center; border-top: 1px solid #eee; }
+        .footer-science p { font-size: 10px; color: #999; line-height: 1.6; }
+    </style>
+</head>
+<body>
+
+    <nav class="navbar">
+        <a href="hub.html" class="btn-back">⬅ Volver</a>
+        <h1 style="font-size: 17px; margin-left: 15px;">⚖️ Monitoreo de Peso</h1>
+    </nav>
+
+    <div class="container">
+        
+        <div class="card">
+            <h2>📈 Historial de Peso</h2>
+            <canvas id="weightChart" height="200"></canvas>
+        </div>
+
+        <div class="card">
+            <h2>📝 Nuevo Registro</h2>
+            
+            <label>Peso de la Mascota (KG)</label>
+            <input type="number" id="input-peso" step="0.1" placeholder="Ej: 8.4">
+
+            <label>Estado Reproductivo / Actividad</label>
+            <select id="select-factor">
+                <option value="1.6">Adulto Castrado (Mantenimiento)</option>
+                <option value="1.8">Adulto Entero (Mantenimiento)</option>
+                <option value="1.2">Poco Activo / Propenso a Obesidad</option>
+                <option value="1.0">Pérdida de Peso (Dieta)</option>
+                <option value="3.0">Cachorro (Crecimiento)</option>
+            </select>
+            
+            <label>Condición Corporal (Escala WSAVA)</label>
+            <div class="bcs-container" id="bcs-selector">
+                <div class="bcs-item" onclick="selectBCS(2, this)">
+                    <span class="bcs-emoji">🦴</span>
+                    <span class="bcs-label">2: Muy Delgado</span>
+                </div>
+                <div class="bcs-item active" onclick="selectBCS(5, this)">
+                    <span class="bcs-emoji">⚖️</span>
+                    <span class="bcs-label">5: Ideal</span>
+                </div>
+                <div class="bcs-item" onclick="selectBCS(7, this)">
+                    <span class="bcs-emoji">🟠</span>
+                    <span class="bcs-label">7: Sobrepeso</span>
+                </div>
+                <div class="bcs-item" onclick="selectBCS(9, this)">
+                    <span class="bcs-emoji">🔴</span>
+                    <span class="bcs-label">9: Obesidad</span>
+                </div>
+            </div>
+
+            <button class="btn-save" id="btn-registrar">Actualizar Expediente</button>
+        </div>
+
+        <div class="card">
+            <h2>🍎 Plan Nutricional Sugerido</h2>
+            <div id="nutricion-info">
+                <p style="color:#aaa; font-size: 13px;">Registra el peso para ver los requerimientos calóricos según las guías clínicas.</p>
+            </div>
+        </div>
+
+        <div class="footer-science">
+            <p>
+                <b>FUENTES CIENTÍFICAS:</b><br>
+                Cálculos de Requerimiento Energético en Reposo (RER) basados en la fórmula alométrica estándar de la <b>WSAVA</b> (World Small Animal Veterinary Association). Evaluación de Condición Corporal según la escala de 9 puntos validada por la <b>AAHA</b> (American Animal Hospital Association).
+                <br><br>
+                <i>* Esta herramienta es para monitoreo doméstico y no sustituye la evaluación clínica de un veterinario.</i>
+            </p>
+            <img src="https://wsava.org/wp-content/uploads/2020/01/WSAVA-logo.png" height="20" style="opacity: 0.5; margin-top: 10px;">
+        </div>
+    </div>
+
+
+
+<script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+    import { getFirestore, collection, addDoc, query, where, getDocs, orderBy } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+    const firebaseConfig = {
+        apiKey: "AIzaSyCqROIzmp2guo2XLbdYrSW3ujlUBc7ngOc",
+        authDomain: "huellitas-digitales.firebaseapp.com",
+        projectId: "huellitas-digitales",
+        storageBucket: "huellitas-digitales.firebasestorage.app",
+        messagingSenderId: "523935942496",
+        appId: "1:523935942496:web:0bb3ad3b28c189345fc005"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+    const email = localStorage.getItem("userEmail");
+
+    let bcsSeleccionado = 5;
+
+    window.selectBCS = (valor, element) => {
+        document.querySelectorAll('.bcs-item').forEach(i => i.classList.remove('active'));
+        element.classList.add('active');
+        bcsSeleccionado = valor;
+    };
+
+    document.getElementById('btn-registrar').onclick = async () => {
+        const peso = document.getElementById('input-peso').value;
+        const factor = document.getElementById('select-factor').value;
+        if(!peso) return alert("Por favor, ingresa el peso actual.");
+
+        try {
+            await addDoc(collection(db, "historial_peso"), {
+                userEmail: email,
+                peso: parseFloat(peso),
+                factor: parseFloat(factor),
+                bcs: bcsSeleccionado,
+                fecha: new Date().toLocaleDateString('es-ES', {day:'2-digit', month:'short'}),
+                timestamp: new Date().getTime()
+            });
+            location.reload();
+        } catch (e) { console.error(e); }
+    };
+
+    async function cargarHistorial() {
+        const q = query(collection(db, "historial_peso"), where("userEmail", "==", email), orderBy("timestamp", "asc"));
+        const snap = await getDocs(q);
+        
+        const pesos = [];
+        const etiquetas = [];
+        let ultimoData = null;
+
+        snap.forEach(doc => {
+            const d = doc.data();
+            pesos.push(d.peso);
+            etiquetas.push(d.fecha);
+            ultimoData = d;
+        });
+
+        if (pesos.length > 0) {
+            renderChart(etiquetas, pesos);
+            calcularNutricion(ultimoData.peso, ultimoData.factor || 1.6);
+        }
+    }
+
+    function renderChart(labels, data) {
+        new Chart(document.getElementById('weightChart'), {
+            type: 'line',
+            data: {
+                labels: labels,
+                datasets: [{
+                    label: 'Peso (Kg)',
+                    data: data,
+                    borderColor: '#2bb673',
+                    backgroundColor: 'rgba(43, 182, 115, 0.1)',
+                    borderWidth: 3,
+                    fill: true,
+                    tension: 0.4,
+                    pointRadius: 5,
+                    pointBackgroundColor: '#2bb673'
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: { legend: { display: false } },
+                scales: { y: { beginAtZero: false, grid: { display: false } }, x: { grid: { display: false } } }
+            }
+        });
+    }
+
+    function calcularNutricion(peso, factor) {
+        // Fórmula RER estándar: 70 * (peso)^0.75
+        const rer = Math.round(70 * Math.pow(peso, 0.75));
+        const kcalFinales = Math.round(rer * factor);
+
+        document.getElementById('nutricion-info').innerHTML = `
+            <div class="info-box">
+                <div style="margin-bottom:10px;">
+                    <b style="color:var(--text)">Gasto en Reposo (RER):</b> ${rer} kcal/día
+                    <br><small>Calorías base para funciones vitales.</small>
+                </div>
+                <div style="border-top: 1px solid rgba(21, 101, 192, 0.1); padding-top: 10px;">
+                    <b style="font-size:16px;">Objetivo Diario: ${kcalFinales} kcal</b>
+                    <br><small>Basado en el factor de actividad seleccionado.</small>
+                </div>
+            </div>
+        `;
+    }
+
+    cargarHistorial();
+</script>
+</body>
+</html>
