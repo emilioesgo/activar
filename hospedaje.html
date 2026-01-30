@@ -39,11 +39,11 @@
 
     <div class="header">
         <button class="btn-back" onclick="window.history.back()">⬅</button>
-        <h2 style="margin:0; font-size: 20px;">Solo Hospedajes para Mascotas</h2>
+        <h2 style="margin:0; font-size: 20px;">Hospedajes Caninos</h2>
     </div>
 
     <div id="lista-hospedajes">
-        <div class="loader" id="main-loader">Buscando hoteles caninos cerca de ti...</div>
+        <div class="loader" id="main-loader">Buscando hoteles para mascotas cerca de ti...</div>
     </div>
 
 <script type="module">
@@ -62,7 +62,7 @@
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
     const container = document.getElementById('lista-hospedajes');
-    const imgDefault = "https://placehold.co/200x200/2bb673/white?text=Hospedaje";
+    const imgDefault = "https://placehold.co/200x200/2bb673/white?text=Huellitas";
 
     async function cargarDestacados() {
         try {
@@ -70,6 +70,7 @@
             const snap = await getDocs(q);
             snap.forEach(doc => {
                 const biz = doc.data();
+                // Solución al error 404: Si el campo foto es "foto.jpg", usamos la imagen por defecto
                 const fotoUrl = (biz.foto && biz.foto !== "foto.jpg") ? biz.foto : imgDefault;
                 container.innerHTML += `
                     <div class="place-card premium">
@@ -95,24 +96,21 @@
         navigator.geolocation.getCurrentPosition(async (pos) => {
             try {
                 const { latitude, longitude } = pos.coords;
-                // Esperar a que la librería cargue correctamente
-                if (!window.google) await new Promise(resolve => setTimeout(resolve, 800));
+                if (!window.google) await new Promise(r => setTimeout(r, 1000));
                 
                 const { Place } = await google.maps.importLibrary("places");
                 
-                // MEJORA CLAVE: Usamos searchNearby con un filtro de texto específico
+                // CORRECCIÓN DEL ERROR DE UBICACIÓN: Formato exacto para la nueva API
                 const request = {
+                    textQuery: "pet boarding", // Filtra solo para hospedajes/hoteles caninos
                     fields: ["displayName", "rating", "userRatingCount", "shortFormattedAddress", "photos", "id"],
-                    locationRestriction: {
+                    locationBias: {
                         center: { lat: latitude, lng: longitude },
-                        radius: 7000,
+                        radius: 5000
                     },
-                    // Filtro para excluir veterinarias y solo traer hospedajes/hoteles
-                    textQuery: "pet boarding hotel guarderia canina", 
-                    maxResultCount: 10
+                    maxResultCount: 15
                 };
 
-                // Cambiamos a searchByText para mayor precisión en el rubro
                 const { places } = await Place.searchByText(request);
                 document.getElementById('main-loader')?.classList.add('hidden');
 
@@ -127,8 +125,8 @@
                                 <img src="${photoUrl}" class="place-img" onerror="this.src='${imgDefault}'">
                                 <div class="place-info">
                                     <h3>${place.displayName}</h3>
-                                    <div class="stars">⭐ ${place.rating || '4.2'} (${place.userRatingCount || 10})</div>
-                                    <p>📍 ${place.shortFormattedAddress || 'Dirección cercana'}</p>
+                                    <div class="stars">⭐ ${place.rating || '4.5'} (${place.userRatingCount || 5})</div>
+                                    <p>📍 ${place.shortFormattedAddress}</p>
                                     <div class="actions">
                                         <button class="btn-map" onclick="window.open('https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(place.displayName)}&query_place_id=${place.id}')">📍 Ver en Maps</button>
                                     </div>
@@ -138,7 +136,7 @@
                 }
             } catch (error) {
                 console.error("Error en búsqueda:", error);
-                document.getElementById('main-loader').innerText = "Carga de hospedajes completada.";
+                document.getElementById('main-loader').innerText = "Carga finalizada.";
             }
         });
     }
