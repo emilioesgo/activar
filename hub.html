@@ -13,12 +13,16 @@
         body { font-family: 'Segoe UI', sans-serif; background: var(--bg); margin: 0; padding: 20px; display: flex; justify-content: center; color: var(--text); }
         .container { max-width: 600px; width: 100%; position: relative; }
         
+        /* Encabezado */
         .header-hub { text-align: center; margin-bottom: 30px; }
         .header-hub h1 { color: var(--primary); margin: 0; font-size: 32px; }
+        .header-hub p { color: #888; margin-top: 5px; }
 
         /* Login Box */
         .login-box { background: white; padding: 30px; border-radius: 28px; box-shadow: 0 10px 30px rgba(0,0,0,0.05); text-align: center; }
+        label { display: block; text-align: left; font-size: 11px; font-weight: 800; color: #aaa; margin-bottom: 5px; text-transform: uppercase; }
         input { width: 100%; padding: 15px; margin-bottom: 20px; border: 2px solid #eee; border-radius: 15px; box-sizing: border-box; font-size: 16px; outline: none; }
+
         .btn-login { background: var(--primary); color: white; border: none; padding: 16px; border-radius: 15px; font-weight: bold; cursor: pointer; width: 100%; font-size: 16px; }
 
         /* Secciones */
@@ -32,25 +36,13 @@
         .status-lost { background: var(--lost); }
         .status-safe { background: var(--primary); }
 
-        /* --- NUEVO: BOTÓN DE AVISTAMIENTOS (ESTÁTICO) --- */
+        /* --- BOTÓN DE AVISTAMIENTOS (ESTÁTICO) --- */
         .btn-ver-avistamientos {
-            background: var(--blue);
-            color: white;
-            padding: 18px;
-            border-radius: 20px;
-            text-align: center;
-            font-weight: bold;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 12px;
-            text-decoration: none;
-            margin-bottom: 25px;
-            box-shadow: 0 8px 20px rgba(52, 152, 219, 0.25);
-            border: none;
-            width: 100%;
-            cursor: pointer;
-            font-size: 16px;
+            background: var(--blue); color: white; padding: 18px; border-radius: 20px;
+            text-align: center; font-weight: bold; display: flex; align-items: center;
+            justify-content: center; gap: 12px; text-decoration: none; margin-bottom: 25px;
+            box-shadow: 0 8px 20px rgba(52, 152, 219, 0.25); border: none; width: 100%;
+            cursor: pointer; font-size: 16px;
         }
 
         /* BANNER WHATSAPP */
@@ -62,7 +54,7 @@
         }
         .btn-wa-join { background: white; color: #128C7E; padding: 12px 25px; border-radius: 50px; text-decoration: none; font-weight: bold; display: inline-block; margin-top: 15px; }
 
-        /* Centro Pet Care */
+        /* Servicios */
         .grid-servicios { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
         .btn-servicio { background: white; border: 1px solid #eee; padding: 15px; border-radius: 20px; display: flex; flex-direction: column; align-items: center; gap: 5px; text-decoration: none; color: inherit; }
         
@@ -73,19 +65,23 @@
 
 <div class="container">
     <div class="header-hub">
-        <h1>🐾 Huellitas23 Hub</h1>
-        <p>Panel de Control Mascota</p>
+        <h1>🐾 Huellitas Hub</h1>
+        <p>Todo para tu mascota en un solo lugar</p>
     </div>
 
     <div id="seccion-auth" class="login-box">
+        <label>Correo Electrónico</label>
         <input type="email" id="auth-email" placeholder="tu@correo.com">
-        <input type="password" id="auth-pin" maxlength="4" placeholder="PIN de Seguridad">
-        <button class="btn-login" id="btn-entrar">Acceder</button>
+        <label>PIN de Seguridad</label>
+        <input type="password" id="auth-pin" maxlength="4" placeholder="****">
+        <button class="btn-login" id="btn-entrar">Acceder a mi Panel</button>
     </div>
 
     <div id="seccion-lista" class="hidden">
         
-        <div class="section-title">📸 Reportes Visuales</div>
+        <div id="notif-box"></div>
+
+        <div class="section-title">📸 Reportes del Perfil</div>
         <button class="btn-ver-avistamientos" onclick="window.location.href='avistamientos.html'">
             <span>🖼️</span> VER FOTOS DE AVISTAMIENTOS
         </button>
@@ -96,19 +92,19 @@
         <div class="section-title">📢 Comunidad & Alertas</div>
         <div class="promo-comunidad">
             <h3 style="margin: 0;">Red de Búsqueda WhatsApp</h3>
-            <p style="font-size: 13px; margin: 5px 0;">Recibe alertas y ayuda a otras mascotas.</p>
+            <p style="font-size: 13px; margin: 5px 0;">Recibe alertas y mira fotos de reportes en tiempo real.</p>
             <a href="https://chat.whatsapp.com/TU_CODIGO" target="_blank" class="btn-wa-join">UNIRME AL GRUPO</a>
         </div>
 
         <div class="section-title">🌟 Centro Pet Care</div>
         <div class="grid-servicios">
-            <a href="veterinarias.html" class="btn-servicio">🏥<span style="font-size:12px;">Veterinarias</span></a>
-            <a href="esteticas.html" class="btn-servicio">✂️<span style="font-size:12px;">Estética</span></a>
-            <a href="carnet.html" class="btn-servicio">📋<span style="font-size:12px;">Mi Carnet</span></a>
-            <a href="peso.html" class="btn-servicio">⚖️<span style="font-size:12px;">Peso</span></a>
+            <a href="veterinarias.html" class="btn-servicio">🏥<span style="font-size:12px; font-weight:bold;">Veterinarias</span></a>
+            <a href="esteticas.html" class="btn-servicio">✂️<span style="font-size:12px; font-weight:bold;">Estética</span></a>
+            <a href="carnet.html" class="btn-servicio">📋<span style="font-size:12px; font-weight:bold;">Mi Carnet</span></a>
+            <a href="peso.html" class="btn-servicio">⚖️<span style="font-size:12px; font-weight:bold;">Peso/Dieta</span></a>
         </div>
 
-        <button onclick="localStorage.clear(); location.reload();" style="margin-top:50px; border:none; background:none; color:#bbb; cursor:pointer; width:100%; text-decoration:underline;">Cerrar Sesión</button>
+        <button onclick="localStorage.clear(); location.reload();" style="margin-top:50px; border:none; background:none; color:#bbb; cursor:pointer; width:100%; text-decoration:underline; font-size:12px; padding-bottom: 40px;">Cerrar Sesión de Seguridad</button>
     </div>
 </div>
 
@@ -128,17 +124,21 @@
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
 
+    // Manejo de Login
     document.getElementById("btn-entrar").onclick = async () => {
         const email = document.getElementById("auth-email").value.trim().toLowerCase();
         const pin = document.getElementById("auth-pin").value;
-        const q = query(collection(db, "placas"), where("email", "==", email));
-        const snap = await getDocs(q);
-        let ok = false;
-        snap.forEach(doc => { if(doc.data().pin === pin) ok = true; });
-        if (ok) {
-            localStorage.setItem("userEmail", email);
-            mostrarHub(email);
-        } else { alert("Datos incorrectos"); }
+        try {
+            const q = query(collection(db, "placas"), where("email", "==", email));
+            const snap = await getDocs(q);
+            let ok = false;
+            snap.forEach(doc => { if(doc.data().pin === pin) ok = true; });
+            if (ok) {
+                localStorage.setItem("userEmail", email);
+                localStorage.setItem("loginTimestamp", new Date().getTime());
+                mostrarHub(email);
+            } else { alert("PIN Incorrecto"); }
+        } catch (e) { console.error(e); }
     };
 
     async function mostrarHub(email) {
@@ -158,13 +158,18 @@
                     <img src="${pet.foto || 'assets/img/logo.png'}">
                     <div style="padding:10px;">
                         <h3 style="margin:0; font-size:15px;">${pet.mascota}</h3>
-                        <button style="width:100%; border:1px solid var(--primary); background:none; color:var(--primary); padding:5px; border-radius:10px; font-size:11px; cursor:pointer;" onclick="window.location.href='editar.html?id=${doc.id}'">GESTIONAR</button>
+                        <button style="width:100%; border:1.5px solid var(--primary); background:none; color:var(--primary); padding:8px; border-radius:12px; font-size:11px; font-weight:bold; cursor:pointer; margin-top:10px;" onclick="window.location.href='editar.html?id=${doc.id}'">GESTIONAR</button>
                     </div>
                 </div>`;
         });
     }
 
-    if(localStorage.getItem("userEmail")) mostrarHub(localStorage.getItem("userEmail"));
+    // Auto-login al cargar la página
+    const userEmail = localStorage.getItem("userEmail");
+    const loginTimestamp = localStorage.getItem("loginTimestamp");
+    if (userEmail && (new Date().getTime() - loginTimestamp < 5 * 60 * 60 * 1000)) {
+        mostrarHub(userEmail);
+    }
 </script>
 </body>
 </html>
