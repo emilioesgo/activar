@@ -11,7 +11,7 @@
     <style>
         :root { --primary: #2bb673; --bg: #f4f7f6; --text: #333; --lost: #ff4757; --wa: #25D366; }
         body { font-family: 'Segoe UI', sans-serif; background: var(--bg); margin: 0; padding: 20px; display: flex; justify-content: center; color: var(--text); }
-        .container { max-width: 600px; width: 100%; position: relative; } /* Added position relative */
+        .container { max-width: 600px; width: 100%; position: relative; }
         
         /* Encabezado */
         .header-hub { text-align: center; margin-bottom: 30px; }
@@ -50,7 +50,7 @@
             100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(46, 204, 113, 0); }
         }
 
-        /* --- NUEVO: ESTILO COMUNIDAD WHATSAPP --- */
+        /* Comunidad WhatsApp */
         .promo-comunidad {
             background: linear-gradient(135deg, #25D366, #128C7E);
             color: white;
@@ -119,33 +119,21 @@
         .btn-servicio .icon { font-size: 24px; }
         .btn-servicio .label { font-size: 12px; font-weight: 700; color: #555; }
         
-        .btn-full { grid-column: span 2; flex-direction: row; justify-content: center; background: var(--primary); color: white !important; border: none; }
         .btn-manage { background: #f8f9fa; color: var(--primary); border: 1.5px solid var(--primary); padding: 8px 0; border-radius: 12px; font-size: 11px; font-weight: bold; cursor: pointer; width: 90%; margin: 10px auto; }
 
-        /* ESTILO DEL BOTÓN DE AVISTAMIENTO */
-        .btn-reportar-flotante {
-            position: fixed; 
-            bottom: 25px; 
-            right: 20px; 
-            z-index: 9999;
-            background: #ff4757; 
-            color: white; 
-            border: none; 
-            padding: 12px 20px; 
-            border-radius: 50px; 
-            font-weight: bold; 
-            box-shadow: 0 5px 15px rgba(255, 71, 87, 0.4); 
-            display: flex; 
-            align-items: center; 
-            gap: 8px; 
-            cursor: pointer; 
-            transition: transform 0.2s;
+        /* BOTÓN FLOTANTE: VER AVISTAMIENTOS */
+        .btn-avistamientos-flotante {
+            position: fixed; bottom: 25px; right: 20px; z-index: 9999;
+            background: #3498db; color: white; border: none; 
+            padding: 14px 22px; border-radius: 50px; font-weight: bold; 
+            box-shadow: 0 8px 20px rgba(52, 152, 219, 0.4); 
+            display: flex; align-items: center; gap: 10px; cursor: pointer;
+            transition: 0.3s;
         }
-        .btn-reportar-flotante:active { transform: scale(0.95); }
+        .btn-avistamientos-flotante:active { transform: scale(0.9); }
 
-        .hidden { display: none; }
+        .hidden { display: none !important; }
         @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.7; } 100% { opacity: 1; } }
-        #status-msg { margin-top: 15px; font-size: 14px; }
     </style>
 </head>
 <body>
@@ -154,13 +142,6 @@
     <div class="header-hub">
         <h1>🐾 Huellitas Hub</h1>
         <p id="hub-subtitle">Todo para tu mascota en un solo lugar</p>
-    </div>
-
-    <div class="promo-tienda">
-        <div style="font-size: 24px;">🏷️</div>
-        <h3 style="margin: 5px 0; font-size: 16px;">¿Aún no tienes tu Placa Inteligente?</h3>
-        <p style="font-size: 12px; color: #777; margin: 0;">Protege a tu mascota con tecnología GPS y Carnet Digital.</p>
-        <a href="tienda.html" target="_blank" class="btn-buy-now">ADQUIRIR MÁS PLACAS</a>
     </div>
 
     <div id="pwa-install-banner" class="hidden">
@@ -177,7 +158,6 @@
         <label>PIN de Seguridad</label>
         <input type="password" id="auth-pin" class="pin-input" maxlength="4" placeholder="****">
         <button class="btn-login" id="btn-entrar">Acceder a mi Panel</button>
-        <div id="status-msg"></div>
     </div>
 
     <div id="seccion-lista" class="hidden">
@@ -187,57 +167,43 @@
         <div class="section-title">🐕 Mis Mascotas</div>
         <div class="grid-mascotas" id="lista-mascotas"></div>
 
-        <div class="section-title">🩺 Bienestar y Salud</div>
+        <div class="section-title">📢 Comunidad & Alertas</div>
+        <div class="promo-comunidad">
+            <h3 style="margin: 0;">¡Únete a la Red!</h3>
+            <p style="font-size: 13px; margin: 5px 0;">Recibe alertas y ve fotos de avistamientos.</p>
+            <a href="https://chat.whatsapp.com/TU_CODIGO" target="_blank" class="btn-wa-join">GRUPO DE WHATSAPP</a>
+        </div>
 
+        <div class="section-title">🩺 Bienestar y Salud</div>
         <div class="health-scroll">
             <div class="health-card" id="btn-carnet-salud" onclick="window.location.href='carnet.html'">
                 <div class="icon">📋</div>
                 <div style="font-size: 12px; color: #666;">Mi Carnet</div>
                 <div class="val" id="vax-status">Consultar</div>
             </div>
-
-            <div class="health-card" id="btn-peso-ideal" onclick="window.location.href='peso.html'">
-                <div class="icon">⚖️</div>
-                <div style="font-size: 12px; color: #666;">Peso Mascota</div>
-                <div class="val">Ver Registro</div>
-            </div>
-
             <div class="health-card" onclick="window.location.href='peso.html'">
-                <div class="icon">🍎</div>
-                <div style="font-size: 12px; color: #666;">Ración Diaria</div>
-                <div class="val">Calcular</div>
+                <div class="icon">⚖️</div>
+                <div style="font-size: 12px; color: #666;">Peso y Dieta</div>
+                <div class="val">Ver Más</div>
             </div>
-        </div>
-
-        <div class="section-title">📢 Comunidad & Alertas</div>
-        <div class="promo-comunidad">
-            <div style="font-size: 40px; margin-bottom: 10px;">💬</div>
-            <h3 style="margin: 0; font-size: 18px;">Únete a la Red de Búsqueda</h3>
-            <p style="font-size: 13px; opacity: 0.9; margin: 10px 0;">Recibe alertas en tiempo real de mascotas perdidas y consejos.</p>
-            <a href="https://chat.whatsapp.com/TU_CODIGO_DE_GRUPO" target="_blank" class="btn-wa-join">UNIRME AL GRUPO</a>
         </div>
 
         <div class="section-title">🌟 Centro Pet Care</div>
         <div class="grid-servicios">
-            <a href="veterinarias.html" class="btn-servicio">
-                <span class="icon">🏥</span><span class="label">Veterinarias</span>
-            </a>
-            <a href="esteticas.html" class="btn-servicio">
-                <span class="icon">✂️</span><span class="label">Estética</span>
-            </a>
-            <a href="hospedaje.html" class="btn-servicio">
-                <span class="icon">🏨</span><span class="label">Hospedaje</span>
-            </a>
-            <button class="btn-servicio" onclick="window.open('https://TIENDA.com', '_blank')">
-                <span class="icon">🦴</span><span class="label">Comprar Alimento</span>
-            </button>
+            <a href="veterinarias.html" class="btn-servicio">🏥<span class="label">Veterinarias</span></a>
+            <a href="esteticas.html" class="btn-servicio">✂️<span class="label">Estética</span></a>
         </div>
 
-        <button onclick="abrirReporte()" class="btn-reportar-flotante">
-            <span>👁️</span> Reportar Avistamiento
+        <div class="promo-tienda" style="margin-top: 20px;">
+            <h3 style="margin: 5px 0; font-size: 15px;">¿Necesitas otra placa?</h3>
+            <a href="tienda.html" target="_blank" class="btn-buy-now">IR A LA TIENDA</a>
+        </div>
+
+        <button onclick="verGaleriaAvistamientos()" class="btn-avistamientos-flotante">
+            <span>🖼️</span> VER AVISTAMIENTOS
         </button>
 
-        <button onclick="localStorage.clear(); location.reload();" style="margin-top:50px; border:none; background:none; color:#bbb; cursor:pointer; width:100%; text-decoration:underline; font-size:12px; padding-bottom: 40px;">Cerrar Sesión de Seguridad</button>
+        <button onclick="localStorage.clear(); location.reload();" style="margin-top:50px; border:none; background:none; color:#bbb; cursor:pointer; width:100%; text-decoration:underline; font-size:12px; padding-bottom: 50px;">Cerrar Sesión</button>
     </div>
 </div>
 
@@ -257,150 +223,41 @@
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
 
-    // PWA Logic
-    let deferredPrompt;
-    const pwaBanner = document.getElementById('pwa-install-banner');
-    window.addEventListener('beforeinstallprompt', (e) => {
-        e.preventDefault();
-        deferredPrompt = e;
-        pwaBanner.classList.remove('hidden');
-    });
-    document.getElementById('btn-pwa-install').addEventListener('click', async () => {
-        if (deferredPrompt) {
-            deferredPrompt.prompt();
-            deferredPrompt = null;
-            pwaBanner.classList.add('hidden');
-        }
-    });
-
-    // --- ALERTA DE CARNET ---
-    async function verificarAlertasVacunas(email) {
-        const q = query(collection(db, "recordatorios"), where("userEmail", "==", email), where("tipo", "==", "agenda"));
-        const snap = await getDocs(q);
-        const btnCarnet = document.getElementById("btn-carnet-salud");
-        const vaxStatus = document.getElementById("vax-status");
-        const notifBox = document.getElementById("notif-box");
-        
-        const hoy = new Date();
-        hoy.setHours(0,0,0,0);
-
-        snap.forEach(doc => {
-            const data = doc.data();
-            const fechaCita = new Date(data.fecha + "T00:00:00");
-            const diffDays = Math.ceil((fechaCita - hoy) / (1000 * 60 * 60 * 24));
-
-            if (diffDays <= 1 && diffDays >= -1) {
-                btnCarnet.classList.add("alert-active");
-                vaxStatus.innerText = "¡Cita Próxima!";
-                vaxStatus.style.color = "#ff4757";
-
-                const msg = diffDays === 0 ? "es HOY" : (diffDays === 1 ? "es MAÑANA" : "está VENCIDA");
-                notifBox.innerHTML = `
-                    <div class="notif-urgente" onclick="window.location.href='carnet.html'">
-                        <span>⚠️</span>
-                        <div style="font-size:13px; font-weight:bold; color:#c0392b;">
-                            La cita de <b>${data.petName}</b> (${data.vacuna}) ${msg}.
-                        </div>
-                    </div>`;
-            }
-        });
-    }
-
-    // --- NUEVO: GALERÍA DE AVISTAMIENTOS ---
-    async function cargarAvistamientos(petsIds) {
-        if (petsIds.length === 0) return;
-
-        const container = document.getElementById("notif-box");
-        
-        // Buscamos avistamientos para TUS mascotas
-        const q = query(
-            collection(db, "avistamientos"), 
-            where("petId", "in", petsIds),
-            orderBy("fecha", "desc"),
-            limit(5)
-        );
-
-        const snap = await getDocs(q);
-
-        if (!snap.empty) {
-            let html = `<div class="section-title">🚨 Reportes Recientes</div>`;
-            html += `<div style="display:flex; gap:10px; overflow-x:auto; padding-bottom:10px;">`;
-            
-            snap.forEach(doc => {
-                const data = doc.data();
-                const fecha = data.fecha ? new Date(data.fecha.seconds * 1000).toLocaleString() : "Reciente";
-                const mapa = data.lat ? `https://www.google.com/maps?q=${data.lat},${data.lon}` : "#";
-
-                html += `
-                <div style="min-width:200px; background:white; border-radius:15px; border:1px solid #ffcccc; overflow:hidden; box-shadow:0 4px 10px rgba(0,0,0,0.05);">
-                    <div style="height:120px; background:black;">
-                        <img src="${data.foto}" style="width:100%; height:100%; object-fit:contain;">
-                    </div>
-                    <div style="padding:10px;">
-                        <b style="color:#c0392b; font-size:12px;">¡VISTO POR ALGUIEN!</b>
-                        <p style="margin:5px 0; font-size:11px; color:#555;">📅 ${fecha}</p>
-                        <p style="margin:0; font-size:11px;">ID: ${data.petId}</p>
-                        <a href="${mapa}" target="_blank" style="display:block; margin-top:8px; background:#c0392b; color:white; text-align:center; padding:6px; border-radius:8px; text-decoration:none; font-size:11px; font-weight:bold;">📍 VER UBICACIÓN</a>
-                    </div>
-                </div>`;
-            });
-            
-            html += `</div>`;
-            
-            const listaDiv = document.getElementById("seccion-lista");
-            const divAlerta = document.createElement("div");
-            divAlerta.innerHTML = html;
-            listaDiv.insertBefore(divAlerta, listaDiv.children[1]); 
-        }
-    }
-
-    // --- FUNCIÓN DEL BOTÓN DE AVISTAMIENTO (AGREGADA) ---
-    window.abrirReporte = function() {
-        // Redirige a la página de reporte o muestra alerta si aún no la tienes
-        // window.location.href = "reportar.html"; 
-        alert("¡Cámara activada! Función lista para reportar mascota.");
+    // FUNCIÓN PARA VER GALERÍA
+    window.verGaleriaAvistamientos = function() {
+        window.location.href = "avistamientos.html"; 
     };
 
     // --- SESIÓN ---
     function verificarSesion() {
         const userEmail = localStorage.getItem("userEmail");
-        const loginTimestamp = localStorage.getItem("loginTimestamp");
-        if (userEmail && (new Date().getTime() - loginTimestamp < 5 * 60 * 60 * 1000)) {
-            mostrarHub(userEmail);
-        }
+        if (userEmail) mostrarHub(userEmail);
     }
 
     document.getElementById("btn-entrar").onclick = async () => {
         const email = document.getElementById("auth-email").value.trim().toLowerCase();
         const pin = document.getElementById("auth-pin").value;
-        try {
-            const q = query(collection(db, "placas"), where("email", "==", email));
-            const snap = await getDocs(q);
-            let ok = false;
-            snap.forEach(doc => { if(doc.data().pin === pin) ok = true; });
-            if (ok) {
-                localStorage.setItem("userEmail", email);
-                localStorage.setItem("loginTimestamp", new Date().getTime());
-                mostrarHub(email);
-            } else alert("PIN Incorrecto");
-        } catch (e) { console.error(e); }
+        const q = query(collection(db, "placas"), where("email", "==", email));
+        const snap = await getDocs(q);
+        let ok = false;
+        snap.forEach(doc => { if(doc.data().pin === pin) ok = true; });
+        if (ok) {
+            localStorage.setItem("userEmail", email);
+            mostrarHub(email);
+        } else { alert("Datos incorrectos"); }
     };
 
     async function mostrarHub(email) {
         document.getElementById("seccion-auth").classList.add("hidden");
         document.getElementById("seccion-lista").classList.remove("hidden");
-        verificarAlertasVacunas(email);
-
+        
         const q = query(collection(db, "placas"), where("email", "==", email));
         const snap = await getDocs(q);
         const lista = document.getElementById("lista-mascotas");
         lista.innerHTML = "";
         
-        let misMascotasIds = [];
-
         snap.forEach((doc) => {
             const pet = doc.data();
-            misMascotasIds.push(doc.id);
             lista.innerHTML += `
                 <div class="pet-card">
                     <div class="status-badge ${pet.extraviado ? 'status-lost' : 'status-safe'}">${pet.extraviado ? 'Perdido' : 'A salvo'}</div>
@@ -411,9 +268,6 @@
                     </div>
                 </div>`;
         });
-
-        // Llamamos a la carga de avistamientos
-        cargarAvistamientos(misMascotasIds);
     }
 
     verificarSesion();
