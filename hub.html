@@ -9,7 +9,7 @@
     <link rel="manifest" href="manifest-hub.json">
 
     <style>
-        :root { --primary: #2bb673; --bg: #f4f7f6; --text: #333; --lost: #ff4757; }
+        :root { --primary: #2bb673; --bg: #f4f7f6; --text: #333; --lost: #ff4757; --wa: #25D366; }
         body { font-family: 'Segoe UI', sans-serif; background: var(--bg); margin: 0; padding: 20px; display: flex; justify-content: center; color: var(--text); }
         .container { max-width: 600px; width: 100%; }
         
@@ -18,7 +18,7 @@
         .header-hub h1 { color: var(--primary); margin: 0; font-size: 32px; }
         .header-hub p { color: #888; margin-top: 5px; }
 
-        /* --- MEJORA: BANNER DE VENTA LLAMATIVO --- */
+        /* Banner de Venta */
         .promo-tienda {
             background: white;
             padding: 25px;
@@ -48,6 +48,30 @@
             0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(46, 204, 113, 0.7); }
             70% { transform: scale(1.05); box-shadow: 0 0 0 10px rgba(46, 204, 113, 0); }
             100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(46, 204, 113, 0); }
+        }
+
+        /* --- NUEVO: ESTILO COMUNIDAD WHATSAPP --- */
+        .promo-comunidad {
+            background: linear-gradient(135deg, #25D366, #128C7E);
+            color: white;
+            padding: 20px;
+            border-radius: 25px;
+            text-align: center;
+            box-shadow: 0 8px 20px rgba(37, 211, 102, 0.3);
+            margin-bottom: 30px;
+            position: relative;
+            overflow: hidden;
+        }
+        .btn-wa-join {
+            background: white;
+            color: #128C7E;
+            padding: 12px 25px;
+            border-radius: 50px;
+            text-decoration: none;
+            font-weight: bold;
+            display: inline-block;
+            margin-top: 15px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
         }
 
         /* Auth Box */
@@ -164,6 +188,14 @@
             </div>
         </div>
 
+        <div class="section-title">📢 Comunidad & Alertas</div>
+        <div class="promo-comunidad">
+            <div style="font-size: 40px; margin-bottom: 10px;">💬</div>
+            <h3 style="margin: 0; font-size: 18px;">Únete a la Red de Búsqueda</h3>
+            <p style="font-size: 13px; opacity: 0.9; margin: 10px 0;">Recibe alertas en tiempo real de mascotas perdidas y consejos.</p>
+            <a href="https://chat.whatsapp.com/TU_CODIGO_DE_GRUPO" target="_blank" class="btn-wa-join">UNIRME AL GRUPO</a>
+        </div>
+
         <div class="section-title">🌟 Centro Pet Care</div>
         <div class="grid-servicios">
             <a href="veterinarias.html" class="btn-servicio">
@@ -186,7 +218,7 @@
 
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-    import { getFirestore, collection, query, where, getDocs } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+    import { getFirestore, collection, query, where, getDocs, orderBy, limit } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
     const firebaseConfig = {
         apiKey: "AIzaSyCqROIzmp2guo2XLbdYrSW3ujlUBc7ngOc",
@@ -249,6 +281,54 @@
         });
     }
 
+    // --- NUEVO: GALERÍA DE AVISTAMIENTOS ---
+    async function cargarAvistamientos(petsIds) {
+        if (petsIds.length === 0) return;
+
+        const container = document.getElementById("notif-box");
+        
+        // Buscamos avistamientos para TUS mascotas
+        const q = query(
+            collection(db, "avistamientos"), 
+            where("petId", "in", petsIds),
+            orderBy("fecha", "desc"),
+            limit(5)
+        );
+
+        const snap = await getDocs(q);
+
+        if (!snap.empty) {
+            let html = `<div class="section-title">🚨 Reportes Recientes</div>`;
+            html += `<div style="display:flex; gap:10px; overflow-x:auto; padding-bottom:10px;">`;
+            
+            snap.forEach(doc => {
+                const data = doc.data();
+                const fecha = data.fecha ? new Date(data.fecha.seconds * 1000).toLocaleString() : "Reciente";
+                const mapa = data.lat ? `https://www.google.com/maps?q=${data.lat},${data.lon}` : "#";
+
+                html += `
+                <div style="min-width:200px; background:white; border-radius:15px; border:1px solid #ffcccc; overflow:hidden; box-shadow:0 4px 10px rgba(0,0,0,0.05);">
+                    <div style="height:120px; background:black;">
+                        <img src="${data.foto}" style="width:100%; height:100%; object-fit:contain;">
+                    </div>
+                    <div style="padding:10px;">
+                        <b style="color:#c0392b; font-size:12px;">¡VISTO POR ALGUIEN!</b>
+                        <p style="margin:5px 0; font-size:11px; color:#555;">📅 ${fecha}</p>
+                        <p style="margin:0; font-size:11px;">ID: ${data.petId}</p>
+                        <a href="${mapa}" target="_blank" style="display:block; margin-top:8px; background:#c0392b; color:white; text-align:center; padding:6px; border-radius:8px; text-decoration:none; font-size:11px; font-weight:bold;">📍 VER UBICACIÓN</a>
+                    </div>
+                </div>`;
+            });
+            
+            html += `</div>`;
+            
+            const listaDiv = document.getElementById("seccion-lista");
+            const divAlerta = document.createElement("div");
+            divAlerta.innerHTML = html;
+            listaDiv.insertBefore(divAlerta, listaDiv.children[1]); 
+        }
+    }
+
     // --- SESIÓN ---
     function verificarSesion() {
         const userEmail = localStorage.getItem("userEmail");
@@ -283,8 +363,12 @@
         const snap = await getDocs(q);
         const lista = document.getElementById("lista-mascotas");
         lista.innerHTML = "";
+        
+        let misMascotasIds = [];
+
         snap.forEach((doc) => {
             const pet = doc.data();
+            misMascotasIds.push(doc.id);
             lista.innerHTML += `
                 <div class="pet-card">
                     <div class="status-badge ${pet.extraviado ? 'status-lost' : 'status-safe'}">${pet.extraviado ? 'Perdido' : 'A salvo'}</div>
@@ -295,6 +379,9 @@
                     </div>
                 </div>`;
         });
+
+        // Llamamos a la carga de avistamientos
+        cargarAvistamientos(misMascotasIds);
     }
 
     verificarSesion();
