@@ -184,6 +184,8 @@
     </div>
 
     <div id="seccion-lista" class="hidden">
+
+        <div id="avistamientos-box"></div>
         
         <div id="notif-box"></div>
 
@@ -226,6 +228,10 @@
             <button class="btn-servicio" onclick="window.open('https://TIENDA.com', '_blank')">
                 <span class="icon">🦴</span><span class="label">Comprar Alimento</span>
             </button>
+            
+            <a href="avistamientos.html" class="btn-servicio btn-full">
+                <span class="icon">🔭</span><span class="label">Mapa de Avistamientos</span>
+            </a>
         </div>
 
         <div class="section-title">📢 Comunidad & Alertas</div>
@@ -281,7 +287,6 @@
         const notifBox = document.getElementById("notif-box");
         notifBox.innerHTML = ""; // Limpiar alertas anteriores
         
-        // Obtenemos fecha de hoy sin horas
         const hoy = new Date();
         hoy.setHours(0,0,0,0);
 
@@ -289,7 +294,6 @@
             const data = doc.data();
             const fechaCita = new Date(data.fecha + "T00:00:00");
             
-            // Diferencia en días
             const diffTime = fechaCita - hoy;
             const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
             
@@ -299,25 +303,21 @@
             let mostrar = false;
 
             if (diffDays < 0) {
-                // Vencida
                 tipoAlerta = "notif-urgente";
                 icono = '<i class="fas fa-exclamation-triangle" style="color:#ff4757; font-size:24px;"></i>';
                 textoTiempo = `<span style="color:#ff4757; font-weight:bold;">FECHA VENCIDA (${Math.abs(diffDays)} días)</span>`;
                 mostrar = true;
             } else if (diffDays === 0) {
-                // Es Hoy
                 tipoAlerta = "notif-atencion";
                 icono = '<i class="fas fa-clock" style="color:#ffa502; font-size:24px;"></i>';
                 textoTiempo = `<span style="color:#ffa502; font-weight:bold;">¡ES HOY!</span>`;
                 mostrar = true;
             } else if (diffDays === 1) {
-                // Es Mañana
                 tipoAlerta = "notif-atencion";
                 icono = '<i class="fas fa-calendar-day" style="color:#ffa502; font-size:24px;"></i>';
                 textoTiempo = `<span style="color:#ffa502; font-weight:bold;">ES MAÑANA</span>`;
                 mostrar = true;
             } else if (diffDays <= 7) {
-                // Próximos 7 días
                 tipoAlerta = "notif-info";
                 icono = '<i class="fas fa-info-circle" style="color:#3498db; font-size:24px;"></i>';
                 textoTiempo = `<span>Faltan ${diffDays} días</span>`;
@@ -336,51 +336,57 @@
                     </div>`;
             }
         });
-
-        // Llamamos después a los avistamientos para no borrar su contenido
-        // Se cargan después de que se definan los IDs en mostrarHub
     }
 
-    // --- GALERÍA DE AVISTAMIENTOS ---
+    // --- GALERÍA DE AVISTAMIENTOS (CORREGIDA) ---
     async function cargarAvistamientos(petsIds) {
-        if (petsIds.length === 0) return;
-        const container = document.getElementById("notif-box");
+        if (!petsIds || petsIds.length === 0) return;
         
-        const q = query(
-            collection(db, "avistamientos"), 
-            where("petId", "in", petsIds),
-            orderBy("fecha", "desc"),
-            limit(5)
-        );
-        const snap = await getDocs(q);
+        const container = document.getElementById("avistamientos-box");
+        container.innerHTML = ""; 
 
-        if (!snap.empty) {
-            let html = `<div class="section-title">🚨 Reportes Recientes</div>`;
-            html += `<div style="display:flex; gap:10px; overflow-x:auto; padding-bottom:10px;">`;
+        try {
+            // Se quitó orderBy para evitar conflictos de índice
+            const q = query(
+                collection(db, "avistamientos"), 
+                where("petId", "in", petsIds),
+                limit(5)
+            );
             
-            snap.forEach(doc => {
-                const data = doc.data();
-                const fecha = data.fecha ? new Date(data.fecha.seconds * 1000).toLocaleString() : "Reciente";
-                const mapa = data.lat ? `https://www.google.com/maps?q=${data.lat},${data.lon}` : "#";
-                html += `
-                <div style="min-width:200px; background:white; border-radius:15px; border:1px solid #ffcccc; overflow:hidden; box-shadow:0 4px 10px rgba(0,0,0,0.05);">
-                    <div style="height:120px; background:black;">
-                        <img src="${data.foto}" style="width:100%; height:100%; object-fit:contain;">
-                    </div>
-                    <div style="padding:10px;">
-                        <b style="color:#c0392b; font-size:12px;">¡VISTO POR ALGUIEN!</b>
-                        <p style="margin:5px 0; font-size:11px; color:#555;">📅 ${fecha}</p>
-                        <p style="margin:0; font-size:11px;">ID: ${data.petId}</p>
-                        <a href="${mapa}" target="_blank" style="display:block; margin-top:8px; background:#c0392b; color:white; text-align:center; padding:6px; border-radius:8px; text-decoration:none; font-size:11px; font-weight:bold;">📍 VER UBICACIÓN</a>
-                    </div>
-                </div>`;
-            });
-            html += `</div>`;
-            
-            const divAlerta = document.createElement("div");
-            divAlerta.innerHTML = html;
-            // Lo insertamos después de las alertas de vacunas
-            container.appendChild(divAlerta);
+            const snap = await getDocs(q);
+
+            if (!snap.empty) {
+                let html = `<div class="section-title" style="color:#c0392b;">🚨 ¡Alerta de Avistamiento!</div>`;
+                html += `<div style="display:flex; gap:10px; overflow-x:auto; padding-bottom:10px;">`;
+                
+                snap.forEach(doc => {
+                    const data = doc.data();
+                    let fechaTexto = "Reciente";
+                    if(data.fecha && data.fecha.seconds) {
+                        fechaTexto = new Date(data.fecha.seconds * 1000).toLocaleDateString();
+                    }
+                    const mapa = data.lat ? `https://www.google.com/maps?q=${data.lat},${data.lon}` : "#";
+                    
+                    html += `
+                    <div style="min-width:220px; background:white; border-radius:15px; border:2px solid #ff4757; overflow:hidden; box-shadow:0 4px 15px rgba(255, 71, 87, 0.2);">
+                        <div style="height:140px; background:#f0f0f0; position:relative;">
+                            <img src="${data.foto}" style="width:100%; height:100%; object-fit:cover;">
+                            <div style="position:absolute; top:10px; right:10px; background:#ff4757; color:white; padding:4px 8px; border-radius:10px; font-size:10px; font-weight:bold;">NUEVO</div>
+                        </div>
+                        <div style="padding:12px;">
+                            <b style="color:#c0392b; font-size:14px; display:block; margin-bottom:5px;">¡Alguien vio a tu mascota!</b>
+                            <p style="margin:0; font-size:12px; color:#555;">📅 Fecha: ${fechaTexto}</p>
+                            <a href="${mapa}" target="_blank" style="display:block; margin-top:10px; background:#ff4757; color:white; text-align:center; padding:8px; border-radius:8px; text-decoration:none; font-size:12px; font-weight:bold;">
+                                <i class="fas fa-map-marker-alt"></i> VER UBICACIÓN
+                            </a>
+                        </div>
+                    </div>`;
+                });
+                html += `</div>`;
+                container.innerHTML = html;
+            }
+        } catch (error) {
+            console.error("Error cargando avistamientos:", error);
         }
     }
 
@@ -424,12 +430,12 @@
         lista.innerHTML = "";
         
         let misMascotasIds = [];
-        let nombresMascotas = {}; // Mapa para guardar ID -> Nombre
+        let nombresMascotas = {}; 
 
         snap.forEach((doc) => {
             const pet = doc.data();
             misMascotasIds.push(doc.id);
-            nombresMascotas[doc.id] = pet.mascota; // Guardamos el nombre
+            nombresMascotas[doc.id] = pet.mascota; 
 
             lista.innerHTML += `
                 <div class="pet-card">
@@ -442,9 +448,7 @@
                 </div>`;
         });
 
-        // Llamamos a las alertas pasando el mapa de nombres
         verificarAlertasVacunas(email, nombresMascotas);
-        // Llamamos a la carga de avistamientos
         cargarAvistamientos(misMascotasIds);
     }
 
