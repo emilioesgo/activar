@@ -220,7 +220,6 @@
     const email = localStorage.getItem("userEmail");
 
     // --- CARGAR CARNETS ---
-    // --- FUNCIÓN CORREGIDA ---
     async function cargarCarnets() {
         const container = document.getElementById("main-container");
         if (!email) { window.location.href = "hub.html"; return; }
@@ -260,38 +259,6 @@
                             <div class="pet-details">
                                 <h2>${pet.mascota}</h2>
                                 <span class="chip">ID Placa: ${petId}</span>
-                            </div>
-                        </div>
-                        ${weightHTML}
-                    </div>
-                    
-                    <div class="folder-body" id="lista-vacunas-${petId}">
-                        <div style="padding:20px; text-align:center; color:#999; font-size:12px;">Cargando historial...</div>
-                    </div>
-
-                    <div class="folder-footer">
-                        <button class="btn-action btn-primary-ghost" onclick="abrirModal('${petId}')">
-                            <i class="fas fa-plus-circle"></i> NUEVA CITA
-                        </button>
-                        <button class="btn-action" onclick="window.location.href='peso.html'">
-                            <i class="fas fa-weight"></i> VER PESO
-                        </button>
-                    </div>
-                </div>
-            `;
-            // Cargar registros asíncronamente
-            cargarRegistrosVacunas(petId);
-        }
-    }
-
-            container.innerHTML += `
-                <div class="medical-folder">
-                    <div class="folder-tab">
-                        <div class="pet-info">
-                            <img src="${pet.foto || 'assets/img/logo.png'}" class="pet-photo">
-                            <div class="pet-details">
-                                <h2>${pet.mascota}</h2>
-                                <span class="chip">ID: ${pet.token || '---'}</span>
                             </div>
                         </div>
                         ${weightHTML}
@@ -399,26 +366,4 @@
             await addDoc(collection(db, "recordatorios"), {
                 petId, vacuna, fecha, estado,
                 userEmail: email,
-                timestamp: Date.now()
-            });
-            cerrarModal();
-            cargarRegistrosVacunas(petId); // Recargar solo la lista
-        } catch (e) {
-            console.error(e);
-            alert("Error al guardar");
-        } finally {
-            btn.innerText = "Guardar en Cartilla";
-            btn.disabled = false;
-        }
-    };
-
-    function formatearFecha(f) {
-        const partes = f.split('-'); // f viene como YYYY-MM-DD
-        const d = new Date(partes[0], partes[1] - 1, partes[2]);
-        return d.toLocaleDateString('es-ES', { day: 'numeric', month: 'short', year: 'numeric' });
-    }
-
-    cargarCarnets();
-</script>
-</body>
-</html>
+                timestamp:
