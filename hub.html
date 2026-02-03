@@ -247,8 +247,9 @@
 </div>
 
 <script type="module">
+    // Se agregan deleteDoc y doc a los imports
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-    import { getFirestore, collection, query, where, getDocs, orderBy, limit } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+    import { getFirestore, collection, query, where, getDocs, orderBy, limit, deleteDoc, doc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
     const firebaseConfig = {
         apiKey: "AIzaSyCqROIzmp2guo2XLbdYrSW3ujlUBc7ngOc",
@@ -338,7 +339,22 @@
         });
     }
 
-    // --- GALERÍA DE AVISTAMIENTOS (CORREGIDA) ---
+    // --- NUEVA FUNCIÓN PARA ELIMINAR AVISTAMIENTOS ---
+    window.eliminarAvistamiento = async (idDoc) => {
+        const confirmar = confirm("¿Ya revisaste este reporte? Al aceptar, se borrará permanentemente.");
+        if (confirmar) {
+            try {
+                await deleteDoc(doc(db, "avistamientos", idDoc));
+                alert("Reporte eliminado.");
+                location.reload(); 
+            } catch (error) {
+                console.error("Error al borrar:", error);
+                alert("No se pudo borrar. Verifica tu conexión.");
+            }
+        }
+    };
+
+    // --- GALERÍA DE AVISTAMIENTOS (CORREGIDA Y CON BORRAR) ---
     async function cargarAvistamientos(petsIds) {
         if (!petsIds || petsIds.length === 0) return;
         
@@ -359,8 +375,10 @@
                 let html = `<div class="section-title" style="color:#c0392b;">🚨 ¡Alerta de Avistamiento!</div>`;
                 html += `<div style="display:flex; gap:10px; overflow-x:auto; padding-bottom:10px;">`;
                 
-                snap.forEach(doc => {
-                    const data = doc.data();
+                snap.forEach(docSnap => {
+                    const data = docSnap.data();
+                    const idReporte = docSnap.id; // Obtenemos el ID para borrar
+
                     let fechaTexto = "Reciente";
                     if(data.fecha && data.fecha.seconds) {
                         fechaTexto = new Date(data.fecha.seconds * 1000).toLocaleDateString();
@@ -368,7 +386,10 @@
                     const mapa = data.lat ? `https://www.google.com/maps?q=${data.lat},${data.lon}` : "#";
                     
                     html += `
-                    <div style="min-width:220px; background:white; border-radius:15px; border:2px solid #ff4757; overflow:hidden; box-shadow:0 4px 15px rgba(255, 71, 87, 0.2);">
+                    <div style="min-width:220px; background:white; border-radius:15px; border:2px solid #ff4757; overflow:hidden; box-shadow:0 4px 15px rgba(255, 71, 87, 0.2); position:relative;">
+                        
+                        <button onclick="eliminarAvistamiento('${idReporte}')" style="position:absolute; top:5px; right:5px; background:white; color:#ff4757; border:none; width:30px; height:30px; border-radius:50%; font-weight:bold; cursor:pointer; box-shadow:0 2px 5px rgba(0,0,0,0.2); z-index:10;">✕</button>
+
                         <div style="height:140px; background:#f0f0f0; position:relative;">
                             <img src="${data.foto}" style="width:100%; height:100%; object-fit:cover;">
                             <div style="position:absolute; top:10px; right:10px; background:#ff4757; color:white; padding:4px 8px; border-radius:10px; font-size:10px; font-weight:bold;">NUEVO</div>
