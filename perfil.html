@@ -31,7 +31,6 @@
 
         body { font-family: 'Segoe UI', system-ui, sans-serif; background: var(--bg); margin: 0; display: flex; justify-content: center; color: var(--text); padding-bottom: 80px; }
         
-        /* Contenedor Principal */
         .profile-card { 
             background: white; 
             width: 100%; 
@@ -42,7 +41,6 @@
             overflow: hidden;
         }
         
-        /* Estado Extraviado */
         .is-lost { border: 4px solid var(--danger); }
         .lost-banner { 
             display: none; 
@@ -62,10 +60,11 @@
         }
         @keyframes pulse-danger { 0% { background: #ff4757; } 50% { background: #ff6b81; } 100% { background: #ff4757; } }
 
-        /* Foto */
+        /* --- FOTO MÁS GRANDE --- */
         .photo-container { 
             width: 100%; 
-            height: 380px; 
+            height: 45vh; /* Ocupa el 45% de la altura de la pantalla */
+            max-height: 500px; /* Límite para pantallas grandes */
             background: #eee; 
             position: relative; 
             display: flex; 
@@ -75,7 +74,6 @@
         #pet-photo { width: 100%; height: 100%; object-fit: cover; transition: opacity 0.3s; }
         .img-logo-fallback { width: 120px !important; height: auto !important; object-fit: contain !important; opacity: 0.3; filter: grayscale(1); }
         
-        /* Badge de Estado */
         .status-badge { 
             position: absolute; 
             bottom: -15px; 
@@ -93,7 +91,6 @@
             display: flex; align-items: center; gap: 6px;
         }
 
-        /* Contenido */
         .info-content { 
             padding: 40px 25px 30px; 
             border-radius: 35px 35px 0 0; 
@@ -107,7 +104,6 @@
         .breed { color: #636e72; font-size: 14px; margin-bottom: 25px; display: block; text-align: center; text-transform: uppercase; letter-spacing: 1px; font-weight: 600; }
         .display-id-box { background: #f1f2f6; padding: 4px 10px; border-radius: 6px; color: #b2bec3; }
 
-        /* Cajas de Info */
         .info-box { padding: 18px; border-radius: 16px; margin-bottom: 15px; position: relative; }
         .emergency-box { background: #fff5f5; border: 1px dashed #fc8181; }
         .medical-box { background: var(--medical-bg); border: 1px solid var(--medical-border); }
@@ -115,7 +111,6 @@
         .box-title { font-weight: 800; font-size: 11px; text-transform: uppercase; display: flex; align-items: center; gap: 6px; margin-bottom: 8px; }
         .box-text { margin: 0; font-size: 15px; line-height: 1.5; color: #444; }
 
-        /* Botones */
         .actions { display: grid; gap: 12px; margin-top: 25px; }
         .btn { 
             display: flex; align-items: center; justify-content: center; gap: 10px; 
@@ -134,7 +129,6 @@
         }
         .btn-report:hover { background: #f0f8ff; }
 
-        /* Footer */
         footer { text-align: center; padding: 40px 20px; font-size: 12px; color: #b2bec3; background: white; margin-top: 20px; }
         .btn-owner { 
             display: inline-flex; align-items: center; gap: 8px;
@@ -145,10 +139,8 @@
             box-shadow: 0 4px 10px rgba(45, 52, 54, 0.3);
         }
 
-        /* Utilidades */
         .hidden { display: none !important; }
         
-        /* Loading Spinner */
         .loading { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; }
         .spinner {
             width: 40px; height: 40px; border: 4px solid #f3f3f3; 
@@ -157,7 +149,6 @@
         }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
-        /* Botón Flotante Panel */
         .floating-hub {
             position: fixed; bottom: 25px; right: 25px; z-index: 1000;
             background: var(--primary); color: white;
@@ -243,7 +234,7 @@
 
     <footer>
         <img src="assets/img/logo.png" width="25" style="filter: grayscale(1); opacity:0.4; margin-bottom:5px;"><br>
-        <b>Huellitas Digitales</b> &copy; 2024<br>
+        <b>Huellitas Digitales</b> © 2024<br>
         <button id="admin-btn" onclick="ownerAccess()" class="btn-owner hidden">
             <i class="fas fa-user-cog"></i> GESTIONAR PERFIL
         </button>
@@ -258,8 +249,15 @@
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
     import { getFirestore, doc, getDoc, collection, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
-    // Inicializar EmailJS
-    emailjs.init("TWeQlV3AV77UPCLZ6");
+    // --- SEGURIDAD DE CARGA ---
+    const safetyTimer = setTimeout(() => {
+        const loader = document.getElementById("loading-view");
+        if(loader && loader.style.display !== 'none') {
+            loader.innerHTML = '<p style="color:red; font-weight:bold;">Error de conexión. <br>Por favor recarga la página.</p>';
+        }
+    }, 8000);
+
+    try { if(window.emailjs) emailjs.init("TWeQlV3AV77UPCLZ6"); } catch(e){}
 
     const firebaseConfig = {
         apiKey: "AIzaSyCqROIzmp2guo2XLbdYrSW3ujlUBc7ngOc",
@@ -270,141 +268,194 @@
         appId: "1:523935942496:web:0bb3ad3b28c189345fc005"
     };
 
-    const app = initializeApp(firebaseConfig);
-    const db = getFirestore(app);
+    let app, db;
+    try {
+        app = initializeApp(firebaseConfig);
+        db = getFirestore(app);
+    } catch (error) { console.error("Error iniciando Firebase:", error); }
+
     let petData = null;
 
     async function loadProfile() {
         const urlParams = new URLSearchParams(window.location.search);
         const id = urlParams.get('id');
+
         if (!id) {
+            clearTimeout(safetyTimer);
             document.getElementById("loading-view").style.display = "none";
             document.getElementById("not-sold-view").classList.remove("hidden");
             return;
         }
 
-        const docRef = doc(db, "placas", id.toUpperCase());
-        const docSnap = await getDoc(docRef);
-        document.getElementById("loading-view").style.display = "none";
+        try {
+            const docRef = doc(db, "placas", id.toUpperCase());
+            const docSnap = await getDoc(docRef);
+            
+            clearTimeout(safetyTimer);
+            document.getElementById("loading-view").style.display = "none";
 
-        if (docSnap.exists()) {
-            const data = docSnap.data();
-            petData = data;
+            if (docSnap.exists()) {
+                const data = docSnap.data();
+                petData = data;
 
-            if (data.activa) {
-                const idUpper = id.toUpperCase();
-                
-                // --- DETECCIÓN DE DUEÑO ---
-                const currentUserEmail = localStorage.getItem("userEmail");
-                const esDueno = currentUserEmail && currentUserEmail === data.email;
+                if (data.activa) {
+                    const idUpper = id.toUpperCase();
+                    const currentUserEmail = localStorage.getItem("userEmail");
+                    const esDueno = currentUserEmail && currentUserEmail === data.email;
 
-                if (esDueno) {
-                    document.getElementById("admin-btn").classList.remove("hidden");
-                    document.getElementById("floating-hub-menu").classList.remove("hidden");
-                    document.getElementById("btn-report-sighting").style.display = "none";
-                }
+                    if (esDueno) {
+                        document.getElementById("admin-btn").classList.remove("hidden");
+                        document.getElementById("floating-hub-menu").classList.remove("hidden");
+                        const btnReport = document.getElementById("btn-report-sighting");
+                        if(btnReport) btnReport.style.display = "none";
+                    }
 
-                // Llenar datos
-                document.getElementById("pet-name").innerText = data.mascota;
-                document.getElementById("display-id").innerText = idUpper;
-                
-                if(data.foto) {
-                    document.getElementById("pet-photo").src = data.foto;
+                    setText("pet-name", data.mascota);
+                    setText("display-id", idUpper);
+                    
+                    const imgEl = document.getElementById("pet-photo");
+                    if(data.foto) imgEl.src = data.foto;
+                    else {
+                        imgEl.src = "assets/img/logo.png";
+                        imgEl.classList.add('img-logo-fallback');
+                    }
+
+                    if(data.mensaje) setText("pet-msg", data.mensaje);
+                    if(data.notas) setText("pet-medical", data.notas);
+                    
+                    if(data.extraviado) {
+                        document.getElementById("profile-view").classList.add("is-lost");
+                        document.getElementById("lost-alert").style.display = "block";
+                        const badge = document.getElementById("status-txt");
+                        badge.innerHTML = '<i class="fas fa-search"></i> SE BUSCA';
+                        badge.style.background = "var(--danger)";
+                    }
+
+                    document.getElementById("call-link").href = `tel:${data.telefono}`;
+                    document.getElementById("wa-link").href = `https://wa.me/${data.telefono.replace(/\D/g,'')}?text=Hola,%20escaneé%20la%20placa%20de%20${data.mascota}`;
+                    
+                    document.getElementById("profile-view").classList.remove("hidden");
+
+                    if (navigator.geolocation && !esDueno) {
+                        navigator.geolocation.getCurrentPosition((position) => {
+                            const lat = position.coords.latitude;
+                            const lon = position.coords.longitude;
+                            const mapsUrl = `https://www.google.com/maps?q=${lat},${lon}`;
+                            
+                            if(window.emailjs) {
+                                emailjs.send("service_xwx9czt", "template_rghvb1w", {
+                                    pet_name: data.mascota,
+                                    pet_id: idUpper,
+                                    map_url: mapsUrl,
+                                    owner_email: data.email,
+                                    mensaje_aviso: "Alguien ha escaneado la placa."
+                                });
+                            }
+                        }, null, {timeout: 8000});
+                    }
+                } else if (data.vendida) {
+                    document.getElementById("btn-activar-link").href = `index.html?id=${id.toUpperCase()}`;
+                    document.getElementById("not-active-view").classList.remove("hidden");
                 } else {
-                    document.getElementById("pet-photo").src = "assets/img/logo.png";
-                    document.getElementById("pet-photo").classList.add('img-logo-fallback');
+                    document.getElementById("not-sold-view").classList.remove("hidden");
                 }
-
-                if(data.mensaje) document.getElementById("pet-msg").innerText = data.mensaje;
-                if(data.notas) document.getElementById("pet-medical").innerText = data.notas;
-                
-                if(data.extraviado) {
-                    document.getElementById("profile-view").classList.add("is-lost");
-                    document.getElementById("lost-alert").style.display = "block";
-                    const badge = document.getElementById("status-txt");
-                    badge.innerHTML = '<i class="fas fa-search"></i> SE BUSCA';
-                    badge.style.background = "var(--danger)";
-                }
-
-                document.getElementById("call-link").href = `tel:${data.telefono}`;
-                document.getElementById("wa-link").href = `https://wa.me/${data.telefono.replace(/\D/g,'')}?text=Hola,%20escaneé%20la%20placa%20de%20${data.mascota}`;
-                
-                document.getElementById("profile-view").classList.remove("hidden");
-
-                // --- GEOLOCALIZACIÓN AL DUEÑO ---
-                if (navigator.geolocation && !esDueno) {
-                    navigator.geolocation.getCurrentPosition((position) => {
-                        const mapsUrl = `https://www.google.com/maps?q=${position.coords.latitude},${position.coords.longitude}`;
-                        console.log("Visitante detectado. Enviando alerta silenciosa...");
-                        emailjs.send("service_xwx9czt", "template_rghvb1w", {
-                            pet_name: data.mascota,
-                            pet_id: idUpper,
-                            map_url: mapsUrl,
-                            owner_email: data.email,
-                            mensaje_aviso: "Alguien ha escaneado la placa."
-                        });
-                    }, null, {timeout: 10000});
-                }
-            } else if (data.vendida) {
-                document.getElementById("btn-activar-link").href = `index.html?id=${id.toUpperCase()}`;
-                document.getElementById("not-active-view").classList.remove("hidden");
             } else {
                 document.getElementById("not-sold-view").classList.remove("hidden");
             }
-        } else {
-            document.getElementById("not-sold-view").classList.remove("hidden");
+        } catch (error) {
+            clearTimeout(safetyTimer);
+            document.getElementById("loading-view").innerHTML = "<p>Error cargando datos.</p>";
         }
     }
 
-    // FUNCIÓN DE REPORTE DE FOTO
+    // --- NUEVO: FUNCIÓN PARA COMPRIMIR IMAGEN ---
+    // Reduce la imagen a máximo 800px de ancho y calidad 70%
+    const comprimirImagen = (file) => {
+        return new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.readAsDataURL(file);
+            reader.onload = (event) => {
+                const img = new Image();
+                img.src = event.target.result;
+                img.onload = () => {
+                    const canvas = document.createElement('canvas');
+                    const MAX_WIDTH = 800;
+                    const scaleSize = MAX_WIDTH / img.width;
+                    // Si la imagen es más pequeña que 800px, no redimensionamos hacia arriba
+                    const width = img.width > MAX_WIDTH ? MAX_WIDTH : img.width;
+                    const height = img.width > MAX_WIDTH ? img.height * scaleSize : img.height;
+
+                    canvas.width = width;
+                    canvas.height = height;
+                    const ctx = canvas.getContext('2d');
+                    ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+                    
+                    // Exportar como JPEG calidad 0.7 (70%)
+                    resolve(canvas.toDataURL('image/jpeg', 0.7)); 
+                }
+                img.onerror = (err) => reject(err);
+            }
+            reader.onerror = (err) => reject(err);
+        });
+    }
+
+    // --- FUNCIÓN DE REPORTE ACTUALIZADA ---
     window.enviarAvistamiento = async (input) => {
         if (!input.files || !input.files[0]) return;
         
         const btn = document.querySelector('.btn-report');
         const originalText = btn.innerHTML;
+        
+        // Estado de carga
         btn.innerHTML = '<i class="fas fa-circle-notch fa-spin"></i> ENVIANDO...';
         btn.disabled = true;
         btn.style.opacity = "0.7";
 
         try {
+            // 1. Obtener ubicación (con timeout para no bloquear)
             let lat = null, lon = null;
             if (navigator.geolocation) {
                 try {
                     const pos = await new Promise((resolve, reject) => {
-                        navigator.geolocation.getCurrentPosition(resolve, reject, {timeout: 5000});
+                        navigator.geolocation.getCurrentPosition(resolve, reject, {timeout: 4000});
                     });
                     lat = pos.coords.latitude;
                     lon = pos.coords.longitude;
-                } catch(e) { console.log("Ubicación no permitida o timeout"); }
+                } catch(e) { console.log("Ubicación no obtenida (timeout o permiso)"); }
             }
 
-            const reader = new FileReader();
-            reader.readAsDataURL(input.files[0]);
-            reader.onload = async () => {
-                await addDoc(collection(db, "avistamientos"), {
-                    petId: new URLSearchParams(window.location.search).get('id').toUpperCase(),
-                    foto: reader.result,
-                    lat: lat, 
-                    lon: lon,
-                    fecha: serverTimestamp(),
-                    vistoPor: "Anonimo"
-                });
+            // 2. Comprimir la imagen antes de subir
+            const fotoComprimida = await comprimirImagen(input.files[0]);
 
-                const mapsUrl = lat ? `https://www.google.com/maps?q=${lat},${lon}` : "Ubicación no compartida";
-                
+            // 3. Guardar en Firebase (Avistamiento + Foto Base64 ligera)
+            await addDoc(collection(db, "avistamientos"), {
+                petId: new URLSearchParams(window.location.search).get('id').toUpperCase(),
+                foto: fotoComprimida, // Usamos la versión comprimida
+                lat: lat, 
+                lon: lon,
+                fecha: serverTimestamp(),
+                vistoPor: "Anonimo"
+            });
+
+            // 4. Enviar Correo de Aviso
+            const mapsUrl = lat ? `https://www.google.com/maps?q=${lat},${lon}` : "Ubicación no compartida";
+            
+            if(window.emailjs) {
                 await emailjs.send("service_xwx9czt", "template_rghvb1w", {
-                    pet_name: petData.mascota,
-                    owner_email: petData.email,
+                    pet_name: petData ? petData.mascota : "Mascota",
+                    owner_email: petData ? petData.email : "",
                     map_url: mapsUrl,
-                    mensaje_aviso: "¡URGENTE! Se ha subido una foto de avistamiento."
+                    mensaje_aviso: "¡URGENTE! Foto de avistamiento recibida."
                 });
+            }
 
-                alert("✅ ¡Gracias! Hemos avisado al dueño.");
-                btn.innerHTML = '<i class="fas fa-check"></i> REPORTE ENVIADO';
-                btn.style.background = "#2ecc71";
-                btn.style.color = "white";
-                btn.style.borderColor = "#2ecc71";
-            };
+            // 5. Éxito
+            alert("✅ ¡Gracias! Hemos avisado al dueño.");
+            btn.innerHTML = '<i class="fas fa-check"></i> REPORTE ENVIADO';
+            btn.style.background = "#2ecc71";
+            btn.style.color = "white";
+            btn.style.borderColor = "#2ecc71";
+
         } catch (e) {
             console.error(e);
             alert("Hubo un error al enviar. Intenta de nuevo.");
@@ -413,6 +464,11 @@
             btn.style.opacity = "1";
         }
     };
+
+    function setText(id, text) {
+        const el = document.getElementById(id);
+        if(el) el.innerText = text;
+    }
 
     window.ownerAccess = () => {
         const id = new URLSearchParams(window.location.search).get('id');
