@@ -3,59 +3,165 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Carnet de Salud | Huellitas Digitales</title>
+    <title>Carnet Médico | Huellitas Digitales</title>
     <link rel="icon" type="image/png" href="assets/img/logo.png">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+
     <style>
-        :root { --primary: #2bb673; --bg: #f4f7f6; --text: #333; --accent: #fbbf24; }
-        body { font-family: 'Segoe UI', sans-serif; background: var(--bg); margin: 0; padding: 20px; color: var(--text); }
+        :root { --primary: #2bb673; --dark-primary: #1e8452; --bg: #f0f2f5; --text: #333; --paper: #fdfbf7; --red: #e74c3c; }
+        body { font-family: 'Segoe UI', sans-serif; background: var(--bg); margin: 0; padding: 20px; color: var(--text); padding-bottom: 80px;}
         .container { max-width: 600px; margin: 0 auto; padding-top: 60px; }
         
         /* Navbar */
-        .navbar { position: fixed; top: 0; left: 0; right: 0; background: white; padding: 15px; display: flex; align-items: center; box-shadow: 0 2px 10px rgba(0,0,0,0.1); z-index: 100; }
-        .btn-back { background: #eee; border: none; padding: 8px 12px; border-radius: 10px; cursor: pointer; text-decoration: none; color: #333; font-weight: bold; font-size: 14px; }
+        .navbar { position: fixed; top: 0; left: 0; right: 0; background: white; padding: 15px; display: flex; align-items: center; box-shadow: 0 4px 12px rgba(0,0,0,0.05); z-index: 100; }
+        .btn-back { background: #f8f9fa; border: none; padding: 8px 12px; border-radius: 8px; cursor: pointer; text-decoration: none; color: #555; font-weight: bold; font-size: 14px; display: flex; align-items: center; gap: 5px; }
 
-        /* Tarjeta de Carnet */
-        .card-carnet { background: white; border-radius: 28px; padding: 20px; margin-bottom: 25px; box-shadow: 0 8px 25px rgba(0,0,0,0.05); border: 1px solid #f0f0f0; }
-        .pet-header { display: flex; align-items: center; gap: 15px; margin-bottom: 20px; }
-        .pet-photo { width: 70px; height: 70px; border-radius: 50%; object-fit: cover; border: 3px solid var(--primary); }
-        
-        /* Línea de Tiempo de Vacunas */
-        .vacunas-timeline { margin-top: 15px; padding-left: 15px; border-left: 2px solid #f0f0f0; }
-        .vacuna-item { 
-            position: relative; padding: 12px 15px; border-radius: 18px; margin-bottom: 12px; 
-            display: flex; justify-content: space-between; align-items: center; 
-        }
-        .vacuna-item::before { 
-            content: ''; position: absolute; left: -22px; top: 50%; transform: translateY(-50%); 
-            width: 12px; height: 12px; border-radius: 50%; border: 3px solid white; 
+        /* Estilo Carnet "Real" (Folder Médico) */
+        .medical-folder {
+            background: var(--paper); /* Color papel crema suave */
+            border-radius: 15px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+            margin-bottom: 30px;
+            overflow: hidden;
+            border: 1px solid #e0e0e0;
+            position: relative;
         }
         
-        .vacuna-done { background: #f0fdf4; border: 1px solid #dcfce7; }
-        .vacuna-done::before { background: var(--primary); }
-        .vacuna-pending { background: #fffbeb; border: 1px solid #fef3c7; }
-        .vacuna-pending::before { background: var(--accent); }
+        /* Pestaña superior del folder */
+        .folder-tab {
+            background: var(--primary);
+            color: white;
+            padding: 15px 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border-bottom: 4px solid var(--dark-primary);
+        }
 
-        .vacuna-info b { font-size: 14px; color: #444; display: block; }
-        .vacuna-info span { font-size: 11px; color: #888; }
-        .vacuna-status { font-size: 10px; font-weight: 800; padding: 4px 10px; border-radius: 10px; background: white; }
+        .pet-info { display: flex; align-items: center; gap: 15px; }
+        .pet-photo { 
+            width: 60px; height: 60px; 
+            border-radius: 50%; 
+            object-fit: cover; 
+            border: 3px solid white; 
+            background: white;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        }
+        .pet-details h2 { margin: 0; font-size: 18px; text-transform: uppercase; letter-spacing: 0.5px; }
+        .pet-details .chip { font-size: 10px; background: rgba(0,0,0,0.2); padding: 3px 8px; border-radius: 10px; margin-top: 4px; display: inline-block; }
 
-        /* Botones */
-        .btn-group { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 15px; }
-        .btn-sec { background: #f8f9fa; color: var(--primary); border: 1.5px dashed var(--primary); padding: 12px; border-radius: 15px; font-size: 11px; font-weight: bold; cursor: pointer; }
+        /* Cuerpo del Carnet (Lineas de papel) */
+        .folder-body { padding: 0; background-image: repeating-linear-gradient(#fdfbf7 0px, #fdfbf7 29px, #e8e8e8 30px); }
         
-        /* Modal Formulario */
-        .modal { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.6); z-index:1000; align-items:center; justify-content:center; backdrop-filter: blur(4px); }
-        .modal-content { background: white; padding: 25px; border-radius: 25px; width: 90%; max-width: 400px; }
-        label { display: block; font-size: 11px; font-weight: 800; color: #aaa; text-transform: uppercase; margin-bottom: 5px; margin-top: 15px; }
-        input, select { width: 100%; padding: 12px; border: 1px solid #eee; border-radius: 12px; box-sizing: border-box; }
-        .btn-save { background: var(--primary); color: white; border: none; width: 100%; padding: 15px; border-radius: 12px; font-weight: bold; margin-top: 20px; cursor: pointer; }
+        .entry-row {
+            padding: 15px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid transparent; /* Usamos el gradiente para las lineas */
+            position: relative;
+        }
+
+        .entry-data { display: flex; flex-direction: column; }
+        .entry-title { font-size: 14px; font-weight: bold; color: #2c3e50; }
+        .entry-date { font-size: 12px; color: #7f8c8d; font-family: monospace; }
+        
+        /* Sellos y Estados */
+        .stamp-box {
+            border: 2px solid #ccc;
+            padding: 4px 8px;
+            border-radius: 6px;
+            font-size: 10px;
+            font-weight: bold;
+            text-transform: uppercase;
+            color: #999;
+            transform: rotate(-2deg);
+            background: rgba(255,255,255,0.8);
+        }
+        .stamp-completed {
+            border-color: var(--primary);
+            color: var(--primary);
+            border-radius: 50px;
+            padding: 5px 12px;
+            box-shadow: 0 0 0 2px inset var(--primary); /* Efecto doble borde */
+        }
+        .stamp-pending {
+            border-color: #f39c12;
+            color: #f39c12;
+            border-style: dashed;
+        }
+
+        /* Botón Eliminar */
+        .btn-delete {
+            background: none;
+            border: none;
+            color: #e74c3c;
+            cursor: pointer;
+            padding: 8px;
+            margin-left: 10px;
+            opacity: 0.4;
+            transition: 0.3s;
+        }
+        .btn-delete:hover { opacity: 1; transform: scale(1.1); }
+
+        /* Botonera inferior del carnet */
+        .folder-footer {
+            background: white;
+            padding: 15px;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            border-top: 1px solid #eee;
+        }
+        .btn-action {
+            padding: 10px;
+            border-radius: 8px;
+            border: 1px solid #eee;
+            background: white;
+            color: #555;
+            font-size: 12px;
+            font-weight: bold;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            transition: 0.2s;
+        }
+        .btn-action:hover { background: #f9f9f9; border-color: var(--primary); color: var(--primary); }
+        .btn-primary-ghost { color: var(--primary); border: 1px dashed var(--primary); background: rgba(43, 182, 115, 0.05); }
+
+        /* Peso Widget */
+        .weight-badge {
+            background: rgba(255,255,255,0.2);
+            padding: 5px 10px;
+            border-radius: 8px;
+            font-size: 11px;
+            text-align: right;
+        }
+        .weight-val { font-weight: bold; font-size: 13px; }
+
+        /* Modal */
+        .modal { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.6); z-index:1000; align-items:center; justify-content:center; backdrop-filter: blur(3px); }
+        .modal-content { background: white; padding: 25px; border-radius: 20px; width: 85%; max-width: 350px; box-shadow: 0 10px 30px rgba(0,0,0,0.2); }
+        
+        /* Inputs Formulario */
+        .form-group { margin-bottom: 15px; }
+        .form-label { display: block; font-size: 11px; font-weight: 800; color: #7f8c8d; text-transform: uppercase; margin-bottom: 5px; }
+        .form-input { width: 100%; padding: 12px; border: 2px solid #eee; border-radius: 10px; box-sizing: border-box; outline: none; transition: 0.3s; }
+        .form-input:focus { border-color: var(--primary); }
+        
+        .btn-save { background: var(--primary); color: white; border: none; width: 100%; padding: 14px; border-radius: 10px; font-weight: bold; cursor: pointer; box-shadow: 0 4px 10px rgba(43, 182, 115, 0.3); }
     </style>
 </head>
 <body>
 
     <nav class="navbar">
-        <a href="hub.html" class="btn-back">⬅ Volver</a>
-        <h1 style="font-size: 18px; margin-left: 15px; color: var(--primary);">📋 Carnet Digital</h1>
+        <a href="hub.html" class="btn-back"><i class="fas fa-arrow-left"></i> Volver</a>
+        <div style="margin-left: 15px;">
+            <h1 style="font-size: 16px; margin:0; color: var(--primary);">Historial Médico</h1>
+            <span style="font-size: 11px; color: #999;">Cartilla Digital Oficial</span>
+        </div>
     </nav>
 
     <div class="container" id="main-container">
@@ -63,29 +169,42 @@
 
     <div id="modal-registro" class="modal">
         <div class="modal-content">
-            <h2 style="margin:0; color: var(--primary); font-size: 20px;">Nuevo Registro</h2>
+            <div style="text-align: center; margin-bottom: 20px;">
+                <div style="background:#e8f5e9; width:50px; height:50px; border-radius:50%; display:flex; align-items:center; justify-content:center; margin:0 auto 10px; color:var(--primary); font-size:20px;">
+                    <i class="fas fa-syringe"></i>
+                </div>
+                <h2 style="margin:0; font-size: 18px;">Nuevo Registro</h2>
+                <p style="margin:5px 0 0; font-size:12px; color:#777;">Agrega vacunas, desparasitaciones o citas.</p>
+            </div>
+            
             <input type="hidden" id="form-pet-id">
             
-            <label>Tipo de Registro</label>
-            <input type="text" id="form-nombre" placeholder="Ej: Vacuna Séxtuple, Desparasitación...">
+            <div class="form-group">
+                <label class="form-label">Nombre del Tratamiento / Cita</label>
+                <input type="text" id="form-nombre" class="form-input" placeholder="Ej: Séxtuple, Corte de uñas...">
+            </div>
             
-            <label>Fecha Programada/Aplicada</label>
-            <input type="date" id="form-fecha">
+            <div class="form-group">
+                <label class="form-label">Fecha</label>
+                <input type="date" id="form-fecha" class="form-input">
+            </div>
             
-            <label>Estado actual</label>
-            <select id="form-estado">
-                <option value="pendiente">⏳ Pendiente / Cita</option>
-                <option value="completado">✅ Ya aplicada</option>
-            </select>
+            <div class="form-group">
+                <label class="form-label">Estado</label>
+                <select id="form-estado" class="form-input">
+                    <option value="pendiente">⏳ Programar (Pendiente)</option>
+                    <option value="completado">✅ Ya aplicada (Historial)</option>
+                </select>
+            </div>
 
-            <button class="btn-save" id="btn-guardar-registro">Guardar en Carnet</button>
-            <button onclick="cerrarModal()" style="background:none; border:none; color:#aaa; width:100%; margin-top:10px; cursor:pointer; font-size:12px;">Cancelar</button>
+            <button class="btn-save" id="btn-guardar-registro">Guardar en Cartilla</button>
+            <button onclick="cerrarModal()" style="background:none; border:none; color:#999; width:100%; margin-top:15px; cursor:pointer; font-size:13px;">Cancelar</button>
         </div>
     </div>
 
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-    import { getFirestore, collection, query, where, getDocs, orderBy, limit, addDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+    import { getFirestore, collection, query, where, getDocs, orderBy, limit, addDoc, deleteDoc, doc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
     const firebaseConfig = {
         apiKey: "AIzaSyCqROIzmp2guo2XLbdYrSW3ujlUBc7ngOc",
@@ -109,79 +228,116 @@
         const snapMascotas = await getDocs(qMascotas);
         container.innerHTML = "";
 
+        if(snapMascotas.empty) {
+            container.innerHTML = "<p style='text-align:center; color:#777; margin-top:50px;'>No tienes mascotas registradas.</p>";
+            return;
+        }
+
         for (const petDoc of snapMascotas.docs) {
             const pet = petDoc.data();
             const petId = petDoc.id;
 
-            // Buscar último peso de esta mascota específica
-            const qPeso = query(
-                collection(db, "historial_peso"), 
-                where("petId", "==", petId), 
-                orderBy("timestamp", "desc"),
-                limit(1)
-            );
+            // Peso Widget
+            const qPeso = query(collection(db, "historial_peso"), where("petId", "==", petId), orderBy("timestamp", "desc"), limit(1));
             const snapPeso = await getDocs(qPeso);
-            let htmlPeso = `<span style="font-size:11px; color:#aaa;">Sin peso registrado</span>`;
+            let weightHTML = `<div class="weight-badge"><span>Sin peso</span></div>`;
 
             if (!snapPeso.empty) {
                 const p = snapPeso.docs[0].data();
-                let colorP = "#2bb673";
-                if (p.bcs >= 7) colorP = "#ff4757";
-                if (p.bcs <= 3) colorP = "#ffa502";
-                htmlPeso = `<b style="color:${colorP}; font-size:13px;">⚖️ ${p.peso}kg - BCS: ${p.bcs}/9</b>`;
+                weightHTML = `
+                    <div class="weight-badge">
+                        <div style="font-size:9px; opacity:0.8;">PESO ACTUAL</div>
+                        <div class="weight-val">${p.peso} kg</div>
+                    </div>`;
             }
 
             container.innerHTML += `
-                <div class="card-carnet">
-                    <div class="pet-header">
-                        <img src="${pet.foto || 'assets/img/logo.png'}" class="pet-photo">
-                        <div>
-                            <h2 style="margin:0; font-size:20px;">${pet.mascota}</h2>
-                            ${htmlPeso}
+                <div class="medical-folder">
+                    <div class="folder-tab">
+                        <div class="pet-info">
+                            <img src="${pet.foto || 'assets/img/logo.png'}" class="pet-photo">
+                            <div class="pet-details">
+                                <h2>${pet.mascota}</h2>
+                                <span class="chip">ID: ${pet.token || '---'}</span>
+                            </div>
                         </div>
+                        ${weightHTML}
                     </div>
-                    <div id="lista-vacunas-${petId}"></div>
-                    <div class="btn-group">
-                        <button class="btn-sec" onclick="abrirModal('${petId}')">➕ AGREGAR CITA</button>
-                        <button class="btn-sec" onclick="window.location.href='peso.html'">📈 VER PESO</button>
+                    
+                    <div class="folder-body" id="lista-vacunas-${petId}">
+                        <div style="padding:20px; text-align:center; color:#999; font-size:12px;">Cargando historial...</div>
+                    </div>
+
+                    <div class="folder-footer">
+                        <button class="btn-action btn-primary-ghost" onclick="abrirModal('${petId}')">
+                            <i class="fas fa-plus-circle"></i> NUEVA CITA
+                        </button>
+                        <button class="btn-action" onclick="window.location.href='peso.html'">
+                            <i class="fas fa-weight"></i> VER PESO
+                        </button>
                     </div>
                 </div>
             `;
-            await cargarRegistrosVacunas(petId);
+            // Cargar registros asíncronamente
+            cargarRegistrosVacunas(petId);
         }
     }
 
-    // --- CARGAR VACUNAS POR MASCOTA ---
+    // --- CARGAR LISTA DE REGISTROS ---
     async function cargarRegistrosVacunas(petId) {
         const listaDiv = document.getElementById(`lista-vacunas-${petId}`);
         const q = query(collection(db, "recordatorios"), where("petId", "==", petId), orderBy("fecha", "asc"));
         const snap = await getDocs(q);
         
         if (snap.empty) {
-            listaDiv.innerHTML = `<p style="font-size:12px; color:#bbb; text-align:center; padding:10px;">Sin historial.</p>`;
+            listaDiv.innerHTML = `<div style="padding:30px; text-align:center; opacity:0.5;">
+                <i class="fas fa-folder-open" style="font-size:30px; margin-bottom:10px;"></i><br>
+                <span style="font-size:12px;">Cartilla vacía</span>
+            </div>`;
             return;
         }
 
-        let html = `<div class="vacunas-timeline">`;
-        snap.forEach(doc => {
-            const v = doc.data();
+        let html = "";
+        snap.forEach(docSnap => {
+            const v = docSnap.data();
             const esDone = v.estado === "completado";
+            
+            // Clase e icono según estado
+            const stampClass = esDone ? "stamp-completed" : "stamp-pending";
+            const stampText = esDone ? "APLICADA" : "PENDIENTE";
+            
             html += `
-                <div class="vacuna-item ${esDone ? 'vacuna-done' : 'vacuna-pending'}">
-                    <div class="vacuna-info">
-                        <b>${v.vacuna}</b>
-                        <span>📅 ${formatearFecha(v.fecha)}</span>
+                <div class="entry-row">
+                    <div class="entry-data">
+                        <span class="entry-title">${v.vacuna}</span>
+                        <span class="entry-date"><i class="far fa-calendar-alt"></i> ${formatearFecha(v.fecha)}</span>
                     </div>
-                    <div class="vacuna-status" style="color: ${esDone ? '#2bb673' : '#d97706'};">
-                        ${esDone ? 'APLICADA' : 'PENDIENTE'}
+                    <div style="display:flex; align-items:center;">
+                        <div class="stamp-box ${stampClass}">${stampText}</div>
+                        <button class="btn-delete" onclick="eliminarRegistro('${docSnap.id}', '${petId}')">
+                            <i class="fas fa-trash-alt"></i>
+                        </button>
                     </div>
                 </div>
             `;
         });
-        listaDiv.innerHTML = html + `</div>`;
+        listaDiv.innerHTML = html;
     }
 
-    // --- LÓGICA MODAL ---
+    // --- ELIMINAR REGISTRO ---
+    window.eliminarRegistro = async (docId, petId) => {
+        if(confirm("¿Estás seguro de eliminar este registro del carnet permanentemente?")) {
+            try {
+                await deleteDoc(doc(db, "recordatorios", docId));
+                cargarRegistrosVacunas(petId); // Recargar solo la lista de esa mascota
+            } catch(e) {
+                console.error("Error borrando:", e);
+                alert("Error al eliminar");
+            }
+        }
+    };
+
+    // --- MODALES Y GUARDADO ---
     window.abrirModal = (id) => {
         document.getElementById('form-pet-id').value = id;
         document.getElementById('modal-registro').style.display = 'flex';
@@ -189,6 +345,9 @@
 
     window.cerrarModal = () => {
         document.getElementById('modal-registro').style.display = 'none';
+        // Limpiar inputs
+        document.getElementById('form-nombre').value = '';
+        document.getElementById('form-fecha').value = '';
     };
 
     document.getElementById('btn-guardar-registro').onclick = async () => {
@@ -196,21 +355,34 @@
         const vacuna = document.getElementById('form-nombre').value;
         const fecha = document.getElementById('form-fecha').value;
         const estado = document.getElementById('form-estado').value;
+        const btn = document.getElementById('btn-guardar-registro');
 
-        if(!vacuna || !fecha) return alert("Completa los datos");
+        if(!vacuna || !fecha) return alert("Por favor completa el nombre y la fecha.");
 
-        await addDoc(collection(db, "recordatorios"), {
-            petId, vacuna, fecha, estado,
-            userEmail: email,
-            timestamp: Date.now()
-        });
-        cerrarModal();
-        cargarCarnets();
+        btn.innerText = "Guardando...";
+        btn.disabled = true;
+
+        try {
+            await addDoc(collection(db, "recordatorios"), {
+                petId, vacuna, fecha, estado,
+                userEmail: email,
+                timestamp: Date.now()
+            });
+            cerrarModal();
+            cargarRegistrosVacunas(petId); // Recargar solo la lista
+        } catch (e) {
+            console.error(e);
+            alert("Error al guardar");
+        } finally {
+            btn.innerText = "Guardar en Cartilla";
+            btn.disabled = false;
+        }
     };
 
     function formatearFecha(f) {
-        const d = new Date(f + "T00:00:00");
-        return d.toLocaleDateString('es-ES', { day: 'numeric', month: 'short' });
+        const partes = f.split('-'); // f viene como YYYY-MM-DD
+        const d = new Date(partes[0], partes[1] - 1, partes[2]);
+        return d.toLocaleDateString('es-ES', { day: 'numeric', month: 'short', year: 'numeric' });
     }
 
     cargarCarnets();
