@@ -1,23 +1,27 @@
 {
-  "id": "/hub-propietarios",
+  "id": "huellitas-hub-v1",
   "name": "Huellitas Propietarios",
   "short_name": "Mi Huellita",
   "description": "Panel de control para dueños de mascotas",
-  "start_url": "hub.html",
-  "scope": "/",
+  "start_url": "./hub.html",
+  "scope": "./",
   "display": "standalone",
+  "orientation": "portrait-primary",
   "background_color": "#f4f7f6",
   "theme_color": "#2bb673",
+  "categories": ["lifestyle", "utilities"],
   "icons": [
     {
       "src": "assets/img/logo.png",
       "sizes": "192x192",
-      "type": "image/png"
+      "type": "image/png",
+      "purpose": "any maskable"
     },
     {
       "src": "assets/img/logo.png",
       "sizes": "512x512",
-      "type": "image/png"
+      "type": "image/png",
+      "purpose": "any"
     }
   ]
 }
