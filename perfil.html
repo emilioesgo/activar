@@ -63,19 +63,20 @@
         /* --- FOTO GIGANTE Y A COLOR --- */
         .photo-container { 
             width: 100%; 
-            height: 60vh; /* OCUPA EL 60% DE LA PANTALLA (MUY GRANDE) */
+            height: 450px; /* OCUPA EL 60% DE LA PANTALLA (MUY GRANDE) */
             background: white; 
             position: relative; 
             display: flex; 
             align-items: center; 
             justify-content: center; 
+            overflow: hidden;
         }
         #pet-photo { 
             width: 100%; 
             height: 100%; 
             object-fit: cover; /* Cubre todo el espacio sin deformarse */
+            object-position: center;
             display: block;
-            transition: opacity 0.3s; 
         }
         
         /* ESTILO CUANDO NO HAY FOTO (A COLOR) */
