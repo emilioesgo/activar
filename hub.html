@@ -21,29 +21,17 @@
 
         /* Banner de Venta */
         .promo-tienda {
-            background: white;
-            padding: 25px;
-            border-radius: 30px;
+            background: white; padding: 25px; border-radius: 30px;
             box-shadow: 0 10px 30px rgba(43, 182, 115, 0.15);
-            border: 2px solid #e8f5e9;
-            margin-bottom: 25px;
-            text-align: center;
+            border: 2px solid #e8f5e9; margin-bottom: 25px; text-align: center;
         }
         .btn-buy-now {
             background: linear-gradient(45deg, #2bb673, #2ecc71);
-            color: white;
-            border: none;
-            padding: 16px 30px;
-            border-radius: 50px;
-            font-size: 15px;
-            font-weight: bold;
-            cursor: pointer;
+            color: white; border: none; padding: 16px 30px; border-radius: 50px;
+            font-size: 15px; font-weight: bold; cursor: pointer;
             box-shadow: 0 6px 20px rgba(46, 204, 113, 0.3);
-            transition: 0.3s;
-            animation: pulse-green 2s infinite;
-            text-decoration: none;
-            display: inline-block;
-            margin-top: 10px;
+            transition: 0.3s; animation: pulse-green 2s infinite;
+            text-decoration: none; display: inline-block; margin-top: 10px;
         }
         @keyframes pulse-green {
             0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(46, 204, 113, 0.7); }
@@ -51,51 +39,33 @@
             100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(46, 204, 113, 0); }
         }
 
-        /* --- ESTILOS DE NOTIFICACIONES (NUEVO) --- */
+        /* Notificaciones */
         .notif-card {
-            background: white;
-            border-radius: 15px;
-            padding: 15px;
-            margin-bottom: 15px;
-            display: flex;
-            align-items: center;
-            gap: 15px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
-            border-left: 5px solid #ccc;
-            cursor: pointer;
-            animation: slideIn 0.5s ease;
+            background: white; border-radius: 15px; padding: 15px; margin-bottom: 15px;
+            display: flex; align-items: center; gap: 15px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05); border-left: 5px solid #ccc;
+            cursor: pointer; animation: slideIn 0.5s ease;
         }
         @keyframes slideIn { from { transform: translateY(-10px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
 
-        .notif-urgente { border-left-color: #ff4757; background: #fff5f6; } /* Vencida */
-        .notif-atencion { border-left-color: #ffa502; background: #fffcf2; } /* Hoy/Mañana */
-        .notif-info { border-left-color: #3498db; background: #f0f8ff; } /* Próxima */
+        .notif-urgente { border-left-color: #ff4757; background: #fff5f6; }
+        .notif-atencion { border-left-color: #ffa502; background: #fffcf2; }
+        .notif-info { border-left-color: #3498db; background: #f0f8ff; }
 
         .notif-content b { display: block; font-size: 14px; }
         .notif-content span { font-size: 12px; opacity: 0.8; }
 
-        /* --- ESTILO COMUNIDAD WHATSAPP --- */
+        /* Comunidad WA */
         .promo-comunidad {
-            background: linear-gradient(135deg, #25D366, #128C7E);
-            color: white;
-            padding: 20px;
-            border-radius: 25px;
-            text-align: center;
-            box-shadow: 0 8px 20px rgba(37, 211, 102, 0.3);
-            margin-bottom: 30px;
-            position: relative;
-            overflow: hidden;
+            background: linear-gradient(135deg, #25D366, #128C7E); color: white;
+            padding: 20px; border-radius: 25px; text-align: center;
+            box-shadow: 0 8px 20px rgba(37, 211, 102, 0.3); margin-bottom: 30px;
+            position: relative; overflow: hidden;
         }
         .btn-wa-join {
-            background: white;
-            color: #128C7E;
-            padding: 12px 25px;
-            border-radius: 50px;
-            text-decoration: none;
-            font-weight: bold;
-            display: inline-block;
-            margin-top: 15px;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+            background: white; color: #128C7E; padding: 12px 25px;
+            border-radius: 50px; text-decoration: none; font-weight: bold;
+            display: inline-block; margin-top: 15px; box-shadow: 0 4px 10px rgba(0,0,0,0.1);
         }
 
         /* Auth Box */
@@ -106,9 +76,6 @@
         .pin-input { letter-spacing: 8px; text-align: center; font-weight: bold; }
 
         .btn-login { background: var(--primary); color: white; border: none; padding: 16px; border-radius: 15px; font-weight: bold; cursor: pointer; width: 100%; font-size: 16px; box-shadow: 0 4px 12px rgba(43,182,115,0.2); }
-
-        /* Banner PWA */
-        #pwa-install-banner { background: white; padding: 15px; border-radius: 18px; margin-bottom: 20px; border: 2px solid var(--primary); display: flex; align-items: center; justify-content: space-between; }
 
         /* Secciones */
         .section-title { font-size: 18px; font-weight: 700; margin: 30px 0 15px; display: flex; align-items: center; gap: 8px; }
@@ -124,15 +91,10 @@
         /* Bienestar Scroll */
         .health-scroll { display: flex; gap: 12px; overflow-x: auto; padding-bottom: 10px; scrollbar-width: none; }
         .health-card { min-width: 130px; background: white; padding: 15px; border-radius: 22px; border: 1px solid #eee; text-align: center; cursor: pointer; }
-        
-        /* ALERTA ROJA */
-        .alert-active { border: 2px solid var(--lost) !important; animation: borderPulse 1.5s infinite; }
-        @keyframes borderPulse { 0% { border-color: #ff4757; } 50% { border-color: #ffcbd1; } 100% { border-color: #ff4757; } }
-
         .health-card .icon { font-size: 24px; margin-bottom: 5px; }
         .health-card .val { font-size: 11px; font-weight: bold; color: var(--primary); }
 
-        /* Centro Pet Care */
+        /* Servicios */
         .grid-servicios { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
         .btn-servicio { 
             background: white; border: 1px solid #eee; padding: 15px; border-radius: 20px; 
@@ -143,15 +105,25 @@
         .btn-servicio .icon { font-size: 24px; }
         .btn-servicio .label { font-size: 12px; font-weight: 700; color: #555; }
         
-        .btn-full { grid-column: span 2; flex-direction: row; justify-content: center; background: var(--primary); color: white !important; border: none; }
-        .btn-manage { background: #f8f9fa; color: var(--primary); border: 1.5px solid var(--primary); padding: 8px 0; border-radius: 12px; font-size: 11px; font-weight: bold; cursor: pointer; width: 90%; margin: 10px auto; }
+        .btn-manage { background: #f8f9fa; color: var(--primary); border: 1.5px solid var(--primary); padding: 8px 0; border-radius: 12px; font-size: 11px; font-weight: bold; cursor: pointer; width: 90%; margin: 10px auto; display: block; }
+        .btn-flyer { border-color: #ff4757 !important; color: #ff4757 !important; }
 
         .hidden { display: none; }
         @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.7; } 100% { opacity: 1; } }
-        #status-msg { margin-top: 15px; font-size: 14px; }
+        
+        /* Banner Offline */
+        #offline-banner { 
+            display:none; position:fixed; bottom:0; left:0; width:100%; 
+            background:#333; color:white; text-align:center; padding:10px; 
+            font-size:12px; z-index:9999; border-top: 2px solid var(--lost);
+        }
     </style>
 </head>
 <body>
+
+<div id="offline-banner">
+    <i class="fas fa-wifi-slash"></i> Navegando sin conexión. Los datos mostrados están guardados localmente.
+</div>
 
 <div class="container">
     <div class="header-hub">
@@ -184,29 +156,24 @@
     </div>
 
     <div id="seccion-lista" class="hidden">
-
         <div id="avistamientos-box"></div>
-        
         <div id="notif-box"></div>
 
         <div class="section-title">🐕 Mis Mascotas</div>
         <div class="grid-mascotas" id="lista-mascotas"></div>
 
         <div class="section-title">🩺 Bienestar y Salud</div>
-
         <div class="health-scroll">
-            <div class="health-card" id="btn-carnet-salud" onclick="window.location.href='carnet.html'">
+            <div class="health-card" onclick="window.location.href='carnet.html'">
                 <div class="icon">📋</div>
                 <div style="font-size: 12px; color: #666;">Mi Carnet</div>
                 <div class="val" id="vax-status">Consultar</div>
             </div>
-
-            <div class="health-card" id="btn-peso-ideal" onclick="window.location.href='peso.html'">
+            <div class="health-card" onclick="window.location.href='peso.html'">
                 <div class="icon">⚖️</div>
                 <div style="font-size: 12px; color: #666;">Peso Mascota</div>
                 <div class="val">Ver Registro</div>
             </div>
-
             <div class="health-card" onclick="window.location.href='peso.html'">
                 <div class="icon">🍎</div>
                 <div style="font-size: 12px; color: #666;">Ración Diaria</div>
@@ -228,10 +195,6 @@
             <button class="btn-servicio" onclick="window.open('https://TIENDA.com', '_blank')">
                 <span class="icon">🦴</span><span class="label">Comprar Alimento</span>
             </button>
-            
-            <a href="avistamientos.html" class="btn-servicio btn-full">
-                <span class="icon">🔭</span><span class="label">Mapa de Avistamientos</span>
-            </a>
         </div>
 
         <div class="section-title">📢 Comunidad & Alertas</div>
@@ -247,9 +210,8 @@
 </div>
 
 <script type="module">
-    // Se agregan deleteDoc y doc a los imports
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-    import { getFirestore, collection, query, where, getDocs, orderBy, limit, deleteDoc, doc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+    import { getFirestore, collection, query, where, getDocs, orderBy, limit, deleteDoc, doc, enableIndexedDbPersistence } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
     const firebaseConfig = {
         apiKey: "AIzaSyCqROIzmp2guo2XLbdYrSW3ujlUBc7ngOc",
@@ -263,214 +225,149 @@
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
 
-    // PWA Logic
+    // Persistencia Offline
+    enableIndexedDbPersistence(db).catch((err) => {
+        console.warn("Persistencia offline no disponible:", err.code);
+    });
+
+    // PWA & Offline Detection
+    if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+            navigator.serviceWorker.register('sw.js').catch(err => console.log('SW Error', err));
+        });
+    }
+
+    const offlineBanner = document.getElementById('offline-banner');
+    window.addEventListener('online', () => offlineBanner.style.display = 'none');
+    window.addEventListener('offline', () => offlineBanner.style.display = 'block');
+    if (!navigator.onLine) offlineBanner.style.display = 'block';
+
+    // PWA Install Prompt
     let deferredPrompt;
     const pwaBanner = document.getElementById('pwa-install-banner');
     window.addEventListener('beforeinstallprompt', (e) => {
-        e.preventDefault();
-        deferredPrompt = e;
+        e.preventDefault(); deferredPrompt = e;
         pwaBanner.classList.remove('hidden');
     });
     document.getElementById('btn-pwa-install').addEventListener('click', async () => {
         if (deferredPrompt) {
-            deferredPrompt.prompt();
-            deferredPrompt = null;
+            deferredPrompt.prompt(); deferredPrompt = null;
             pwaBanner.classList.add('hidden');
         }
     });
 
-    // --- ALERTA DE CITAS Y VACUNAS (MEJORADA) ---
+    // Vacunas
     async function verificarAlertasVacunas(email, nombresMascotas) {
-        // Buscamos solo los pendientes
         const q = query(collection(db, "recordatorios"), where("userEmail", "==", email), where("estado", "==", "pendiente"));
         const snap = await getDocs(q);
-        
         const notifBox = document.getElementById("notif-box");
-        notifBox.innerHTML = ""; // Limpiar alertas anteriores
-        
-        const hoy = new Date();
-        hoy.setHours(0,0,0,0);
+        notifBox.innerHTML = "";
+        const hoy = new Date(); hoy.setHours(0,0,0,0);
 
         snap.forEach(doc => {
             const data = doc.data();
             const fechaCita = new Date(data.fecha + "T00:00:00");
+            const diffDays = Math.ceil((fechaCita - hoy) / (1000 * 60 * 60 * 24));
             
-            const diffTime = fechaCita - hoy;
-            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-            
-            let tipoAlerta = "";
-            let icono = "";
-            let textoTiempo = "";
-            let mostrar = false;
-
-            if (diffDays < 0) {
-                tipoAlerta = "notif-urgente";
-                icono = '<i class="fas fa-exclamation-triangle" style="color:#ff4757; font-size:24px;"></i>';
-                textoTiempo = `<span style="color:#ff4757; font-weight:bold;">FECHA VENCIDA (${Math.abs(diffDays)} días)</span>`;
-                mostrar = true;
-            } else if (diffDays === 0) {
-                tipoAlerta = "notif-atencion";
-                icono = '<i class="fas fa-clock" style="color:#ffa502; font-size:24px;"></i>';
-                textoTiempo = `<span style="color:#ffa502; font-weight:bold;">¡ES HOY!</span>`;
-                mostrar = true;
-            } else if (diffDays === 1) {
-                tipoAlerta = "notif-atencion";
-                icono = '<i class="fas fa-calendar-day" style="color:#ffa502; font-size:24px;"></i>';
-                textoTiempo = `<span style="color:#ffa502; font-weight:bold;">ES MAÑANA</span>`;
-                mostrar = true;
-            } else if (diffDays <= 7) {
-                tipoAlerta = "notif-info";
-                icono = '<i class="fas fa-info-circle" style="color:#3498db; font-size:24px;"></i>';
-                textoTiempo = `<span>Faltan ${diffDays} días</span>`;
-                mostrar = true;
-            }
+            let tipo = "", icono = "", txt = "", mostrar = false;
+            if (diffDays < 0) { tipo = "notif-urgente"; icono = "exclamation-triangle"; txt = "VENCIDA"; mostrar = true; }
+            else if (diffDays <= 1) { tipo = "notif-atencion"; icono = "clock"; txt = diffDays === 0 ? "¡HOY!" : "MAÑANA"; mostrar = true; }
+            else if (diffDays <= 7) { tipo = "notif-info"; icono = "info-circle"; txt = `En ${diffDays} días`; mostrar = true; }
 
             if (mostrar) {
-                const nombreMascota = nombresMascotas[data.petId] || "Tu Mascota";
+                const petName = nombresMascotas[data.petId] || "Mascota";
                 notifBox.innerHTML += `
-                    <div class="notif-card ${tipoAlerta}" onclick="window.location.href='carnet.html'">
-                        ${icono}
+                    <div class="notif-card ${tipo}" onclick="window.location.href='carnet.html'">
+                        <i class="fas fa-${icono}" style="font-size:24px;"></i>
                         <div class="notif-content">
-                            <b>${data.vacuna} para ${nombreMascota}</b>
-                            ${textoTiempo} - ${formatearFecha(data.fecha)}
+                            <b>${data.vacuna} - ${petName}</b>
+                            <span>${txt} (${data.fecha.split('-').reverse().slice(0,2).join('/')})</span>
                         </div>
                     </div>`;
             }
         });
     }
 
-    // --- NUEVA FUNCIÓN PARA ELIMINAR AVISTAMIENTOS ---
+    // Avistamientos
     window.eliminarAvistamiento = async (idDoc) => {
-        const confirmar = confirm("¿Ya revisaste este reporte? Al aceptar, se borrará permanentemente.");
-        if (confirmar) {
-            try {
-                await deleteDoc(doc(db, "avistamientos", idDoc));
-                alert("Reporte eliminado.");
-                location.reload(); 
-            } catch (error) {
-                console.error("Error al borrar:", error);
-                alert("No se pudo borrar. Verifica tu conexión.");
-            }
+        if (confirm("¿Borrar este reporte?")) {
+            await deleteDoc(doc(db, "avistamientos", idDoc));
+            location.reload();
         }
     };
 
-    // --- GALERÍA DE AVISTAMIENTOS (CORREGIDA Y CON BORRAR) ---
     async function cargarAvistamientos(petsIds) {
-        if (!petsIds || petsIds.length === 0) return;
-        
-        const container = document.getElementById("avistamientos-box");
-        container.innerHTML = ""; 
+        if (!petsIds.length) return;
+        const q = query(collection(db, "avistamientos"), where("petId", "in", petsIds), limit(5));
+        const snap = await getDocs(q);
+        const box = document.getElementById("avistamientos-box");
+        box.innerHTML = "";
 
-        try {
-            // Se quitó orderBy para evitar conflictos de índice
-            const q = query(
-                collection(db, "avistamientos"), 
-                where("petId", "in", petsIds),
-                limit(5)
-            );
-            
-            const snap = await getDocs(q);
-
-            if (!snap.empty) {
-                let html = `<div class="section-title" style="color:#c0392b;">🚨 ¡Alerta de Avistamiento!</div>`;
-                html += `<div style="display:flex; gap:10px; overflow-x:auto; padding-bottom:10px;">`;
-                
-                snap.forEach(docSnap => {
-                    const data = docSnap.data();
-                    const idReporte = docSnap.id; // Obtenemos el ID para borrar
-
-                    let fechaTexto = "Reciente";
-                    if(data.fecha && data.fecha.seconds) {
-                        fechaTexto = new Date(data.fecha.seconds * 1000).toLocaleDateString();
-                    }
-                    const mapa = data.lat ? `https://www.google.com/maps?q=${data.lat},${data.lon}` : "#";
-                    
-                    html += `
-                    <div style="min-width:220px; background:white; border-radius:15px; border:2px solid #ff4757; overflow:hidden; box-shadow:0 4px 15px rgba(255, 71, 87, 0.2); position:relative;">
-                        
-                        <button onclick="eliminarAvistamiento('${idReporte}')" style="position:absolute; top:5px; right:5px; background:white; color:#ff4757; border:none; width:30px; height:30px; border-radius:50%; font-weight:bold; cursor:pointer; box-shadow:0 2px 5px rgba(0,0,0,0.2); z-index:10;">✕</button>
-
-                        <div style="height:140px; background:#f0f0f0; position:relative;">
-                            <img src="${data.foto}" style="width:100%; height:100%; object-fit:cover;">
-                            <div style="position:absolute; top:10px; right:10px; background:#ff4757; color:white; padding:4px 8px; border-radius:10px; font-size:10px; font-weight:bold;">NUEVO</div>
-                        </div>
-                        <div style="padding:12px;">
-                            <b style="color:#c0392b; font-size:14px; display:block; margin-bottom:5px;">¡Alguien vio a tu mascota!</b>
-                            <p style="margin:0; font-size:12px; color:#555;">📅 Fecha: ${fechaTexto}</p>
-                            <a href="${mapa}" target="_blank" style="display:block; margin-top:10px; background:#ff4757; color:white; text-align:center; padding:8px; border-radius:8px; text-decoration:none; font-size:12px; font-weight:bold;">
-                                <i class="fas fa-map-marker-alt"></i> VER UBICACIÓN
-                            </a>
+        if (!snap.empty) {
+            let html = `<div class="section-title" style="color:#c0392b;">🚨 Avistamientos</div><div style="display:flex; gap:10px; overflow-x:auto; padding-bottom:10px;">`;
+            snap.forEach(d => {
+                const data = d.data();
+                const mapa = data.lat ? `https://www.google.com/maps?q=${data.lat},${data.lon}` : "#";
+                html += `
+                    <div style="min-width:220px; background:white; border-radius:15px; border:2px solid #ff4757; overflow:hidden; position:relative;">
+                        <button onclick="eliminarAvistamiento('${d.id}')" style="position:absolute; top:5px; right:5px; border:none; background:white; border-radius:50%; width:25px; height:25px; cursor:pointer;">✕</button>
+                        <img src="${data.foto}" style="width:100%; height:120px; object-fit:cover;">
+                        <div style="padding:10px;">
+                            <b style="font-size:12px; color:#c0392b;">¡VISTO!</b>
+                            <a href="${mapa}" target="_blank" style="display:block; margin-top:8px; background:#ff4757; color:white; text-align:center; padding:5px; border-radius:8px; text-decoration:none; font-size:11px;">📍 MAPA</a>
                         </div>
                     </div>`;
-                });
-                html += `</div>`;
-                container.innerHTML = html;
-            }
-        } catch (error) {
-            console.error("Error cargando avistamientos:", error);
+            });
+            box.innerHTML = html + `</div>`;
         }
     }
 
-    function formatearFecha(f) {
-        const partes = f.split('-');
-        return `${partes[2]}/${partes[1]}`;
-    }
-
-    // --- SESIÓN ---
+    // Auth & Hub
     function verificarSesion() {
-        const userEmail = localStorage.getItem("userEmail");
-        const loginTimestamp = localStorage.getItem("loginTimestamp");
-        if (userEmail && (new Date().getTime() - loginTimestamp < 5 * 60 * 60 * 1000)) {
-            mostrarHub(userEmail);
-        }
+        const email = localStorage.getItem("userEmail");
+        const ts = localStorage.getItem("loginTimestamp");
+        if (email && (new Date().getTime() - ts < 18000000)) mostrarHub(email);
     }
 
     document.getElementById("btn-entrar").onclick = async () => {
         const email = document.getElementById("auth-email").value.trim().toLowerCase();
         const pin = document.getElementById("auth-pin").value;
-        try {
-            const q = query(collection(db, "placas"), where("email", "==", email));
-            const snap = await getDocs(q);
-            let ok = false;
-            snap.forEach(doc => { if(doc.data().pin === pin) ok = true; });
-            if (ok) {
-                localStorage.setItem("userEmail", email);
-                localStorage.setItem("loginTimestamp", new Date().getTime());
-                mostrarHub(email);
-            } else alert("PIN Incorrecto");
-        } catch (e) { console.error(e); }
+        const snap = await getDocs(query(collection(db, "placas"), where("email", "==", email)));
+        let ok = false;
+        snap.forEach(d => { if(d.data().pin === pin) ok = true; });
+        if (ok) {
+            localStorage.setItem("userEmail", email);
+            localStorage.setItem("loginTimestamp", new Date().getTime());
+            mostrarHub(email);
+        } else alert("PIN incorrecto");
     };
 
     async function mostrarHub(email) {
         document.getElementById("seccion-auth").classList.add("hidden");
         document.getElementById("seccion-lista").classList.remove("hidden");
-
-        const q = query(collection(db, "placas"), where("email", "==", email));
-        const snap = await getDocs(q);
+        const snap = await getDocs(query(collection(db, "placas"), where("email", "==", email)));
         const lista = document.getElementById("lista-mascotas");
         lista.innerHTML = "";
-        
-        let misMascotasIds = [];
-        let nombresMascotas = {}; 
+        let ids = [], nombres = {};
 
-        snap.forEach((doc) => {
-            const pet = doc.data();
-            misMascotasIds.push(doc.id);
-            nombresMascotas[doc.id] = pet.mascota; 
-
+        snap.forEach(d => {
+            const pet = d.data();
+            ids.push(d.id); nombres[d.id] = pet.mascota;
             lista.innerHTML += `
                 <div class="pet-card">
                     <div class="status-badge ${pet.extraviado ? 'status-lost' : 'status-safe'}">${pet.extraviado ? 'Perdido' : 'A salvo'}</div>
                     <img src="${pet.foto || 'assets/img/logo.png'}">
                     <div style="padding:10px;">
                         <h3 style="margin:0; font-size:15px;">${pet.mascota}</h3>
-                        <button class="btn-manage" onclick="window.location.href='editar.html?id=${doc.id}'">GESTIONAR</button>
+                        <button class="btn-manage" onclick="window.location.href='editar.html?id=${d.id}'">GESTIONAR</button>
+                        <button class="btn-manage btn-flyer" onclick="window.location.href='flyer.html?id=${d.id}'">
+                            <i class="fas fa-file-pdf"></i> GENERAR FLYER
+                        </button>
                     </div>
                 </div>`;
         });
-
-        verificarAlertasVacunas(email, nombresMascotas);
-        cargarAvistamientos(misMascotasIds);
+        verificarAlertasVacunas(email, nombres);
+        cargarAvistamientos(ids);
     }
 
     verificarSesion();
