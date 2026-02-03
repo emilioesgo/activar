@@ -7,11 +7,12 @@
     
     <link rel="icon" type="image/png" href="assets/img/logo.png">
     <link rel="manifest" href="manifest-hub.json">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
 
     <style>
         :root { --primary: #2bb673; --bg: #f4f7f6; --text: #333; --lost: #ff4757; --wa: #25D366; }
-        body { font-family: 'Segoe UI', sans-serif; background: var(--bg); margin: 0; padding: 20px; display: flex; justify-content: center; color: var(--text); }
-        .container { max-width: 600px; width: 100%; position: relative; } /* Added position relative */
+        body { font-family: 'Segoe UI', sans-serif; background: var(--bg); margin: 0; padding: 20px; display: flex; justify-content: center; color: var(--text); padding-bottom: 80px; }
+        .container { max-width: 600px; width: 100%; position: relative; }
         
         /* Encabezado */
         .header-hub { text-align: center; margin-bottom: 30px; }
@@ -50,7 +51,30 @@
             100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(46, 204, 113, 0); }
         }
 
-        /* --- NUEVO: ESTILO COMUNIDAD WHATSAPP --- */
+        /* --- ESTILOS DE NOTIFICACIONES (NUEVO) --- */
+        .notif-card {
+            background: white;
+            border-radius: 15px;
+            padding: 15px;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+            border-left: 5px solid #ccc;
+            cursor: pointer;
+            animation: slideIn 0.5s ease;
+        }
+        @keyframes slideIn { from { transform: translateY(-10px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+
+        .notif-urgente { border-left-color: #ff4757; background: #fff5f6; } /* Vencida */
+        .notif-atencion { border-left-color: #ffa502; background: #fffcf2; } /* Hoy/Mañana */
+        .notif-info { border-left-color: #3498db; background: #f0f8ff; } /* Próxima */
+
+        .notif-content b { display: block; font-size: 14px; }
+        .notif-content span { font-size: 12px; opacity: 0.8; }
+
+        /* --- ESTILO COMUNIDAD WHATSAPP --- */
         .promo-comunidad {
             background: linear-gradient(135deg, #25D366, #128C7E);
             color: white;
@@ -121,8 +145,6 @@
         
         .btn-full { grid-column: span 2; flex-direction: row; justify-content: center; background: var(--primary); color: white !important; border: none; }
         .btn-manage { background: #f8f9fa; color: var(--primary); border: 1.5px solid var(--primary); padding: 8px 0; border-radius: 12px; font-size: 11px; font-weight: bold; cursor: pointer; width: 90%; margin: 10px auto; }
-
-        /* --- BOTÓN FLOTANTE ELIMINADO --- */
 
         .hidden { display: none; }
         @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.7; } 100% { opacity: 1; } }
@@ -250,53 +272,86 @@
         }
     });
 
-    // --- ALERTA DE CARNET ---
-    async function verificarAlertasVacunas(email) {
-        const q = query(collection(db, "recordatorios"), where("userEmail", "==", email), where("tipo", "==", "agenda"));
+    // --- ALERTA DE CITAS Y VACUNAS (MEJORADA) ---
+    async function verificarAlertasVacunas(email, nombresMascotas) {
+        // Buscamos solo los pendientes
+        const q = query(collection(db, "recordatorios"), where("userEmail", "==", email), where("estado", "==", "pendiente"));
         const snap = await getDocs(q);
-        const btnCarnet = document.getElementById("btn-carnet-salud");
-        const vaxStatus = document.getElementById("vax-status");
-        const notifBox = document.getElementById("notif-box");
         
+        const notifBox = document.getElementById("notif-box");
+        notifBox.innerHTML = ""; // Limpiar alertas anteriores
+        
+        // Obtenemos fecha de hoy sin horas
         const hoy = new Date();
         hoy.setHours(0,0,0,0);
 
         snap.forEach(doc => {
             const data = doc.data();
             const fechaCita = new Date(data.fecha + "T00:00:00");
-            const diffDays = Math.ceil((fechaCita - hoy) / (1000 * 60 * 60 * 24));
+            
+            // Diferencia en días
+            const diffTime = fechaCita - hoy;
+            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+            
+            let tipoAlerta = "";
+            let icono = "";
+            let textoTiempo = "";
+            let mostrar = false;
 
-            if (diffDays <= 1 && diffDays >= -1) {
-                btnCarnet.classList.add("alert-active");
-                vaxStatus.innerText = "¡Cita Próxima!";
-                vaxStatus.style.color = "#ff4757";
+            if (diffDays < 0) {
+                // Vencida
+                tipoAlerta = "notif-urgente";
+                icono = '<i class="fas fa-exclamation-triangle" style="color:#ff4757; font-size:24px;"></i>';
+                textoTiempo = `<span style="color:#ff4757; font-weight:bold;">FECHA VENCIDA (${Math.abs(diffDays)} días)</span>`;
+                mostrar = true;
+            } else if (diffDays === 0) {
+                // Es Hoy
+                tipoAlerta = "notif-atencion";
+                icono = '<i class="fas fa-clock" style="color:#ffa502; font-size:24px;"></i>';
+                textoTiempo = `<span style="color:#ffa502; font-weight:bold;">¡ES HOY!</span>`;
+                mostrar = true;
+            } else if (diffDays === 1) {
+                // Es Mañana
+                tipoAlerta = "notif-atencion";
+                icono = '<i class="fas fa-calendar-day" style="color:#ffa502; font-size:24px;"></i>';
+                textoTiempo = `<span style="color:#ffa502; font-weight:bold;">ES MAÑANA</span>`;
+                mostrar = true;
+            } else if (diffDays <= 7) {
+                // Próximos 7 días
+                tipoAlerta = "notif-info";
+                icono = '<i class="fas fa-info-circle" style="color:#3498db; font-size:24px;"></i>';
+                textoTiempo = `<span>Faltan ${diffDays} días</span>`;
+                mostrar = true;
+            }
 
-                const msg = diffDays === 0 ? "es HOY" : (diffDays === 1 ? "es MAÑANA" : "está VENCIDA");
-                notifBox.innerHTML = `
-                    <div class="notif-urgente" onclick="window.location.href='carnet.html'">
-                        <span>⚠️</span>
-                        <div style="font-size:13px; font-weight:bold; color:#c0392b;">
-                            La cita de <b>${data.petName}</b> (${data.vacuna}) ${msg}.
+            if (mostrar) {
+                const nombreMascota = nombresMascotas[data.petId] || "Tu Mascota";
+                notifBox.innerHTML += `
+                    <div class="notif-card ${tipoAlerta}" onclick="window.location.href='carnet.html'">
+                        ${icono}
+                        <div class="notif-content">
+                            <b>${data.vacuna} para ${nombreMascota}</b>
+                            ${textoTiempo} - ${formatearFecha(data.fecha)}
                         </div>
                     </div>`;
             }
         });
+
+        // Llamamos después a los avistamientos para no borrar su contenido
+        // Se cargan después de que se definan los IDs en mostrarHub
     }
 
-    // --- NUEVO: GALERÍA DE AVISTAMIENTOS ---
+    // --- GALERÍA DE AVISTAMIENTOS ---
     async function cargarAvistamientos(petsIds) {
         if (petsIds.length === 0) return;
-
         const container = document.getElementById("notif-box");
         
-        // Buscamos avistamientos para TUS mascotas
         const q = query(
             collection(db, "avistamientos"), 
             where("petId", "in", petsIds),
             orderBy("fecha", "desc"),
             limit(5)
         );
-
         const snap = await getDocs(q);
 
         if (!snap.empty) {
@@ -307,7 +362,6 @@
                 const data = doc.data();
                 const fecha = data.fecha ? new Date(data.fecha.seconds * 1000).toLocaleString() : "Reciente";
                 const mapa = data.lat ? `https://www.google.com/maps?q=${data.lat},${data.lon}` : "#";
-
                 html += `
                 <div style="min-width:200px; background:white; border-radius:15px; border:1px solid #ffcccc; overflow:hidden; box-shadow:0 4px 10px rgba(0,0,0,0.05);">
                     <div style="height:120px; background:black;">
@@ -321,14 +375,18 @@
                     </div>
                 </div>`;
             });
-            
             html += `</div>`;
             
-            const listaDiv = document.getElementById("seccion-lista");
             const divAlerta = document.createElement("div");
             divAlerta.innerHTML = html;
-            listaDiv.insertBefore(divAlerta, listaDiv.children[1]); 
+            // Lo insertamos después de las alertas de vacunas
+            container.appendChild(divAlerta);
         }
+    }
+
+    function formatearFecha(f) {
+        const partes = f.split('-');
+        return `${partes[2]}/${partes[1]}`;
     }
 
     // --- SESIÓN ---
@@ -359,7 +417,6 @@
     async function mostrarHub(email) {
         document.getElementById("seccion-auth").classList.add("hidden");
         document.getElementById("seccion-lista").classList.remove("hidden");
-        verificarAlertasVacunas(email);
 
         const q = query(collection(db, "placas"), where("email", "==", email));
         const snap = await getDocs(q);
@@ -367,10 +424,13 @@
         lista.innerHTML = "";
         
         let misMascotasIds = [];
+        let nombresMascotas = {}; // Mapa para guardar ID -> Nombre
 
         snap.forEach((doc) => {
             const pet = doc.data();
             misMascotasIds.push(doc.id);
+            nombresMascotas[doc.id] = pet.mascota; // Guardamos el nombre
+
             lista.innerHTML += `
                 <div class="pet-card">
                     <div class="status-badge ${pet.extraviado ? 'status-lost' : 'status-safe'}">${pet.extraviado ? 'Perdido' : 'A salvo'}</div>
@@ -382,6 +442,8 @@
                 </div>`;
         });
 
+        // Llamamos a las alertas pasando el mapa de nombres
+        verificarAlertasVacunas(email, nombresMascotas);
         // Llamamos a la carga de avistamientos
         cargarAvistamientos(misMascotasIds);
     }
