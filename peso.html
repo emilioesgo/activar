@@ -3,92 +3,150 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Monitoreo de Peso | Huellitas</title>
+    <title>Control de Peso | Huellitas</title>
+    <link rel="icon" type="image/png" href="assets/img/logo.png">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
     <style>
-        :root { --primary: #2bb673; --bg: #f8fafb; --text: #333; --accent: #2196f3; }
-        body { font-family: 'Segoe UI', sans-serif; background: var(--bg); margin: 0; padding: 20px; padding-top: 70px; color: var(--text); }
-        .navbar { position: fixed; top: 0; left: 0; right: 0; background: white; padding: 15px; display: flex; align-items: center; box-shadow: 0 2px 10px rgba(0,0,0,0.1); z-index: 100; }
-        .btn-back { background: #eee; border: none; padding: 8px 12px; border-radius: 10px; cursor: pointer; text-decoration: none; color: #333; font-weight: bold; }
-        .container { max-width: 500px; margin: 0 auto; }
-        .card { background: white; border-radius: 25px; padding: 20px; margin-bottom: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); }
-        h2 { font-size: 18px; margin: 0 0 15px 0; color: var(--primary); display: flex; align-items: center; gap: 8px; }
-        label { display: block; font-size: 11px; font-weight: 800; color: #aaa; text-transform: uppercase; margin-bottom: 5px; margin-top: 15px; }
-        input, select { width: 100%; padding: 12px; border: 1px solid #eee; border-radius: 12px; box-sizing: border-box; font-size: 15px; background: #fafafa; }
+        :root { --primary: #2bb673; --bg: #f4f7f6; --text: #333; --chart-color: #2ecc71; }
+        body { font-family: 'Segoe UI', sans-serif; background: var(--bg); margin: 0; padding: 20px; color: var(--text); padding-bottom: 80px; }
+        .container { max-width: 600px; margin: 0 auto; padding-top: 60px; }
+
+        /* Navbar */
+        .navbar { position: fixed; top: 0; left: 0; right: 0; background: white; padding: 15px; display: flex; align-items: center; justify-content: space-between; box-shadow: 0 4px 12px rgba(0,0,0,0.05); z-index: 100; }
+        .btn-back { background: #f8f9fa; border: none; padding: 8px 12px; border-radius: 8px; cursor: pointer; text-decoration: none; color: #555; font-weight: bold; font-size: 14px; display: flex; align-items: center; gap: 5px; }
+
+        /* Selector de Mascota */
+        .pet-selector { border: none; font-size: 16px; font-weight: bold; color: var(--primary); background: transparent; outline: none; text-align: right; cursor: pointer; }
+
+        /* Tarjeta Resumen */
+        .summary-card {
+            background: linear-gradient(135deg, #2bb673, #2ecc71);
+            color: white;
+            border-radius: 25px;
+            padding: 25px;
+            text-align: center;
+            margin-bottom: 25px;
+            box-shadow: 0 10px 25px rgba(46, 204, 113, 0.3);
+            position: relative;
+            overflow: hidden;
+        }
+        .summary-card h2 { margin: 0; font-size: 42px; font-weight: 800; }
+        .summary-card p { margin: 0; opacity: 0.9; font-size: 14px; }
+        .trend-badge {
+            background: rgba(255,255,255,0.2);
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            margin-top: 10px;
+        }
+
+        /* Contenedor Gráfica */
+        .chart-container {
+            background: white;
+            padding: 15px;
+            border-radius: 20px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+            margin-bottom: 25px;
+            height: 250px;
+        }
+
+        /* Lista Historial */
+        .history-list { list-style: none; padding: 0; margin: 0; }
+        .history-item {
+            background: white;
+            padding: 15px;
+            border-radius: 15px;
+            margin-bottom: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 2px solid #f0f0f0;
+        }
+        .h-date { font-size: 12px; color: #999; display: block; margin-bottom: 2px; }
+        .h-weight { font-weight: bold; font-size: 16px; color: #333; }
+        .h-delete { color: #e74c3c; cursor: pointer; opacity: 0.3; transition: 0.3s; padding: 5px; }
+        .h-delete:hover { opacity: 1; transform: scale(1.1); }
+
+        /* Botón Flotante */
+        .fab {
+            position: fixed; bottom: 25px; right: 25px;
+            background: var(--primary); color: white;
+            width: 60px; height: 60px; border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 24px; box-shadow: 0 5px 15px rgba(43, 182, 115, 0.4);
+            border: none; cursor: pointer; transition: 0.3s;
+            z-index: 900;
+        }
+        .fab:active { transform: scale(0.9); }
+
+        /* Modal */
+        .modal { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.6); z-index:1000; align-items:center; justify-content:center; backdrop-filter: blur(3px); }
+        .modal-content { background: white; padding: 30px; border-radius: 25px; width: 85%; max-width: 350px; text-align: center; }
+        .input-big { font-size: 30px; width: 100px; text-align: center; border: none; border-bottom: 2px solid var(--primary); outline: none; color: var(--primary); font-weight: bold; margin: 20px 0; }
         
-        .bcs-container { display: flex; overflow-x: auto; gap: 10px; padding: 5px 0 15px; scrollbar-width: none; }
-        .bcs-item { min-width: 110px; padding: 12px; border: 2px solid #f0f0f0; border-radius: 18px; text-align: center; cursor: pointer; transition: 0.2s; background: white; }
-        .bcs-item.active { border-color: var(--primary); background: #e8f5e9; transform: scale(1.05); }
-        
-        .info-box { background: #e3f2fd; border-radius: 18px; padding: 18px; font-size: 13px; line-height: 1.5; color: #1565c0; border-left: 5px solid var(--accent); }
-        .footer-science { margin-top: 30px; padding: 20px; text-align: center; border-top: 1px solid #eee; }
-        .footer-science p { font-size: 10px; color: #999; line-height: 1.6; }
+        .btn-save { background: var(--primary); color: white; border: none; width: 100%; padding: 15px; border-radius: 12px; font-weight: bold; cursor: pointer; margin-top: 10px; }
     </style>
 </head>
 <body>
 
     <nav class="navbar">
-        <a href="hub.html" class="btn-back">⬅ Volver</a>
-        <h1 style="font-size: 17px; margin-left: 15px;">⚖️ Monitoreo de Peso</h1>
+        <a href="hub.html" class="btn-back"><i class="fas fa-arrow-left"></i> Volver</a>
+        <select id="pet-select" class="pet-selector">
+            <option>Cargando...</option>
+        </select>
     </nav>
 
     <div class="container">
-        <div class="card">
-            <h2>📈 Historial de Peso</h2>
-            <canvas id="weightChart" height="200"></canvas>
-        </div>
-
-        <div class="card">
-            <h2>📝 Nuevo Registro</h2>
-            
-            <label>Seleccionar Mascota</label>
-            <select id="select-mascota">
-                <option value="">Cargando mascotas...</option>
-            </select>
-
-            <label>Peso Actual (KG)</label>
-            <input type="number" id="input-peso" step="0.1" placeholder="Ej: 12.5">
-
-            <label>Estado Reproductivo / Actividad</label>
-            <select id="select-factor">
-                <option value="1.6">Adulto Castrado (Mantenimiento)</option>
-                <option value="1.8">Adulto Entero (Mantenimiento)</option>
-                <option value="1.2">Poco Activo / Propenso a Obesidad</option>
-                <option value="1.0">Pérdida de Peso (Dieta)</option>
-                <option value="3.0">Cachorro (Crecimiento)</option>
-            </select>
-            
-            <label>Condición Corporal (Escala WSAVA)</label>
-            <div class="bcs-container" id="bcs-selector">
-                <div class="bcs-item" onclick="selectBCS(2, this)">⚖️<br><span style="font-size:10px;">2: Delgado</span></div>
-                <div class="bcs-item active" onclick="selectBCS(5, this)">✅<br><span style="font-size:10px;">5: Ideal</span></div>
-                <div class="bcs-item" onclick="selectBCS(8, this)">🔴<br><span style="font-size:10px;">8: Obesidad</span></div>
-            </div>
-
-            <button style="background:var(--primary); color:white; border:none; width:100%; padding:16px; border-radius:15px; font-weight:bold; cursor:pointer;" id="btn-registrar">Actualizar Expediente</button>
-        </div>
-
-        <div class="card">
-            <h2>🍎 Plan Nutricional Sugerido</h2>
-            <div id="nutricion-info">
-                <p style="color:#aaa; font-size: 13px;">Registra el peso para ver los requerimientos según la WSAVA.</p>
+        
+        <div class="summary-card">
+            <p>Peso Actual</p>
+            <h2 id="current-weight">-- kg</h2>
+            <div class="trend-badge" id="trend-badge">
+                <span>⚖️ Registra un peso</span>
             </div>
         </div>
 
-        <div class="footer-science">
-            <p>
-                <b>FUENTES CIENTÍFICAS:</b><br>
-                Cálculos de Requerimiento Energético en Reposo (RER) basados en la fórmula alométrica estándar de la <b>WSAVA</b> (World Small Animal Veterinary Association). Evaluación de Condición Corporal según la escala de 9 puntos validada por la <b>AAHA</b> (American Animal Hospital Association).
-                <br><br>
-                <i>* Esta herramienta es para monitoreo doméstico y no sustituye la evaluación clínica de un médico veterinario.</i>
-            </p>
-            <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTR9XXCcOdUumx-a_w9TPCppJmpkUsphiG1Ug&s" height="20" style="opacity: 0.5; margin-top: 10px;">
+        <div class="section-title" style="margin-bottom:15px; font-weight:bold; color:#555;">📈 Evolución</div>
+        <div class="chart-container">
+            <canvas id="weightChart"></canvas>
+        </div>
+
+        <div class="section-title" style="margin-bottom:15px; font-weight:bold; color:#555;">📋 Historial</div>
+        <div class="history-list" id="history-list">
+            </div>
+
+    </div>
+
+    <button class="fab" onclick="abrirModal()">
+        <i class="fas fa-plus"></i>
+    </button>
+
+    <div id="modal-peso" class="modal">
+        <div class="modal-content">
+            <h3 style="margin:0; color:#333;">Nuevo Registro</h3>
+            <p style="color:#888; font-size:12px;">Ingresa el peso en Kilogramos</p>
+            
+            <div style="display:flex; align-items:center; justify-content:center; gap:5px;">
+                <input type="number" id="input-peso" class="input-big" step="0.1" placeholder="0.0">
+                <span style="font-size:20px; font-weight:bold; color:#999;">kg</span>
+            </div>
+
+            <input type="date" id="input-fecha" style="width:100%; padding:10px; border:1px solid #eee; border-radius:10px; margin-bottom:10px;">
+
+            <button class="btn-save" id="btn-guardar">Guardar Peso</button>
+            <button onclick="cerrarModal()" style="background:none; border:none; color:#999; margin-top:15px; cursor:pointer;">Cancelar</button>
         </div>
     </div>
 
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-    import { getFirestore, collection, addDoc, query, where, getDocs, orderBy } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+    import { getFirestore, collection, query, where, getDocs, orderBy, limit, addDoc, deleteDoc, doc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
     const firebaseConfig = {
         apiKey: "AIzaSyCqROIzmp2guo2XLbdYrSW3ujlUBc7ngOc",
@@ -102,75 +160,205 @@
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
     const email = localStorage.getItem("userEmail");
-    let myChart = null;
-    let bcsSeleccionado = 5;
 
-    window.selectBCS = (v, e) => {
-        document.querySelectorAll('.bcs-item').forEach(i => i.classList.remove('active'));
-        e.classList.add('active'); bcsSeleccionado = v;
-    };
+    let chartInstance = null;
+    let currentPetId = null;
 
-    async function cargarSelector() {
+    // --- 1. CARGAR MASCOTAS EN SELECTOR ---
+    async function init() {
+        if (!email) return window.location.href = 'hub.html';
+        
+        const selector = document.getElementById("pet-select");
         const q = query(collection(db, "placas"), where("email", "==", email));
         const snap = await getDocs(q);
-        const sel = document.getElementById("select-mascota");
-        sel.innerHTML = "";
-        snap.forEach(doc => {
-            sel.innerHTML += `<option value="${doc.id}">${doc.data().mascota}</option>`;
-        });
-        if(sel.value) cargarHistorial(sel.value);
-    }
 
-    async function cargarHistorial(petId) {
-        const q = query(collection(db, "historial_peso"), where("petId", "==", petId), orderBy("timestamp", "asc"));
-        const snap = await getDocs(q);
-        const pesos = []; const fechas = []; let ultimo = null;
+        selector.innerHTML = "";
+        let firstId = null;
+
         snap.forEach(doc => {
-            pesos.push(doc.data().peso);
-            fechas.push(doc.data().fecha);
-            ultimo = doc.data();
+            const pet = doc.data();
+            const option = document.createElement("option");
+            option.value = doc.id;
+            option.text = pet.mascota;
+            selector.appendChild(option);
+            if (!firstId) firstId = doc.id;
         });
 
-        if(myChart) myChart.destroy();
-        if(pesos.length > 0) {
-            renderChart(fechas, pesos);
-            calcularNutricion(ultimo.peso, ultimo.factor);
+        if (firstId) {
+            currentPetId = firstId;
+            cargarDatos(firstId);
+        } else {
+            selector.innerHTML = "<option>Sin mascotas</option>";
         }
+
+        // Evento al cambiar mascota
+        selector.addEventListener("change", (e) => {
+            currentPetId = e.target.value;
+            cargarDatos(currentPetId);
+        });
     }
 
+    // --- 2. CARGAR DATOS Y GRÁFICA ---
+    async function cargarDatos(petId) {
+        const listDiv = document.getElementById("history-list");
+        const q = query(collection(db, "historial_peso"), where("petId", "==", petId), orderBy("fecha", "asc"));
+        const snap = await getDocs(q);
+
+        let labels = [];
+        let dataPoints = [];
+        let html = "";
+        
+        // Variables para tendencia
+        let prevWeight = 0;
+        let currentWeight = 0;
+
+        // Limpiar lista
+        listDiv.innerHTML = "";
+        const reversedDocs = snap.docs.reverse(); // Para la lista mostramos lo más nuevo arriba
+
+        reversedDocs.forEach((doc, index) => {
+            const data = doc.data();
+            
+            // Para la gráfica (Orden cronológico real) - Usamos el snap original invertido de nuevo o guardamos en array
+            // Mejor iteramos el snap original para la gráfica
+        });
+
+        // Iterar para Gráfica (Cronológico)
+        snap.forEach(doc => {
+            const data = doc.data();
+            labels.push(formatearFechaCorta(data.fecha));
+            dataPoints.push(data.peso);
+            currentWeight = data.peso; // El último será el actual
+        });
+        
+        // Iterar para Lista (Inverso)
+        [...snap.docs].reverse().forEach(doc => {
+            const data = doc.data();
+            html += `
+                <div class="history-item">
+                    <div>
+                        <span class="h-date">${formatearFechaLarga(data.fecha)}</span>
+                        <span class="h-weight">${data.peso} kg</span>
+                    </div>
+                    <i class="fas fa-trash-alt h-delete" onclick="eliminarPeso('${doc.id}')"></i>
+                </div>
+            `;
+        });
+
+        listDiv.innerHTML = html || "<p style='text-align:center; color:#ccc; margin-top:20px;'>No hay registros aún</p>";
+
+        // Actualizar Tarjeta Principal
+        document.getElementById("current-weight").innerText = currentWeight > 0 ? `${currentWeight} kg` : "-- kg";
+        
+        // Calcular tendencia (comparando el último con el penúltimo)
+        const trendBadge = document.getElementById("trend-badge");
+        if (dataPoints.length >= 2) {
+            const last = dataPoints[dataPoints.length - 1];
+            const prev = dataPoints[dataPoints.length - 2];
+            const diff = (last - prev).toFixed(1);
+            
+            if (diff > 0) trendBadge.innerHTML = `<i class="fas fa-arrow-up"></i> Subió ${diff}kg`;
+            else if (diff < 0) trendBadge.innerHTML = `<i class="fas fa-arrow-down"></i> Bajó ${Math.abs(diff)}kg`;
+            else trendBadge.innerHTML = `<i class="fas fa-minus"></i> Se mantiene`;
+        } else {
+            trendBadge.innerHTML = `<span>⚖️ Primer registro</span>`;
+        }
+
+        renderChart(labels, dataPoints);
+    }
+
+    // --- 3. RENDERIZAR GRÁFICA (CHART.JS) ---
     function renderChart(labels, data) {
-        myChart = new Chart(document.getElementById('weightChart'), {
+        const ctx = document.getElementById('weightChart').getContext('2d');
+        
+        if (chartInstance) chartInstance.destroy();
+
+        // Gradiente bonito
+        const gradient = ctx.createLinearGradient(0, 0, 0, 400);
+        gradient.addColorStop(0, 'rgba(46, 204, 113, 0.5)');
+        gradient.addColorStop(1, 'rgba(46, 204, 113, 0.0)');
+
+        chartInstance = new Chart(ctx, {
             type: 'line',
-            data: { labels, datasets: [{ label: 'Kg', data, borderColor: '#2bb673', fill: true, backgroundColor: 'rgba(43,182,115,0.1)', tension: 0.4 }] }
+            data: {
+                labels: labels,
+                datasets: [{
+                    label: 'Peso (kg)',
+                    data: data,
+                    borderColor: '#2bb673',
+                    backgroundColor: gradient,
+                    borderWidth: 3,
+                    pointBackgroundColor: '#fff',
+                    pointBorderColor: '#2bb673',
+                    pointRadius: 5,
+                    fill: true,
+                    tension: 0.4 // Curvatura suave
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { display: false } },
+                scales: {
+                    y: { beginAtZero: false, grid: { display: true, borderDash: [5, 5] } },
+                    x: { grid: { display: false } }
+                }
+            }
         });
     }
 
-    function calcularNutricion(p, f) {
-        const rer = Math.round(70 * Math.pow(p, 0.75));
-        const total = Math.round(rer * f);
-        document.getElementById('nutricion-info').innerHTML = `
-            <div class="info-box">
-                <b>Gasto en Reposo (RER):</b> ${rer} kcal/día<br>
-                <b>Objetivo Diario: ${total} kcal/día</b><br>
-                <small>Basado en guías nutricionales de la WSAVA.</small>
-            </div>`;
-    }
-
-    document.getElementById('btn-registrar').onclick = async () => {
-        const p = document.getElementById('input-peso').value;
-        const petId = document.getElementById('select-mascota').value;
-        const factor = document.getElementById('select-factor').value;
-        if(!p || !petId) return alert("Completa los datos");
-        await addDoc(collection(db, "historial_peso"), {
-            userEmail: email, petId, peso: parseFloat(p), factor: parseFloat(factor),
-            bcs: bcsSeleccionado, timestamp: Date.now(),
-            fecha: new Date().toLocaleDateString('es-ES', {day:'2-digit', month:'short'})
-        });
-        location.reload();
+    // --- 4. FUNCIONES CRUD ---
+    window.abrirModal = () => {
+        document.getElementById("modal-peso").style.display = "flex";
+        document.getElementById("input-fecha").valueAsDate = new Date();
+    };
+    window.cerrarModal = () => {
+        document.getElementById("modal-peso").style.display = "none";
+        document.getElementById("input-peso").value = "";
     };
 
-    document.getElementById('select-mascota').onchange = (e) => cargarHistorial(e.target.value);
-    cargarSelector();
+    document.getElementById("btn-guardar").onclick = async () => {
+        const peso = parseFloat(document.getElementById("input-peso").value);
+        const fecha = document.getElementById("input-fecha").value;
+        
+        if (!peso || !fecha) return alert("Ingresa un peso válido");
+        if (!currentPetId) return alert("Error: No hay mascota seleccionada");
+
+        await addDoc(collection(db, "historial_peso"), {
+            petId: currentPetId,
+            peso: peso,
+            fecha: fecha,
+            userEmail: email,
+            timestamp: Date.now()
+        });
+
+        cerrarModal();
+        cargarDatos(currentPetId);
+    };
+
+    window.eliminarPeso = async (id) => {
+        if(confirm("¿Borrar este registro?")) {
+            await deleteDoc(doc(db, "historial_peso", id));
+            cargarDatos(currentPetId);
+        }
+    };
+
+    // --- UTILIDADES ---
+    function formatearFechaCorta(f) {
+        const p = f.split('-');
+        return `${p[2]}/${p[1]}`;
+    }
+    function formatearFechaLarga(f) {
+        const d = new Date(f + "T00:00:00");
+        return d.toLocaleDateString('es-ES', { weekday: 'short', day: 'numeric', month: 'short' });
+    }
+
+    // Iniciar
+    init();
+
+    // Hacer funciones globales para el HTML
+    window.eliminarPeso = eliminarPeso;
 </script>
+
 </body>
 </html>
