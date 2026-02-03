@@ -4,43 +4,145 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Activar mi Huellita | Huellitas Digitales</title>
+    <link rel="icon" type="image/png" href="assets/img/logo.png">
+    
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+
     <style>
-        :root { --primary: #2bb673; --bg: #f4f7f6; --text: #333; }
-        body { font-family: 'Segoe UI', sans-serif; background: var(--bg); margin: 0; display: flex; align-items: center; justify-content: center; height: 100vh; padding: 20px; box-sizing: border-box; }
-        .card { background: white; padding: 40px 30px; border-radius: 24px; box-shadow: 0 15px 35px rgba(0,0,0,0.1); width: 100%; max-width: 400px; text-align: center; position: relative; }
+        :root { --primary: #2bb673; --bg: #f4f7f6; --text: #333; --error: #e74c3c; }
         
-        .logo { font-size: 50px; margin-bottom: 10px; cursor: pointer; transition: 0.3s; }
-        .logo:hover { transform: scale(1.2) rotate(10deg); }
-        
-        h1 { font-size: 22px; color: var(--text); margin-bottom: 10px; }
-        p { color: #666; font-size: 14px; margin-bottom: 30px; }
+        body { 
+            font-family: 'Segoe UI', system-ui, sans-serif; 
+            background: var(--bg); 
+            margin: 0; 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            height: 100vh; 
+            padding: 20px; 
+            box-sizing: border-box; 
+        }
 
-        input { width: 100%; padding: 15px; border: 2px solid #eee; border-radius: 12px; font-size: 18px; text-align: center; text-transform: uppercase; font-weight: bold; letter-spacing: 2px; box-sizing: border-box; transition: 0.3s; margin-bottom: 20px; }
-        input:focus { border-color: var(--primary); outline: none; background: #f9fffb; box-shadow: 0 0 10px rgba(43, 182, 115, 0.1); }
-
-        button { width: 100%; padding: 16px; background: var(--primary); color: white; border: none; border-radius: 12px; font-size: 16px; font-weight: bold; cursor: pointer; transition: 0.3s; }
-        button:hover { transform: translateY(-2px); box-shadow: 0 5px 15px rgba(43, 182, 115, 0.3); }
+        .card { 
+            background: white; 
+            padding: 50px 30px; 
+            border-radius: 30px; 
+            box-shadow: 0 20px 40px rgba(0,0,0,0.08); 
+            width: 100%; 
+            max-width: 420px; 
+            text-align: center; 
+            position: relative; 
+            overflow: hidden;
+        }
         
-        .footer-text { margin-top: 25px; font-size: 12px; color: #aaa; }
+        /* Decoración superior */
+        .card::before {
+            content: ''; position: absolute; top: 0; left: 0; right: 0; height: 6px;
+            background: linear-gradient(90deg, var(--primary), #239b60);
+        }
+
+        /* Logo animado */
+        .logo-container {
+            width: 80px; height: 80px;
+            background: #e8f5e9;
+            color: var(--primary);
+            border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 35px;
+            margin: 0 auto 20px;
+            cursor: pointer;
+            transition: 0.3s;
+            box-shadow: 0 5px 15px rgba(43, 182, 115, 0.2);
+        }
+        .logo-container:hover { transform: scale(1.1) rotate(10deg); background: var(--primary); color: white; }
+        
+        h1 { font-size: 26px; color: var(--text); margin: 0 0 10px; font-weight: 800; }
+        p { color: #888; font-size: 15px; margin-bottom: 30px; line-height: 1.5; }
+
+        /* Input Estilizado */
+        .input-wrapper { position: relative; margin-bottom: 25px; }
+        .input-wrapper i {
+            position: absolute; left: 20px; top: 50%; transform: translateY(-50%);
+            color: #aaa; font-size: 18px; pointer-events: none;
+        }
+
+        input { 
+            width: 100%; 
+            padding: 18px 20px 18px 50px; /* Espacio para el icono */
+            border: 2px solid #f0f0f0; 
+            border-radius: 18px; 
+            font-size: 20px; 
+            text-align: center; 
+            text-transform: uppercase; 
+            font-weight: bold; 
+            letter-spacing: 3px; 
+            box-sizing: border-box; 
+            transition: 0.3s; 
+            color: var(--text);
+            background: #fafafa;
+        }
+        input:focus { 
+            border-color: var(--primary); 
+            outline: none; 
+            background: white; 
+            box-shadow: 0 4px 15px rgba(43, 182, 115, 0.15); 
+        }
+        input::placeholder { letter-spacing: 1px; color: #ccc; font-weight: normal; font-size: 16px; }
+
+        /* Botón Estilizado */
+        button { 
+            width: 100%; 
+            padding: 18px; 
+            background: var(--primary); 
+            color: white; 
+            border: none; 
+            border-radius: 18px; 
+            font-size: 16px; 
+            font-weight: bold; 
+            cursor: pointer; 
+            transition: 0.3s; 
+            box-shadow: 0 5px 15px rgba(43, 182, 115, 0.3);
+            display: flex; align-items: center; justify-content: center; gap: 10px;
+        }
+        button:hover { transform: translateY(-3px); box-shadow: 0 8px 20px rgba(43, 182, 115, 0.4); }
+        button:active { transform: scale(0.98); }
+        
+        .error-box {
+            color: var(--error); background: #fff5f5; border: 1px solid #feb2b2;
+            padding: 10px; border-radius: 12px; font-size: 13px; margin-top: 15px; 
+            display: none; font-weight: 600;
+        }
+
+        .footer-text { margin-top: 30px; font-size: 13px; color: #b2bec3; }
+        .footer-text a { color: var(--primary); text-decoration: none; font-weight: bold; }
     </style>
 </head>
 <body>
 
 <div class="card">
-    <div class="logo" onclick="reproducirSonido()">🐾</div>
+    <div class="logo-container" onclick="reproducirSonido()">
+        <i class="fas fa-paw"></i>
+    </div>
+    
     <h1>¡Hola, humano!</h1>
-    <p>Ingresa el código de 6 dígitos que viene en tu empaque para comenzar la activación.</p>
+    <p>Ingresa el código de 6 dígitos que viene en tu empaque para activar tu placa.</p>
 
-    <input type="text" id="id-input" placeholder="ABC123" maxlength="6" autocomplete="off">
+    <div class="input-wrapper">
+        <i class="fas fa-qrcode"></i>
+        <input type="text" id="id-input" placeholder="ABC123" maxlength="6" autocomplete="off">
+    </div>
 
-    <button id="btn-continuar">Siguiente: Datos de mascota</button>
+    <button id="btn-continuar">
+        Siguiente paso <i class="fas fa-arrow-right"></i>
+    </button>
 
-    <div id="error-msg" style="color: #e74c3c; font-size: 13px; margin-top: 15px; display: none;">
-        ⚠️ Por favor, ingresa un ID válido.
+    <div id="error-msg" class="error-box">
+        <i class="fas fa-exclamation-circle"></i> Por favor, ingresa un ID válido.
     </div>
 
     <div class="footer-text">
-        ¿Necesitas ayuda? <br> Soporte: hola@huellitasdigitales.com
+        ¿Tienes problemas? <br> 
+        Escríbenos a <a href="mailto:hola@huellitasdigitales.com">Soporte Técnico</a>
     </div>
 </div>
 
