@@ -176,14 +176,12 @@
     // 1. CARGAR SOCIOS DE FIREBASE (Prioridad)
     async function cargarSociosFirebase() {
         try {
-            // Buscamos negocios tipo estetica
             const q = query(collection(db, "negocios"), where("tipo", "==", "estetica"));
             const snap = await getDocs(q);
             snap.forEach(doc => {
                 const biz = doc.data();
                 const fotoUrl = (biz.foto && biz.foto.length > 50) ? biz.foto : imgDefault;
                 
-                // NOTA: Se actualizó el HTML interno para usar las nuevas clases visuales
                 container.innerHTML += `
                     <div class="place-card premium">
                         <span class="badge-premium"><i class="fas fa-crown"></i> RECOMENDADO</span>
@@ -208,13 +206,15 @@
 
     // 2. BUSCAR EN GOOGLE MAPS (Para completar la lista)
     async function buscarEnGoogle() {
-        if (!navigator.geolocation) return;
+        if (!navigator.geolocation) {
+            document.getElementById('main-loader').innerText = "La geolocalización no es compatible con este navegador.";
+            return;
+        }
         
         navigator.geolocation.getCurrentPosition(async (pos) => {
             try {
                 const { latitude, longitude } = pos.coords;
                 
-                // Esperar a que la librería de Google cargue
                 if (!window.google) await new Promise(r => setTimeout(r, 1000));
                 const { Place } = await google.maps.importLibrary("places");
                 
@@ -237,7 +237,6 @@
                             ? place.photos[0].getURI({maxWidth: 200}) 
                             : imgDefault;
 
-                        // HTML actualizado con el nuevo diseño
                         container.innerHTML += `
                             <div class="place-card">
                                 <img src="${photoUrl}" class="place-img" onerror="this.src='${imgDefault}'">
@@ -258,10 +257,22 @@
                 console.error("Error en búsqueda Google:", error);
                 document.getElementById('main-loader').innerHTML = "<p>No pudimos cargar los resultados de Google.</p>";
             }
+        }, (error) => {
+            // MEJORA: Manejo cuando la ubicación no está activada o es denegada
+            const loader = document.getElementById('main-loader');
+            if (error.code === error.PERMISSION_DENIED) {
+                loader.innerHTML = `
+                    <div style="color: #e74c3c; padding: 10px;">
+                        <i class="fas fa-location-arrow-slash" style="font-size: 24px; margin-bottom: 10px;"></i>
+                        <p style="font-size: 14px; margin: 0;">📍 Ubicación desactivada.</p>
+                        <p style="font-size: 12px; opacity: 0.8;">Activa los permisos en tu celular para ver locales cerca de ti.</p>
+                    </div>`;
+            } else {
+                loader.innerText = "Error al obtener la ubicación.";
+            }
         });
     }
 
-    // Ejecutar ambas funciones
     cargarSociosFirebase().then(buscarEnGoogle);
 </script>
 </body>
