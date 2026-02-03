@@ -18,12 +18,8 @@
     <style>
         :root { 
             --primary: #2bb673; 
-            --primary-dark: #239b60;
-            --whatsapp: #25D366; 
             --bg: #f4f7f6; 
             --text: #2c3e50; 
-            --medical-bg: #e6fffa; 
-            --medical-border: #81e6d9; 
             --danger: #ff4757; 
             --info: #3498db;
             --card-shadow: 0 10px 30px rgba(0,0,0,0.08);
@@ -56,36 +52,36 @@
             top: 0; 
             z-index: 100; 
             animation: pulse-danger 1.5s infinite; 
-            box-shadow: 0 4px 10px rgba(255, 71, 87, 0.4);
         }
         @keyframes pulse-danger { 0% { background: #ff4757; } 50% { background: #ff6b81; } 100% { background: #ff4757; } }
 
-        /* --- FOTO GIGANTE Y A COLOR --- */
+        /* --- FOTO CORREGIDA --- */
         .photo-container { 
             width: 100%; 
-            height: 450px; /* OCUPA EL 60% DE LA PANTALLA (MUY GRANDE) */
-            background: white; 
+            height: 450px; /* Altura fija grande para que luzca la foto */
+            background: #eee; 
             position: relative; 
             display: flex; 
             align-items: center; 
             justify-content: center; 
-            overflow: hidden;
+            overflow: hidden; /* Corta lo que sobre */
         }
+        
         #pet-photo { 
             width: 100%; 
             height: 100%; 
-            object-fit: cover; /* Cubre todo el espacio sin deformarse */
-            object-position: center;
+            object-fit: cover; /* ESTA ES LA CLAVE: Rellena todo el espacio sin deformar */
+            object-position: center; /* Centra la imagen */
             display: block;
         }
         
-        /* ESTILO CUANDO NO HAY FOTO (A COLOR) */
+        /* Solo si falla la carga usamos el logo pequeño */
         .img-logo-fallback { 
-            width: 180px !important; /* Logo más grande por defecto */
+            width: 150px !important; 
             height: auto !important; 
             object-fit: contain !important; 
-            opacity: 1 !important; /* Totalmente visible */
-            filter: none !important; /* SIN BLANCO Y NEGRO */
+            opacity: 0.5;
+            padding: 20px;
         }
         
         .status-badge { 
@@ -120,7 +116,7 @@
 
         .info-box { padding: 18px; border-radius: 16px; margin-bottom: 15px; position: relative; }
         .emergency-box { background: #fff5f5; border: 1px dashed #fc8181; }
-        .medical-box { background: var(--medical-bg); border: 1px solid var(--medical-border); }
+        .medical-box { background: #e6fffa; border: 1px solid #81e6d9; }
         
         .box-title { font-weight: 800; font-size: 11px; text-transform: uppercase; display: flex; align-items: center; gap: 6px; margin-bottom: 8px; }
         .box-text { margin: 0; font-size: 15px; line-height: 1.5; color: #444; }
@@ -130,18 +126,15 @@
             display: flex; align-items: center; justify-content: center; gap: 10px; 
             padding: 16px; border-radius: 18px; 
             text-decoration: none; color: white; font-weight: bold; font-size: 16px; 
-            transition: transform 0.2s, box-shadow 0.2s; border: none; cursor: pointer; 
+            transition: transform 0.2s; border: none; cursor: pointer; 
             box-shadow: 0 4px 6px rgba(0,0,0,0.05);
         }
-        .btn:active { transform: scale(0.98); }
-        
         .btn-call { background: linear-gradient(135deg, #2bb673, #239b60); }
         .btn-wa { background: #25D366; }
         .btn-report { 
             background: white; color: var(--info); border: 2px solid var(--info); 
             margin-top: 10px; box-shadow: none; 
         }
-        .btn-report:hover { background: #f0f8ff; }
 
         footer { text-align: center; padding: 40px 20px; font-size: 12px; color: #b2bec3; background: white; margin-top: 20px; }
         .btn-owner { 
@@ -150,7 +143,6 @@
             padding: 10px 20px; border-radius: 50px; 
             text-decoration: none; font-weight: 600; margin-top: 15px; 
             font-size: 13px; border: none; cursor: pointer;
-            box-shadow: 0 4px 10px rgba(45, 52, 54, 0.3);
         }
 
         .hidden { display: none !important; }
@@ -172,7 +164,6 @@
             cursor: pointer; border: 2px solid white;
             transition: 0.3s;
         }
-        .floating-hub:active { transform: scale(0.9); }
     </style>
 </head>
 <body>
@@ -183,7 +174,7 @@
 </div>
 
 <div id="not-sold-view" class="profile-card hidden">
-    <div style="text-align: center; padding: 80px 30px; display:flex; flex-direction:column; align-items:center;">
+    <div style="text-align: center; padding: 80px 30px;">
         <i class="fas fa-qrcode" style="font-size: 60px; color: #ddd; margin-bottom:20px;"></i>
         <h2 style="color:var(--text);">Placa no registrada</h2>
         <p style="color:#999; font-size:14px;">El código escaneado no pertenece a una mascota activa en el sistema.</p>
@@ -194,10 +185,8 @@
     <div style="text-align: center; padding: 60px 30px;">
         <img src="assets/img/logo.png" width="80" style="margin-bottom: 20px;">
         <h2 style="color: var(--primary); margin-bottom: 10px;">¡Casi listo!</h2>
-        <p style="color: #666; line-height: 1.6; margin-bottom: 30px;">Esta placa ya es tuya. Actívala ahora para proteger a tu mascota.</p>
-        <a href="#" id="btn-activar-link" class="btn btn-call" style="box-shadow: 0 8px 20px rgba(43, 182, 115, 0.3);">
-            ACTIVAR PLACA
-        </a>
+        <p style="color: #666; margin-bottom: 30px;">Esta placa ya es tuya. Actívala ahora.</p>
+        <a href="#" id="btn-activar-link" class="btn btn-call">ACTIVAR PLACA</a>
     </div>
 </div>
 
@@ -208,6 +197,7 @@
     
     <div class="photo-container">
         <img id="pet-photo" src="" alt="Foto de la mascota" onerror="this.src='assets/img/logo.png'; this.classList.add('img-logo-fallback');">
+        
         <div id="status-txt" class="status-badge">
             <i class="fas fa-shield-alt"></i> <span>Protegido por Huellitas</span>
         </div>
@@ -263,6 +253,7 @@
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
     import { getFirestore, doc, getDoc, collection, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
+    // --- SEGURIDAD DE CARGA ---
     const safetyTimer = setTimeout(() => {
         const loader = document.getElementById("loading-view");
         if(loader && loader.style.display !== 'none') {
@@ -327,8 +318,10 @@
                     setText("display-id", idUpper);
                     
                     const imgEl = document.getElementById("pet-photo");
-                    if(data.foto) imgEl.src = data.foto;
-                    else {
+                    if(data.foto) {
+                        imgEl.src = data.foto;
+                        imgEl.classList.remove('img-logo-fallback');
+                    } else {
                         imgEl.src = "assets/img/logo.png";
                         imgEl.classList.add('img-logo-fallback');
                     }
@@ -381,7 +374,6 @@
         }
     }
 
-    // COMPRESIÓN DE IMAGENES PARA EVITAR CARGA INFINITA
     const comprimirImagen = (file) => {
         return new Promise((resolve, reject) => {
             const reader = new FileReader();
