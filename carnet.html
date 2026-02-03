@@ -366,4 +366,26 @@
             await addDoc(collection(db, "recordatorios"), {
                 petId, vacuna, fecha, estado,
                 userEmail: email,
-                timestamp:
+                timestamp: Date.now()
+            });
+            cerrarModal();
+            cargarRegistrosVacunas(petId); // Recargar solo la lista
+        } catch (e) {
+            console.error(e);
+            alert("Error al guardar");
+        } finally {
+            btn.innerText = "Guardar en Cartilla";
+            btn.disabled = false;
+        }
+    };
+
+    function formatearFecha(f) {
+        const partes = f.split('-'); // f viene como YYYY-MM-DD
+        const d = new Date(partes[0], partes[1] - 1, partes[2]);
+        return d.toLocaleDateString('es-ES', { day: 'numeric', month: 'short', year: 'numeric' });
+    }
+
+    cargarCarnets();
+</script>
+</body>
+</html>
