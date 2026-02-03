@@ -343,4 +343,83 @@
                             owner_email: data.email,
                             mensaje_aviso: "Alguien ha escaneado la placa."
                         });
-                    }, null, {timeout:
+                    }, null, {timeout: 10000});
+                }
+            } else if (data.vendida) {
+                document.getElementById("btn-activar-link").href = `index.html?id=${id.toUpperCase()}`;
+                document.getElementById("not-active-view").classList.remove("hidden");
+            } else {
+                document.getElementById("not-sold-view").classList.remove("hidden");
+            }
+        } else {
+            document.getElementById("not-sold-view").classList.remove("hidden");
+        }
+    }
+
+    // FUNCIÓN DE REPORTE DE FOTO
+    window.enviarAvistamiento = async (input) => {
+        if (!input.files || !input.files[0]) return;
+        
+        const btn = document.querySelector('.btn-report');
+        const originalText = btn.innerHTML;
+        btn.innerHTML = '<i class="fas fa-circle-notch fa-spin"></i> ENVIANDO...';
+        btn.disabled = true;
+        btn.style.opacity = "0.7";
+
+        try {
+            let lat = null, lon = null;
+            if (navigator.geolocation) {
+                try {
+                    const pos = await new Promise((resolve, reject) => {
+                        navigator.geolocation.getCurrentPosition(resolve, reject, {timeout: 5000});
+                    });
+                    lat = pos.coords.latitude;
+                    lon = pos.coords.longitude;
+                } catch(e) { console.log("Ubicación no permitida o timeout"); }
+            }
+
+            const reader = new FileReader();
+            reader.readAsDataURL(input.files[0]);
+            reader.onload = async () => {
+                await addDoc(collection(db, "avistamientos"), {
+                    petId: new URLSearchParams(window.location.search).get('id').toUpperCase(),
+                    foto: reader.result,
+                    lat: lat, 
+                    lon: lon,
+                    fecha: serverTimestamp(),
+                    vistoPor: "Anonimo"
+                });
+
+                const mapsUrl = lat ? `https://www.google.com/maps?q=${lat},${lon}` : "Ubicación no compartida";
+                
+                await emailjs.send("service_xwx9czt", "template_rghvb1w", {
+                    pet_name: petData.mascota,
+                    owner_email: petData.email,
+                    map_url: mapsUrl,
+                    mensaje_aviso: "¡URGENTE! Se ha subido una foto de avistamiento."
+                });
+
+                alert("✅ ¡Gracias! Hemos avisado al dueño.");
+                btn.innerHTML = '<i class="fas fa-check"></i> REPORTE ENVIADO';
+                btn.style.background = "#2ecc71";
+                btn.style.color = "white";
+                btn.style.borderColor = "#2ecc71";
+            };
+        } catch (e) {
+            console.error(e);
+            alert("Hubo un error al enviar. Intenta de nuevo.");
+            btn.innerHTML = originalText;
+            btn.disabled = false;
+            btn.style.opacity = "1";
+        }
+    };
+
+    window.ownerAccess = () => {
+        const id = new URLSearchParams(window.location.search).get('id');
+        window.location.href = `editar.html?id=${id}`;
+    };
+
+    loadProfile();
+</script>
+</body>
+</html>
