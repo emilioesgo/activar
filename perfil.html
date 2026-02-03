@@ -60,19 +60,32 @@
         }
         @keyframes pulse-danger { 0% { background: #ff4757; } 50% { background: #ff6b81; } 100% { background: #ff4757; } }
 
-        /* --- FOTO MÁS GRANDE --- */
+        /* --- FOTO GIGANTE Y A COLOR --- */
         .photo-container { 
             width: 100%; 
-            height: 45vh; /* Ocupa el 45% de la altura de la pantalla */
-            max-height: 500px; /* Límite para pantallas grandes */
-            background: #eee; 
+            height: 60vh; /* OCUPA EL 60% DE LA PANTALLA (MUY GRANDE) */
+            background: white; 
             position: relative; 
             display: flex; 
             align-items: center; 
             justify-content: center; 
         }
-        #pet-photo { width: 100%; height: 100%; object-fit: cover; transition: opacity 0.3s; }
-        .img-logo-fallback { width: 120px !important; height: auto !important; object-fit: contain !important; opacity: 0.3; filter: grayscale(1); }
+        #pet-photo { 
+            width: 100%; 
+            height: 100%; 
+            object-fit: cover; /* Cubre todo el espacio sin deformarse */
+            display: block;
+            transition: opacity 0.3s; 
+        }
+        
+        /* ESTILO CUANDO NO HAY FOTO (A COLOR) */
+        .img-logo-fallback { 
+            width: 180px !important; /* Logo más grande por defecto */
+            height: auto !important; 
+            object-fit: contain !important; 
+            opacity: 1 !important; /* Totalmente visible */
+            filter: none !important; /* SIN BLANCO Y NEGRO */
+        }
         
         .status-badge { 
             position: absolute; 
@@ -249,7 +262,6 @@
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
     import { getFirestore, doc, getDoc, collection, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
-    // --- SEGURIDAD DE CARGA ---
     const safetyTimer = setTimeout(() => {
         const loader = document.getElementById("loading-view");
         if(loader && loader.style.display !== 'none') {
@@ -368,8 +380,7 @@
         }
     }
 
-    // --- NUEVO: FUNCIÓN PARA COMPRIMIR IMAGEN ---
-    // Reduce la imagen a máximo 800px de ancho y calidad 70%
+    // COMPRESIÓN DE IMAGENES PARA EVITAR CARGA INFINITA
     const comprimirImagen = (file) => {
         return new Promise((resolve, reject) => {
             const reader = new FileReader();
@@ -381,7 +392,6 @@
                     const canvas = document.createElement('canvas');
                     const MAX_WIDTH = 800;
                     const scaleSize = MAX_WIDTH / img.width;
-                    // Si la imagen es más pequeña que 800px, no redimensionamos hacia arriba
                     const width = img.width > MAX_WIDTH ? MAX_WIDTH : img.width;
                     const height = img.width > MAX_WIDTH ? img.height * scaleSize : img.height;
 
@@ -389,8 +399,6 @@
                     canvas.height = height;
                     const ctx = canvas.getContext('2d');
                     ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-                    
-                    // Exportar como JPEG calidad 0.7 (70%)
                     resolve(canvas.toDataURL('image/jpeg', 0.7)); 
                 }
                 img.onerror = (err) => reject(err);
@@ -399,20 +407,16 @@
         });
     }
 
-    // --- FUNCIÓN DE REPORTE ACTUALIZADA ---
     window.enviarAvistamiento = async (input) => {
         if (!input.files || !input.files[0]) return;
         
         const btn = document.querySelector('.btn-report');
         const originalText = btn.innerHTML;
-        
-        // Estado de carga
         btn.innerHTML = '<i class="fas fa-circle-notch fa-spin"></i> ENVIANDO...';
         btn.disabled = true;
         btn.style.opacity = "0.7";
 
         try {
-            // 1. Obtener ubicación (con timeout para no bloquear)
             let lat = null, lon = null;
             if (navigator.geolocation) {
                 try {
@@ -424,20 +428,17 @@
                 } catch(e) { console.log("Ubicación no obtenida (timeout o permiso)"); }
             }
 
-            // 2. Comprimir la imagen antes de subir
             const fotoComprimida = await comprimirImagen(input.files[0]);
 
-            // 3. Guardar en Firebase (Avistamiento + Foto Base64 ligera)
             await addDoc(collection(db, "avistamientos"), {
                 petId: new URLSearchParams(window.location.search).get('id').toUpperCase(),
-                foto: fotoComprimida, // Usamos la versión comprimida
+                foto: fotoComprimida,
                 lat: lat, 
                 lon: lon,
                 fecha: serverTimestamp(),
                 vistoPor: "Anonimo"
             });
 
-            // 4. Enviar Correo de Aviso
             const mapsUrl = lat ? `https://www.google.com/maps?q=${lat},${lon}` : "Ubicación no compartida";
             
             if(window.emailjs) {
@@ -449,7 +450,6 @@
                 });
             }
 
-            // 5. Éxito
             alert("✅ ¡Gracias! Hemos avisado al dueño.");
             btn.innerHTML = '<i class="fas fa-check"></i> REPORTE ENVIADO';
             btn.style.background = "#2ecc71";
