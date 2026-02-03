@@ -2,128 +2,191 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Panel de Control | Huellitas Digitales</title>
-    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
+    <link rel="icon" type="image/png" href="assets/img/logo.png">
+    
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+
     <style>
-        :root { --primary: #2bb673; --bg: #f4f7f6; --text: #333; --error: #e74c3c; --lost: #ff4757; }
-        body { font-family: 'Segoe UI', sans-serif; background: var(--bg); margin: 0; display: flex; justify-content: center; padding: 20px; }
-        .card { background: white; padding: 0; border-radius: 24px; box-shadow: 0 15px 35px rgba(0,0,0,0.1); width: 100%; max-width: 450px; overflow: hidden; }
+        :root { --primary: #2bb673; --primary-dark: #239b60; --bg: #f4f7f6; --text: #333; --error: #e74c3c; --lost: #ff4757; }
+        body { font-family: 'Segoe UI', system-ui, sans-serif; background: var(--bg); margin: 0; display: flex; justify-content: center; padding: 20px; color: var(--text); padding-bottom: 80px; }
         
-        .header { background: var(--primary); color: white; padding: 25px; text-align: center; transition: 0.3s; }
-        .header h2 { margin: 0; font-size: 20px; }
-        .id-badge { display: inline-block; background: rgba(255,255,255,0.2); padding: 4px 12px; border-radius: 20px; font-size: 12px; margin-top: 8px; }
-
-        .content { padding: 25px; }
-        .hidden { display: none; }
-
-        /* Estilo Modo Extravío */
-        .lost-mode-box { background: #fff5f5; border: 2px solid #feb2b2; padding: 15px; border-radius: 15px; margin-bottom: 20px; text-align: center; transition: 0.3s; }
-        .lost-mode-box.active { background: var(--lost); border-color: #ff6b81; color: white; border-style: dashed; }
-        .switch-container { display: flex; align-items: center; justify-content: space-between; margin-top: 10px; }
-
-        /* Centro de Rastreo */
-        .section-label { font-size: 11px; color: #999; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 10px; display: block; text-align: center; }
-        .tracking-hub { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin: 15px 0; }
-        .btn-track { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 15px 10px; border-radius: 16px; border: none; color: white; font-size: 13px; font-weight: 600; cursor: pointer; transition: 0.3s; text-decoration: none; gap: 8px; }
-        .btn-track img { width: 24px; height: 24px; }
-        .track-google { background: #4285F4; box-shadow: 0 4px 12px rgba(66,133,244,0.3); }
-        .track-apple { background: #000000; box-shadow: 0 4px 12px rgba(0,0,0,0.2); }
-
-        /* Formulario y Foto */
-        .photo-edit-section { text-align: center; margin-bottom: 20px; }
-        .current-photo-preview { width: 120px; height: 120px; border-radius: 60px; object-fit: cover; border: 3px solid var(--primary); margin-bottom: 10px; background: #eee; }
+        .card { background: white; width: 100%; max-width: 480px; border-radius: 30px; box-shadow: 0 20px 40px rgba(0,0,0,0.08); overflow: hidden; position: relative; }
         
-        label { display: block; margin-bottom: 6px; font-size: 13px; color: #666; font-weight: 600; text-transform: uppercase; }
-        input, select, textarea { width: 100%; padding: 12px; margin-bottom: 18px; border: 1.5px solid #eee; border-radius: 12px; box-sizing: border-box; font-size: 15px; }
+        /* Header */
+        .header { background: var(--primary); color: white; padding: 35px 25px 50px; text-align: center; border-radius: 0 0 40% 40% / 20px; position: relative; transition: 0.4s; }
+        .header.lost-mode { background: var(--lost); }
+        .header h2 { margin: 0; font-size: 22px; font-weight: 800; }
+        .id-badge { display: inline-flex; align-items: center; gap: 5px; background: rgba(255,255,255,0.25); padding: 5px 15px; border-radius: 20px; font-size: 13px; margin-top: 10px; backdrop-filter: blur(5px); }
+
+        .content { padding: 25px; margin-top: -30px; }
+        .hidden { display: none !important; }
+
+        /* Login */
+        .login-box { background: white; padding: 30px; border-radius: 25px; box-shadow: 0 10px 30px rgba(0,0,0,0.05); text-align: center; }
+        .pin-input { font-size: 24px !important; letter-spacing: 10px; text-align: center; font-weight: bold; }
+
+        /* Inputs con Iconos */
+        .input-group { position: relative; margin-bottom: 20px; }
+        .input-group i { position: absolute; left: 15px; top: 50%; transform: translateY(-50%); color: #aaa; font-size: 16px; transition: 0.3s; }
+        .input-group input, .input-group textarea { width: 100%; padding: 14px 14px 14px 45px; border: 2px solid #f0f0f0; border-radius: 15px; box-sizing: border-box; font-size: 15px; outline: none; transition: 0.3s; font-family: inherit; }
+        .input-group textarea { resize: none; }
+        .input-group input:focus, .input-group textarea:focus { border-color: var(--primary); }
+        .input-group input:focus + i, .input-group textarea:focus + i { color: var(--primary); }
+        label { display: block; margin-bottom: 8px; font-size: 12px; font-weight: 700; color: #888; text-transform: uppercase; letter-spacing: 0.5px; }
+
+        /* Toggle Switch (Modo Perdido) */
+        .lost-panel { background: white; border: 2px solid #eee; padding: 20px; border-radius: 20px; margin-bottom: 25px; display: flex; align-items: center; justify-content: space-between; transition: 0.3s; }
+        .lost-panel.active { border-color: var(--lost); background: #fff5f5; }
+        .lost-info h4 { margin: 0; font-size: 16px; color: #333; }
+        .lost-info p { margin: 3px 0 0; font-size: 12px; color: #888; }
         
-        button { width: 100%; padding: 16px; background: var(--primary); color: white; border: none; border-radius: 12px; font-size: 16px; font-weight: bold; cursor: pointer; transition: 0.3s; margin-bottom: 10px; }
-        .btn-poster { background: #ff7f50; box-shadow: 0 4px 12px rgba(255,127,80,0.3); }
-        .btn-secondary { background: #f0f0f0; color: #666; }
+        .switch { position: relative; display: inline-block; width: 50px; height: 28px; }
+        .switch input { opacity: 0; width: 0; height: 0; }
+        .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #ccc; transition: .4s; border-radius: 34px; }
+        .slider:before { position: absolute; content: ""; height: 20px; width: 20px; left: 4px; bottom: 4px; background-color: white; transition: .4s; border-radius: 50%; box-shadow: 0 2px 5px rgba(0,0,0,0.2); }
+        input:checked + .slider { background-color: var(--lost); }
+        input:checked + .slider:before { transform: translateX(22px); }
 
-        /* Plantilla Cartel Oculta */
-        #poster-template { width: 600px; height: 850px; background: white; position: fixed; left: -9999px; top: 0; display: flex; flex-direction: column; align-items: center; padding: 40px; text-align: center; border: 20px solid var(--lost); }
-        .poster-title { font-size: 65px; color: var(--lost); font-weight: 900; margin: 0; }
-        .poster-img { width: 450px; height: 450px; object-fit: cover; border-radius: 25px; margin: 30px 0; border: 8px solid #f0f0f0; }
+        /* Botones */
+        button { width: 100%; padding: 16px; background: var(--primary); color: white; border: none; border-radius: 15px; font-size: 16px; font-weight: bold; cursor: pointer; transition: 0.2s; box-shadow: 0 4px 15px rgba(43, 182, 115, 0.3); }
+        button:active { transform: scale(0.98); }
+        .btn-poster { background: linear-gradient(45deg, #ff9966, #ff5e62); box-shadow: 0 4px 15px rgba(255, 94, 98, 0.3); margin-top: 10px; display: flex; align-items: center; justify-content: center; gap: 10px; }
+        .btn-secondary { background: #f1f2f6; color: #7f8c8d; box-shadow: none; margin-top: 10px; }
 
-        #status { text-align: center; margin-top: 15px; font-size: 14px; font-weight: 500; }
-        .loader { border: 3px solid #f3f3f3; border-top: 3px solid var(--primary); border-radius: 50%; width: 18px; height: 18px; animation: spin 1s linear infinite; display: inline-block; vertical-align: middle; margin-right: 8px; }
-        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        /* Foto */
+        .photo-section { text-align: center; margin: 20px 0; position: relative; }
+        .photo-wrapper { width: 130px; height: 130px; margin: 0 auto; position: relative; }
+        .current-photo-preview { width: 100%; height: 100%; border-radius: 50%; object-fit: cover; border: 4px solid white; box-shadow: 0 5px 15px rgba(0,0,0,0.1); }
+        .btn-cam-overlay { position: absolute; bottom: 0; right: 0; background: var(--primary); color: white; width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; border: 3px solid white; box-shadow: 0 2px 8px rgba(0,0,0,0.2); transition: 0.3s; }
+        .btn-cam-overlay:hover { transform: scale(1.1); }
+
+        /* Toast Notification */
+        #toast { visibility: hidden; min-width: 250px; margin-left: -125px; background-color: #333; color: #fff; text-align: center; border-radius: 50px; padding: 16px; position: fixed; z-index: 1000; left: 50%; bottom: 30px; font-size: 14px; box-shadow: 0 5px 15px rgba(0,0,0,0.3); opacity: 0; transition: opacity 0.5s, bottom 0.5s; display: flex; align-items: center; justify-content: center; gap: 10px; }
+        #toast.show { visibility: visible; opacity: 1; bottom: 50px; }
+        #toast.success { background-color: var(--primary); }
+        #toast.error { background-color: var(--error); }
+
+        /* Rastreo */
+        .track-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 20px; }
+        .btn-track { padding: 12px; border-radius: 12px; border: 1px solid #eee; background: white; color: #555; font-size: 13px; font-weight: 600; text-decoration: none; display: flex; align-items: center; justify-content: center; gap: 8px; transition: 0.2s; }
+        .btn-track:hover { border-color: var(--primary); color: var(--primary); }
+
+        /* Cartel Oculto */
+        #poster-template { width: 600px; height: 900px; background: white; position: fixed; left: -9999px; top: 0; display: flex; flex-direction: column; align-items: center; padding: 40px; text-align: center; border: 25px solid var(--lost); box-sizing: border-box; font-family: sans-serif; }
     </style>
 </head>
 <body>
 
 <div class="card">
-    <div class="header" id="header-bg">
-        <h2 id="main-title">🔒 Acceso Propietario</h2>
-        <div id="placa-id-display" class="id-badge">ID: Cargando...</div>
+    <div id="header-bg" class="header">
+        <i class="fas fa-paw" style="font-size: 40px; opacity: 0.3; margin-bottom: 10px;"></i>
+        <h2 id="main-title">Panel de Propietario</h2>
+        <div id="placa-id-display" class="id-badge"><i class="fas fa-qrcode"></i> ID: ...</div>
     </div>
 
     <div class="content">
-        <div id="seccion-login">
-            <label>PIN de Seguridad (4 dígitos):</label>
-            <input id="login-pin" type="password" maxlength="4" placeholder="****">
-            <button id="btn-verificar">Acceder al Panel</button>
+        <div id="seccion-login" class="login-box">
+            <h3 style="margin-top:0; color:var(--text);">Identifícate</h3>
+            <p style="font-size:13px; color:#888; margin-bottom:20px;">Ingresa el PIN de seguridad de 4 dígitos asociado a tu placa.</p>
+            <div class="input-group">
+                <input id="login-pin" type="password" maxlength="4" class="pin-input" placeholder="••••">
+            </div>
+            <button id="btn-verificar">Entrar <i class="fas fa-arrow-right"></i></button>
         </div>
 
         <div id="seccion-editor" class="hidden">
-            <div id="lost-status-box" class="lost-mode-box">
-                <strong>¿Tu mascota se perdió?</strong>
-                <div class="switch-container">
-                    <span id="lost-text">Modo Extravío Desactivado</span>
-                    <button id="btn-toggle-lost" class="btn-lost" style="width:auto; padding:8px 15px; margin:0;">ACTIVAR</button>
+            
+            <div class="photo-section">
+                <div class="photo-wrapper">
+                    <img id="current-photo" class="current-photo-preview" src="assets/img/logo.png" alt="Foto">
+                    <label for="new-photo" class="btn-cam-overlay"><i class="fas fa-camera"></i></label>
                 </div>
-            </div>
-
-            <span class="section-label">Sistemas de Rastreo</span>
-            <div class="tracking-hub">
-                <a href="https://www.google.com/android/find" target="_blank" class="btn-track track-google">
-                    <img src="https://commons.wikimedia.org/wiki/File:Google_Find_My_Device_2023.svg" alt="Google"> Google Find
-                </a>
-                <a href="https://www.icloud.com/find" target="_blank" class="btn-track track-apple">
-                    <img src="https://upload.wikimedia.org/wikipedia/commons/f/fa/Apple_logo_black.svg" alt="Apple" style="filter: invert(1);"> Apple Find
-                </a>
-            </div>
-
-            <button id="btn-generar-poster" class="btn-poster">📢 Generar Cartel de Extravío</button>
-
-            <hr style="border:0; border-top:1px solid #eee; margin:25px 0;">
-
-            <div class="photo-edit-section">
-                <img id="current-photo" class="current-photo-preview" src="" alt="Foto">
-                <label for="new-photo" style="color: var(--primary); cursor: pointer; display: block;">📸 Cambiar Foto</label>
                 <input id="new-photo" type="file" accept="image/*" style="display: none;">
             </div>
 
-            <label>Nombre de la Mascota:</label>
-            <input id="edit-nombre" type="text">
+            <div id="lost-panel" class="lost-panel">
+                <div class="lost-info">
+                    <h4>Modo Extravío</h4>
+                    <p id="lost-status-text">Desactivado (Mascota segura)</p>
+                </div>
+                <label class="switch">
+                    <input type="checkbox" id="check-lost">
+                    <span class="slider"></span>
+                </label>
+            </div>
 
-            <label>Mensaje de Emergencia (Aparece en Perfil):</label>
-            <textarea id="edit-mensaje" rows="2" placeholder="Ej: Soy asustadizo, por favor llama a mi mamá."></textarea>
+            <label>Sistemas de Rastreo</label>
+            <div class="track-grid">
+                <a href="https://www.google.com/android/find" target="_blank" class="btn-track">
+                    <i class="fab fa-google"></i> Google Find
+                </a>
+                <a href="https://www.icloud.com/find" target="_blank" class="btn-track">
+                    <i class="fab fa-apple"></i> Apple Find
+                </a>
+            </div>
 
-            <label>Celular de Contacto:</label>
-            <input id="edit-num-local" type="tel">
+            <form onsubmit="event.preventDefault();">
+                <label>Nombre</label>
+                <div class="input-group">
+                    <input id="edit-nombre" type="text" placeholder="Nombre de la mascota">
+                    <i class="fas fa-dog"></i>
+                </div>
 
-            <label>Notas Médicas / Observaciones:</label>
-            <textarea id="edit-notas" rows="3"></textarea>
+                <label>Mensaje de Emergencia</label>
+                <div class="input-group">
+                    <textarea id="edit-mensaje" rows="2" placeholder="Ej: Soy alérgico, llama a mi dueño."></textarea>
+                    <i class="fas fa-comment-medical"></i>
+                </div>
 
-            <button id="btn-guardar">Guardar Cambios</button>
-            <button onclick="window.location.reload()" class="btn-secondary">Cerrar Sesión</button>
+                <label>Teléfono de Contacto</label>
+                <div class="input-group">
+                    <input id="edit-num-local" type="tel" placeholder="Número celular">
+                    <i class="fas fa-phone"></i>
+                </div>
+
+                <label>Notas Médicas</label>
+                <div class="input-group">
+                    <textarea id="edit-notas" rows="3" placeholder="Vacunas, condiciones, vet..."></textarea>
+                    <i class="fas fa-notes-medical"></i>
+                </div>
+
+                <button id="btn-guardar"><i class="fas fa-save"></i> Guardar Cambios</button>
+            </form>
+
+            <button id="btn-generar-poster" class="btn-poster">
+                <i class="fas fa-print"></i> Descargar Cartel de Búsqueda
+            </button>
+
+            <button onclick="window.location.reload()" class="btn-secondary">
+                <i class="fas fa-sign-out-alt"></i> Cerrar Sesión
+            </button>
         </div>
-
-        <div id="status"></div>
     </div>
 </div>
 
+<div id="toast"><i class="fas fa-info-circle"></i> <span id="toast-msg">Mensaje</span></div>
+
 <div id="poster-template">
-    <h1 class="poster-title">¡BUSCO A MI FAMILIA!</h1>
-    <img id="poster-photo" class="poster-img" src="">
-    <h2 id="poster-pet-name" style="font-size: 55px; color: #2bb673; margin: 10px 0;">NOMBRE</h2>
-    <p style="font-size: 26px; color: #333; font-weight: bold;">Si me ves, escanea mi placa QR</p>
-    <p style="font-size: 20px; color: #666;">ID DE PLACA: <span id="poster-id"></span></p>
-    <div style="margin-top:40px; border: 4px solid #ff4757; padding: 15px; border-radius: 15px; width: 80%;">
-        <span style="font-size: 30px; color: #ff4757; font-weight: 900;">HUELLITAS DIGITALES</span>
+    <div style="background:var(--lost); color:white; width:100%; padding:20px 0; margin-bottom:30px;">
+        <h1 style="font-size:70px; margin:0; font-weight:900;">¡SE BUSCA!</h1>
+    </div>
+    
+    <div style="width:450px; height:450px; border-radius:50%; overflow:hidden; border:10px solid #eee; margin-bottom:20px;">
+        <img id="poster-photo" src="" crossorigin="anonymous" style="width:100%; height:100%; object-fit:cover;">
+    </div>
+
+    <h2 id="poster-pet-name" style="font-size: 60px; color: #333; margin: 10px 0; text-transform:uppercase;">NOMBRE</h2>
+    <p style="font-size: 30px; color: #555; margin:0;">Si me has visto, escanea mi placa:</p>
+    
+    <div style="background:#f9f9f9; padding:20px 40px; border-radius:20px; margin:30px 0; border:2px dashed #ccc;">
+        <p style="font-size: 35px; color: #333; font-weight: bold; margin:0;">ID PLACA: <span id="poster-id" style="color:var(--primary);">---</span></p>
+    </div>
+
+    <div style="margin-top:auto; width:100%; padding:20px; color:#aaa; font-weight:bold;">
+        AYÚDAME A VOLVER A CASA - HUELLITAS DIGITALES
     </div>
 </div>
 
@@ -147,65 +210,95 @@
 
     const urlParams = new URLSearchParams(window.location.search);
     const placaId = urlParams.get('id')?.toUpperCase();
-    const status = document.getElementById("status");
-    let isLostLocal = false;
+    
+    if(placaId) document.getElementById("placa-id-display").innerHTML = `<i class="fas fa-qrcode"></i> ID: ${placaId}`;
 
-    if(placaId) document.getElementById("placa-id-display").innerText = "ID: " + placaId;
+    // --- FUNCIÓN TOAST ---
+    function showToast(msg, type = 'success') {
+        const toast = document.getElementById("toast");
+        const toastMsg = document.getElementById("toast-msg");
+        toastMsg.innerText = msg;
+        toast.className = `show ${type}`;
+        setTimeout(() => { toast.className = toast.className.replace("show", ""); }, 3000);
+    }
 
-    // LOGIN POR PIN
+    // LOGIN
     document.getElementById("btn-verificar").onclick = async () => {
         const pin = document.getElementById("login-pin").value;
-        status.innerHTML = '<div class="loader"></div> Verificando acceso...';
+        const btn = document.getElementById("btn-verificar");
+        
+        btn.innerHTML = '<i class="fas fa-circle-notch fa-spin"></i> Verificando...';
+        
         try {
             const docSnap = await getDoc(doc(db, "placas", placaId));
             if (docSnap.exists() && docSnap.data().pin === pin) {
                 const d = docSnap.data();
-                status.innerText = "";
+                
                 document.getElementById("seccion-login").classList.add("hidden");
                 document.getElementById("seccion-editor").classList.remove("hidden");
+                
+                // Cargar datos
                 document.getElementById("edit-nombre").value = d.mascota || "";
                 document.getElementById("edit-notas").value = d.notas || "";
                 document.getElementById("edit-mensaje").value = d.mensaje || "";
                 document.getElementById("edit-num-local").value = d.telefono || "";
-                document.getElementById("current-photo").src = d.foto || "assets/img/logo.png";
-                isLostLocal = d.extraviado || false;
-                actualizarInterfazPerdido();
-            } else { status.innerText = "❌ PIN incorrecto."; }
-        } catch (e) { status.innerText = "Error de conexión."; }
+                
+                const imgEl = document.getElementById("current-photo");
+                if(d.foto) imgEl.src = d.foto;
+                
+                // Configurar Toggle
+                const checkLost = document.getElementById("check-lost");
+                checkLost.checked = d.extraviado || false;
+                actualizarEstadoPerdido(checkLost.checked);
+
+                showToast("¡Bienvenido al panel!");
+            } else {
+                showToast("PIN Incorrecto", "error");
+                btn.innerHTML = 'Entrar <i class="fas fa-arrow-right"></i>';
+            }
+        } catch (e) { 
+            console.error(e);
+            showToast("Error de conexión", "error");
+            btn.innerHTML = 'Entrar <i class="fas fa-arrow-right"></i>';
+        }
     };
 
-    // FUNCIÓN ACTUALIZAR INTERFAZ PERDIDO
-    function actualizarInterfazPerdido() {
-        const box = document.getElementById("lost-status-box");
+    // LOGICA MODO PERDIDO (VISUAL)
+    function actualizarEstadoPerdido(isLost) {
         const header = document.getElementById("header-bg");
-        const btn = document.getElementById("btn-toggle-lost");
-        const txt = document.getElementById("lost-text");
-        if(isLostLocal) {
-            box.classList.add("active"); header.style.background = "var(--lost)";
-            txt.innerText = "MODO EXTRAVÍO ACTIVADO"; btn.innerText = "DESACTIVAR";
+        const panel = document.getElementById("lost-panel");
+        const txt = document.getElementById("lost-status-text");
+
+        if(isLost) {
+            header.classList.add("lost-mode");
+            panel.classList.add("active");
+            txt.innerText = "ACTIVADO - Alerta visible en perfil";
+            txt.style.color = "#d63031";
+            txt.style.fontWeight = "bold";
         } else {
-            box.classList.remove("active"); header.style.background = "var(--primary)";
-            txt.innerText = "Modo Extravío Desactivado"; btn.innerText = "ACTIVAR";
+            header.classList.remove("lost-mode");
+            panel.classList.remove("active");
+            txt.innerText = "Desactivado (Mascota segura)";
+            txt.style.color = "#888";
+            txt.style.fontWeight = "normal";
         }
     }
 
-    // BOTÓN MODO EXTRAVÍO CON CONFIRMACIÓN
-    document.getElementById("btn-toggle-lost").onclick = async () => {
-        const accion = isLostLocal ? "desactivar" : "ACTIVAR";
-        const confirmacion = confirm(`¿Estás seguro que deseas ${accion} el Modo Extravío?\n\n${isLostLocal ? "El banner rojo desaparecerá del perfil." : "Se activará una alerta roja en el perfil público."}`);
-        
-        if (confirmacion) {
-            isLostLocal = !isLostLocal;
-            actualizarInterfazPerdido();
-            try {
-                await updateDoc(doc(db, "placas", placaId), { extraviado: isLostLocal });
-                status.innerText = `Modo Extravío ${isLostLocal ? 'activado' : 'desactivado'} correctamente.`;
-                setTimeout(() => status.innerText = "", 3000);
-            } catch (e) { status.innerText = "Error al actualizar estado."; }
+    // LISTENER TOGGLE SWITCH
+    document.getElementById("check-lost").addEventListener('change', async function() {
+        const isLost = this.checked;
+        actualizarEstadoPerdido(isLost);
+        try {
+            await updateDoc(doc(db, "placas", placaId), { extraviado: isLost });
+            showToast(isLost ? "Modo Extravío ACTIVADO" : "Modo Extravío DESACTIVADO", isLost ? "error" : "success");
+        } catch(e) {
+            this.checked = !isLost; // Revertir si falla
+            actualizarEstadoPerdido(!isLost);
+            showToast("Error al actualizar", "error");
         }
-    };
+    });
 
-    // OPTIMIZACIÓN DE IMAGEN (CANVAS)
+    // COMPRIMIR IMAGEN
     async function comprimirImagen(archivo) {
         return new Promise((resolve) => {
             const reader = new FileReader();
@@ -217,17 +310,18 @@
                     const canvas = document.createElement('canvas');
                     const MAX_WIDTH = 800;
                     const scale = MAX_WIDTH / img.width;
-                    canvas.width = MAX_WIDTH;
-                    canvas.height = img.height * scale;
+                    const width = img.width > MAX_WIDTH ? MAX_WIDTH : img.width;
+                    const height = img.width > MAX_WIDTH ? img.height * scale : img.height;
+                    canvas.width = width; canvas.height = height;
                     const ctx = canvas.getContext('2d');
-                    ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-                    canvas.toBlob((blob) => resolve(blob), 'image/jpeg', 0.7);
+                    ctx.drawImage(img, 0, 0, width, height);
+                    canvas.toBlob(resolve, 'image/jpeg', 0.8);
                 };
             };
         });
     }
 
-    // PREVISUALIZACIÓN DE FOTO SELECCIONADA
+    // PREVIEW FOTO
     document.getElementById("new-photo").onchange = (e) => {
         const file = e.target.files[0];
         if (file) {
@@ -237,22 +331,21 @@
         }
     };
 
-    // BOTÓN GUARDAR CAMBIOS (CON SUBIDA OPTIMIZADA)
+    // GUARDAR DATOS
     document.getElementById("btn-guardar").onclick = async () => {
         const btn = document.getElementById("btn-guardar");
         const fileInput = document.getElementById("new-photo");
         const file = fileInput.files[0];
         
+        btn.innerHTML = '<i class="fas fa-circle-notch fa-spin"></i> Guardando...';
         btn.disabled = true;
-        status.innerHTML = '<div class="loader"></div> Guardando y optimizando...';
 
         try {
             let fotoUrl = document.getElementById("current-photo").src;
-
             if (file) {
-                const fotoComprimida = await comprimirImagen(file);
+                const blob = await comprimirImagen(file);
                 const storageRef = ref(storage, `fotos_mascotas/${placaId}.jpg`);
-                await uploadBytes(storageRef, fotoComprimida);
+                await uploadBytes(storageRef, blob);
                 fotoUrl = await getDownloadURL(storageRef);
             }
 
@@ -264,32 +357,52 @@
                 foto: fotoUrl
             });
 
-            status.innerHTML = "✨ ¡Cambios guardados con éxito!";
-            btn.disabled = false;
+            showToast("Cambios guardados correctamente");
             fileInput.value = "";
         } catch (e) {
             console.error(e);
-            status.innerText = "❌ Error al guardar cambios.";
+            showToast("Error al guardar", "error");
+        } finally {
+            btn.innerHTML = '<i class="fas fa-save"></i> Guardar Cambios';
             btn.disabled = false;
         }
     };
 
-    // GENERADOR DE CARTEL (HTML2CANVAS)
+    // GENERAR CARTEL (CORREGIDO CORS)
     document.getElementById("btn-generar-poster").onclick = () => {
-        status.innerHTML = '<div class="loader"></div> Generando cartel de alta resolución...';
-        document.getElementById("poster-pet-name").innerText = document.getElementById("edit-nombre").value;
-        document.getElementById("poster-id").innerText = placaId;
-        document.getElementById("poster-photo").src = document.getElementById("current-photo").src;
+        const btn = document.getElementById("btn-generar-poster");
+        btn.innerHTML = '<i class="fas fa-circle-notch fa-spin"></i> Creando...';
         
-        setTimeout(() => {
-            html2canvas(document.querySelector("#poster-template"), { useCORS: true, scale: 2 }).then(canvas => {
-                const link = document.createElement('a');
-                link.download = `BUSCANDO_A_${document.getElementById("edit-nombre").value}.png`;
-                link.href = canvas.toDataURL("image/png");
-                link.click();
-                status.innerText = "✅ Cartel descargado con éxito.";
-            });
-        }, 1000);
+        // Llenar datos ocultos
+        document.getElementById("poster-pet-name").innerText = document.getElementById("edit-nombre").value || "MI MASCOTA";
+        document.getElementById("poster-id").innerText = placaId;
+        
+        // Asegurar imagen con CORS para html2canvas
+        const originalSrc = document.getElementById("current-photo").src;
+        const posterImg = document.getElementById("poster-photo");
+        posterImg.crossOrigin = "anonymous"; // CLAVE PARA QUE FUNCIONE
+        posterImg.src = originalSrc + "?not-from-cache-please"; // Evitar caché
+
+        // Esperar un momento a que la imagen cargue en el div oculto
+        posterImg.onload = () => {
+            setTimeout(() => {
+                html2canvas(document.querySelector("#poster-template"), { 
+                    useCORS: true, 
+                    scale: 2 
+                }).then(canvas => {
+                    const link = document.createElement('a');
+                    link.download = `BUSCADO_${document.getElementById("edit-nombre").value}.png`;
+                    link.href = canvas.toDataURL("image/png");
+                    link.click();
+                    btn.innerHTML = '<i class="fas fa-print"></i> Descargar Cartel de Búsqueda';
+                    showToast("Cartel descargado");
+                }).catch(err => {
+                    console.error(err);
+                    showToast("Error generando imagen", "error");
+                    btn.innerHTML = '<i class="fas fa-print"></i> Descargar Cartel de Búsqueda';
+                });
+            }, 500);
+        };
     };
 </script>
 </body>
