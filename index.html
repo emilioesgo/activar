@@ -5,33 +5,146 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Registro de Mascota | Huellitas Digitales</title>
     <link rel="icon" type="image/png" href="assets/img/favicon.png">
+    
     <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+
     <style>
-        :root { --primary: #2bb673; --dark: #2c3e50; --bg: #f8f9fa; }
-        body { font-family: 'Segoe UI', sans-serif; background: var(--bg); margin: 0; padding: 20px; color: var(--dark); display: flex; justify-content: center; }
-        .container { max-width: 500px; width: 100%; background: white; padding: 30px; border-radius: 25px; box-shadow: 0 10px 30px rgba(0,0,0,0.08); position: relative; }
-        .logo-header { text-align: center; margin-bottom: 20px; }
-        .logo-header img { width: 50px; }
-        h2 { text-align: center; margin: 5px 0; font-size: 22px; color: var(--primary); }
-        p.subtitle { text-align: center; color: #666; font-size: 14px; margin-bottom: 25px; }
-        .photo-upload { text-align: center; margin-bottom: 20px; }
-        #preview { width: 130px; height: 130px; border-radius: 50%; object-fit: cover; border: 4px solid var(--primary); display: none; margin: 10px auto; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
-        .custom-file-upload { background: #e8f5e9; color: var(--primary); padding: 10px 20px; border-radius: 50px; cursor: pointer; display: inline-block; font-size: 14px; font-weight: bold; border: 1px dashed var(--primary); }
+        :root { --primary: #2bb673; --primary-dark: #239b60; --bg: #f4f7f6; --text: #333; --error: #e74c3c; }
+        
+        body { 
+            font-family: 'Segoe UI', system-ui, sans-serif; 
+            background: var(--bg); 
+            margin: 0; 
+            padding: 20px; 
+            color: var(--text); 
+            display: flex; 
+            justify-content: center; 
+            min-height: 100vh;
+        }
+
+        .container { 
+            max-width: 500px; 
+            width: 100%; 
+            background: white; 
+            padding: 40px 30px; 
+            border-radius: 30px; 
+            box-shadow: 0 20px 40px rgba(0,0,0,0.08); 
+            position: relative; 
+            overflow: hidden;
+            height: fit-content;
+        }
+
+        /* Encabezado */
+        .logo-header { text-align: center; margin-bottom: 30px; }
+        .logo-header i { font-size: 40px; color: var(--primary); margin-bottom: 10px; }
+        h2 { margin: 5px 0; font-size: 24px; font-weight: 800; color: var(--text); }
+        p.subtitle { color: #888; font-size: 14px; margin: 0; }
+
+        /* Foto Avatar */
+        .photo-upload { text-align: center; margin-bottom: 30px; position: relative; }
+        .avatar-wrapper {
+            width: 120px; height: 120px; margin: 0 auto;
+            position: relative; border-radius: 50%;
+            background: #f0f0f0; border: 4px solid white;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            overflow: hidden; cursor: pointer;
+            transition: 0.3s;
+        }
+        .avatar-wrapper:hover { transform: scale(1.05); border-color: var(--primary); }
+        
+        #preview { width: 100%; height: 100%; object-fit: cover; display: none; }
+        .placeholder-icon { 
+            position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+            font-size: 40px; color: #ccc; 
+        }
+        .camera-badge {
+            position: absolute; bottom: 0; right: 0;
+            background: var(--primary); color: white;
+            width: 35px; height: 35px; border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            border: 3px solid white; font-size: 14px;
+        }
+
+        /* Formulario */
         .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
         .full { grid-column: span 2; }
+        
         .form-group { margin-bottom: 15px; position: relative; }
-        label { display: block; margin-bottom: 6px; font-weight: bold; font-size: 12px; color: #555; text-transform: uppercase; }
-        input, textarea, select { width: 100%; padding: 12px; border: 2px solid #eee; border-radius: 12px; font-size: 15px; box-sizing: border-box; transition: 0.3s; }
-        input:focus, textarea:focus { border-color: var(--primary); outline: none; background: #f9fffb; }
-        .id-input { background: #f1f3f2; font-family: monospace; font-weight: bold; text-align: center; text-transform: uppercase; color: var(--primary); font-size: 18px; letter-spacing: 2px; }
-        .toggle-btn { position: absolute; right: 12px; top: 35px; background: none; border: none; cursor: pointer; font-size: 18px; color: #999; z-index: 2; }
-        .btn-submit { width: 100%; background: var(--primary); color: white; border: none; padding: 18px; border-radius: 15px; font-weight: bold; font-size: 18px; cursor: pointer; margin-top: 20px; box-shadow: 0 6px 20px rgba(43,182,115,0.4); transition: 0.3s; }
-        .btn-submit:hover { background: #24a163; transform: translateY(-2px); }
-        #loader { display: none; position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(255,255,255,0.95); border-radius: 25px; flex-direction: column; justify-content: center; align-items: center; z-index: 100; }
-        .spinner { width: 50px; height: 50px; border: 5px solid #f3f3f3; border-top: 5px solid var(--primary); border-radius: 50%; animation: spin 1s linear infinite; }
+        .form-group i { 
+            position: absolute; left: 15px; top: 42px; 
+            color: #aaa; font-size: 16px; transition: 0.3s; 
+        }
+        
+        label { display: block; margin-bottom: 8px; font-weight: 700; font-size: 12px; color: #666; text-transform: uppercase; letter-spacing: 0.5px; }
+        
+        input, select, textarea { 
+            width: 100%; 
+            padding: 14px 14px 14px 45px; 
+            border: 2px solid #f0f0f0; 
+            border-radius: 15px; 
+            font-size: 15px; 
+            box-sizing: border-box; 
+            transition: 0.3s; 
+            background: #fafafa;
+            font-family: inherit;
+        }
+        textarea { padding-left: 15px; resize: none; } /* Textarea sin icono */
+        
+        input:focus, select:focus, textarea:focus { 
+            border-color: var(--primary); 
+            outline: none; 
+            background: white; 
+            box-shadow: 0 4px 10px rgba(43, 182, 115, 0.1); 
+        }
+        input:focus + i { color: var(--primary); }
+
+        .id-input { text-align: center; font-weight: bold; letter-spacing: 2px; text-transform: uppercase; padding-left: 15px !important; }
+        
+        .toggle-btn { 
+            position: absolute; right: 15px; top: 42px; 
+            background: none; border: none; cursor: pointer; 
+            color: #ccc; font-size: 16px; padding: 0;
+        }
+        .toggle-btn:hover { color: var(--primary); }
+
+        /* Botón */
+        .btn-submit { 
+            width: 100%; 
+            background: var(--primary); 
+            color: white; 
+            border: none; 
+            padding: 18px; 
+            border-radius: 15px; 
+            font-weight: bold; 
+            font-size: 16px; 
+            cursor: pointer; 
+            margin-top: 25px; 
+            box-shadow: 0 8px 20px rgba(43,182,115,0.3); 
+            transition: 0.3s; 
+            display: flex; align-items: center; justify-content: center; gap: 10px;
+        }
+        .btn-submit:hover { transform: translateY(-3px); box-shadow: 0 12px 25px rgba(43,182,115,0.4); }
+
+        /* Loader Overlay */
+        #loader { 
+            display: none; 
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%; 
+            background: rgba(255,255,255,0.95); 
+            flex-direction: column; justify-content: center; align-items: center; 
+            z-index: 100; backdrop-filter: blur(2px);
+        }
+        .spinner { 
+            width: 50px; height: 50px; 
+            border: 4px solid #f3f3f3; border-top: 4px solid var(--primary); 
+            border-radius: 50%; animation: spin 1s linear infinite; 
+            margin-bottom: 15px;
+        }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-        #msg { margin-top: 15px; padding: 12px; border-radius: 10px; text-align: center; display: none; font-size: 14px; font-weight: bold; }
-        .err { background: #ffebee; color: #c62828; border: 1px solid #ffcdd2; }
+
+        /* Mensajes */
+        #msg { margin-top: 20px; padding: 15px; border-radius: 12px; text-align: center; display: none; font-size: 14px; font-weight: bold; }
+        .err { background: #fff5f5; color: var(--error); border: 1px solid #ffcdd2; }
     </style>
 </head>
 <body>
@@ -39,81 +152,96 @@
 <div class="container">
     <div id="loader">
         <div class="spinner"></div>
-        <p style="margin-top: 15px; font-weight: bold; color: var(--primary);">Guardando registro y enviando accesos...</p>
+        <p style="font-weight: bold; color: var(--primary);">Guardando perfil...</p>
+        <small style="color:#888;">Enviando credenciales por correo</small>
     </div>
 
     <div class="logo-header">
-        <img src="assets/img/logo.png" alt="Logo">
-        <h2>Activa tu Placa</h2>
-        <p class="subtitle">Vincula tu mascota a su nueva identidad inteligente.</p>
+        <i class="fas fa-paw"></i>
+        <h2>Registro de Mascota</h2>
+        <p class="subtitle">Completa los datos para activar la placa</p>
     </div>
 
     <div class="photo-upload">
-        <img id="preview" src="#" alt="Foto de mascota">
-        <label class="custom-file-upload">
-            <input type="file" id="fotoInput" accept="image/*" style="display:none">
-            📸 Subir foto (Se optimizará automáticamente)
-        </label>
+        <div class="avatar-wrapper" onclick="document.getElementById('fotoInput').click()">
+            <i class="fas fa-camera placeholder-icon"></i>
+            <img id="preview" src="#" alt="Foto">
+        </div>
+        <input type="file" id="fotoInput" accept="image/*" style="display:none">
+        <p style="font-size:12px; color:#aaa; margin-top:10px;">Toca para subir foto</p>
     </div>
 
     <div class="form-grid">
         <div class="form-group full">
             <label>ID de la Placa</label>
-            <input type="text" id="placaId" class="id-input" maxlength="6" placeholder="EJ: A12B34">
+            <input type="text" id="placaId" class="id-input" maxlength="6" placeholder="EJ: A12B34" readonly style="background:#f9f9f9;">
         </div>
+        
         <div class="form-group full">
             <label>Nombre de la Mascota</label>
+            <i class="fas fa-dog"></i>
             <input type="text" id="nombreMascota" placeholder="¿Cómo se llama?">
         </div>
         
         <div class="form-group">
-            <label>País</label>
+            <label>Código País</label>
+            <i class="fas fa-globe"></i>
             <select id="paisCod">
-                <option value="52">🇲🇽 México (+52)</option>
-                <option value="1">🇺🇸 USA (+1)</option>
-                <option value="57">🇨🇴 Colombia (+57)</option>
-                <option value="34">🇪🇸 España (+34)</option>
-                <option value="54">🇦🇷 Argentina (+54)</option>
-                <option value="56">🇨🇱 Chile (+56)</option>
-                <option value="51">🇵🇪 Perú (+51)</option>
-                <option value="593">🇪🇨 Ecuador (+593)</option>
-                <option value="506">🇨🇷 Costa Rica (+506)</option>
-                <option value="502">🇬🇹 Guatemala (+502)</option>
+                <option value="52">🇲🇽 +52</option>
+                <option value="1">🇺🇸 +1</option>
+                <option value="57">🇨🇴 +57</option>
+                <option value="34">🇪🇸 +34</option>
+                <option value="54">🇦🇷 +54</option>
+                <option value="56">🇨🇱 +56</option>
+                <option value="51">🇵🇪 +51</option>
+                <option value="593">🇪🇨 +593</option>
+                <option value="506">🇨🇷 +506</option>
+                <option value="502">🇬🇹 +502</option>
             </select>
         </div>
         
         <div class="form-group">
             <label>Celular</label>
+            <i class="fas fa-phone"></i>
             <input type="tel" id="telefono" placeholder="1234567890">
         </div>
 
         <div class="form-group full">
-            <label>Email</label>
+            <label>Email (Usuario)</label>
+            <i class="fas fa-envelope"></i>
             <input type="email" id="email" placeholder="ejemplo@correo.com">
         </div>
+        
         <div class="form-group full">
             <label>Confirmar Email</label>
+            <i class="fas fa-check-circle"></i>
             <input type="email" id="emailConf" placeholder="Repite tu correo">
         </div>
 
         <div class="form-group">
-            <label>PIN (4 dígitos)</label>
+            <label>Crear PIN (4 dígitos)</label>
+            <i class="fas fa-lock"></i>
             <input type="password" id="pin" maxlength="4" placeholder="****">
-            <button type="button" class="toggle-btn" onclick="togglePin('pin')">👁️</button>
+            <button type="button" class="toggle-btn" onclick="togglePin('pin')"><i class="fas fa-eye"></i></button>
         </div>
+        
         <div class="form-group">
             <label>Confirmar PIN</label>
+            <i class="fas fa-lock"></i>
             <input type="password" id="pinConf" maxlength="4" placeholder="****">
-            <button type="button" class="toggle-btn" onclick="togglePin('pinConf')">👁️</button>
+            <button type="button" class="toggle-btn" onclick="togglePin('pinConf')"><i class="fas fa-eye"></i></button>
         </div>
 
         <div class="form-group full">
-            <label>Observaciones y/o Notas Médicas</label>
-            <textarea id="observaciones" rows="2" placeholder="Alergias, medicinas, comportamiento..."></textarea>
+            <label>Notas Médicas / Observaciones</label>
+            <textarea id="observaciones" rows="3" placeholder="Alergias, medicinas, carácter..."></textarea>
         </div>
     </div>
 
-    <button id="btnRegistrar" class="btn-submit">Finalizar Registro 🐾</button>
+    <button id="btnRegistrar" class="btn-submit">
+        Finalizar Registro <i class="fas fa-check"></i>
+    </button>
+    
     <div id="msg"></div>
 </div>
 
@@ -126,7 +254,16 @@
 
     window.togglePin = (id) => {
         const input = document.getElementById(id);
-        input.type = input.type === 'password' ? 'text' : 'password';
+        const icon = input.parentElement.querySelector('.toggle-btn i');
+        if (input.type === 'password') {
+            input.type = 'text';
+            icon.classList.remove('fa-eye');
+            icon.classList.add('fa-eye-slash');
+        } else {
+            input.type = 'password';
+            icon.classList.remove('fa-eye-slash');
+            icon.classList.add('fa-eye');
+        }
     }
 
     const firebaseConfig = {
@@ -144,11 +281,32 @@
 
     const URL_SHEETS = "https://script.google.com/macros/s/AKfycbzH1tsICupT_eLE1aNzsUMUx_0w3Wl6ZcAckHGmtuvXLmuOBKg2kBHf285e1DVGY6iVSA/exec"; 
 
-    window.onload = () => {
+    window.onload = async () => {
         const urlParams = new URLSearchParams(window.location.search);
         const idFromUrl = urlParams.get('id');
+        
         if (idFromUrl) {
-            document.getElementById('placaId').value = idFromUrl.toUpperCase();
+            const idUpper = idFromUrl.toUpperCase();
+            document.getElementById('placaId').value = idUpper;
+            
+            // VERIFICACIÓN AUTOMÁTICA DE ESTADO
+            try {
+                const docSnap = await getDoc(doc(db, "placas", idUpper));
+                if (docSnap.exists()) {
+                    const data = docSnap.data();
+                    // Si ya está activa, redirigir al perfil inmediatamente
+                    if (data.activa) {
+                        window.location.href = `perfil.html?id=${idUpper}`;
+                    } else if (!data.vendida) {
+                        // Si no está marcada como vendida (para seguridad)
+                        mostrarError("Esta placa no está habilitada para registro.");
+                        document.getElementById("btnRegistrar").disabled = true;
+                    }
+                } else {
+                    mostrarError("ID de placa no encontrado.");
+                    document.getElementById("btnRegistrar").disabled = true;
+                }
+            } catch(e) { console.log("Verificando..."); }
         }
     };
 
@@ -167,9 +325,7 @@
                     canvas.height = img.height * scaleSize;
                     const ctx = canvas.getContext('2d');
                     ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-                    canvas.toBlob((blob) => {
-                        resolve(blob);
-                    }, 'image/jpeg', 0.7);
+                    canvas.toBlob((blob) => { resolve(blob); }, 'image/jpeg', 0.7);
                 };
             };
         });
@@ -182,8 +338,10 @@
             selectedFile = file;
             const reader = new FileReader();
             reader.onload = () => {
-                document.getElementById("preview").src = reader.result;
-                document.getElementById("preview").style.display = "block";
+                const preview = document.getElementById("preview");
+                preview.src = reader.result;
+                preview.style.display = "block";
+                document.querySelector('.placeholder-icon').style.display = 'none';
             };
             reader.readAsDataURL(file);
         }
@@ -235,7 +393,6 @@
                     fechaActivacion: new Date().toISOString()
                 });
 
-                // CORRECCIÓN DEL ENVÍO DE EMAIL (Mapeo de variables exacto)
                 try {
                     await emailjs.send("service_xwx9czt", "template_zgl2oii", {
                         nombre_mascota: nombre,
@@ -246,9 +403,7 @@
                         user_email: email,
                         to_email: email
                     });
-                } catch (emailErr) {
-                    console.warn("Correo no enviado:", emailErr);
-                }
+                } catch (emailErr) { console.warn("Correo no enviado:", emailErr); }
 
                 fetch(URL_SHEETS, {
                     method: 'POST',
@@ -256,7 +411,10 @@
                     body: JSON.stringify({ id: id, status: "ACTIVADA", mascota: nombre, contacto: tel })
                 }).catch(e => console.log("Error Sheets"));
 
-                window.location.href = `perfil.html?id=${id}`;
+                // Redirección con un pequeño delay para asegurar la UX
+                setTimeout(() => {
+                    window.location.href = `perfil.html?id=${id}`;
+                }, 1000);
             } else {
                 mostrarError("Placa no válida o no activada en tienda.");
             }
