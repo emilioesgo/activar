@@ -203,7 +203,10 @@
     }
 
     async function buscarEnGoogle() {
-        if (!navigator.geolocation) return;
+        if (!navigator.geolocation) {
+            document.getElementById('main-loader').innerText = "La geolocalización no es compatible.";
+            return;
+        }
         
         navigator.geolocation.getCurrentPosition(async (pos) => {
             try {
@@ -250,6 +253,19 @@
             } catch (error) {
                 console.error("Error en búsqueda:", error);
                 document.getElementById('main-loader').innerHTML = "<p>Carga finalizada.</p>";
+            }
+        }, (error) => {
+            // MEJORA: Manejo de errores de permisos de ubicación
+            const loader = document.getElementById('main-loader');
+            if (error.code === error.PERMISSION_DENIED) {
+                loader.innerHTML = `
+                    <div style="color: #2bb673; padding: 10px;">
+                        <i class="fas fa-location-arrow" style="font-size: 24px; margin-bottom: 10px; opacity: 0.5;"></i>
+                        <p style="font-size: 14px; margin: 0; font-weight: 600;">📍 Ubicación no disponible</p>
+                        <p style="font-size: 12px; opacity: 0.8; margin-top: 5px;">Por favor, activa los permisos de ubicación en tu dispositivo para encontrar hospedajes cerca de ti.</p>
+                    </div>`;
+            } else {
+                loader.innerText = "Error al obtener la ubicación.";
             }
         });
     }
