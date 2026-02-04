@@ -23,115 +23,43 @@
             --gold: #ffc107; 
         }
 
-        body { 
-            font-family: 'Segoe UI', system-ui, sans-serif; 
-            background: var(--dark-bg); 
-            color: var(--text);
-            margin: 0; 
-            display: flex; 
-            justify-content: center; 
-            align-items: center; 
-            min-height: 100vh; 
-            padding: 20px; 
-            box-sizing: border-box; 
-        }
+        body { font-family: 'Segoe UI', system-ui, sans-serif; background: var(--dark-bg); color: var(--text); margin: 0; display: flex; justify-content: center; align-items: center; min-height: 100vh; padding: 20px; box-sizing: border-box; }
         
-        /* LOGIN SCREEN OSCURO */
-        #login-screen { 
-            background: var(--card-bg); 
-            padding: 40px; 
-            border-radius: 25px; 
-            box-shadow: 0 20px 50px rgba(0,0,0,0.5); 
-            text-align: center; 
-            width: 100%; 
-            max-width: 320px; 
-            border: 1px solid #444;
-        }
-        
+        /* LOGIN */
+        #login-screen { background: var(--card-bg); padding: 40px; border-radius: 25px; box-shadow: 0 20px 50px rgba(0,0,0,0.5); text-align: center; width: 100%; max-width: 320px; border: 1px solid #444; }
         .shake { animation: shake 0.4s; }
         @keyframes shake { 0%, 100% {transform: translateX(0);} 25% {transform: translateX(-10px);} 75% {transform: translateX(10px);} }
         
-        input { 
-            width: 100%; 
-            padding: 14px; 
-            margin: 20px 0; 
-            border: 1px solid #444; 
-            border-radius: 12px; 
-            text-align: center; 
-            font-size: 20px; 
-            box-sizing: border-box; 
-            background: #111; 
-            color: var(--primary);
-            font-weight: bold;
-        }
+        input { width: 100%; padding: 14px; margin: 15px 0; border: 1px solid #444; border-radius: 12px; text-align: center; font-size: 18px; box-sizing: border-box; background: #111; color: var(--primary); font-weight: bold; }
         
-        /* PANEL ADMIN OSCURO */
-        #admin-panel { 
-            display: none; 
-            width: 100%; 
-            max-width: 900px; 
-            background: var(--card-bg); 
-            padding: 30px; 
-            border-radius: 30px; 
-            box-shadow: 0 15px 40px rgba(0,0,0,0.4); 
-            border: 1px solid #444;
-        }
-        
-        .header { 
-            display: flex; 
-            justify-content: space-between; 
-            align-items: center; 
-            border-bottom: 1px solid #444; 
-            padding-bottom: 20px; 
-            margin-bottom: 30px; 
-        }
-        .header h1 { margin: 0; font-size: 24px; color: #fff; }
-
+        /* PANEL */
+        #admin-panel { display: none; width: 100%; max-width: 900px; background: var(--card-bg); padding: 30px; border-radius: 30px; border: 1px solid #444; box-shadow: 0 15px 40px rgba(0,0,0,0.4); }
+        .header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #444; padding-bottom: 20px; margin-bottom: 30px; }
         .grid-menu { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 20px; }
         
-        .card { 
-            background: #252525; 
-            padding: 25px; 
-            border-radius: 20px; 
-            text-decoration: none; 
-            color: #ddd; 
-            transition: 0.3s; 
-            border: 1px solid #3d3d3d; 
-            text-align: center; 
-            cursor: pointer; 
-        }
+        .card { background: #252525; padding: 25px; border-radius: 20px; text-decoration: none; color: #ddd; transition: 0.3s; border: 1px solid #3d3d3d; text-align: center; cursor: pointer; }
         .card:hover { transform: translateY(-5px); border-color: var(--primary); background: #2a352e; }
         .card.danger:hover { border-color: var(--danger); background: #352626; }
-        .card.sheets:hover { border-color: var(--sheets); background: #1e2a21; }
         .card.gold { border: 1px solid var(--gold); background: #2d2a1e; }
         .card.live { border: 1px solid var(--primary); background: rgba(43, 182, 115, 0.1); animation: pulse-border 2s infinite; }
         
-        @keyframes pulse-border {
-            0% { border-color: var(--primary); }
-            50% { border-color: #fff; }
-            100% { border-color: var(--primary); }
-        }
+        @keyframes pulse-border { 0%, 100% { border-color: var(--primary); } 50% { border-color: #fff; } }
         
         .card-icon { font-size: 35px; margin-bottom: 12px; display: block; }
         .card-title { font-weight: bold; font-size: 17px; display: block; margin-bottom: 5px; color: #fff; }
         .card-desc { font-size: 12px; color: #999; }
 
         .btn { background: var(--primary); color: white; border: none; padding: 14px 25px; border-radius: 12px; font-weight: bold; cursor: pointer; width: 100%; transition: 0.2s; }
-        .btn:active { transform: scale(0.98); }
         .btn-logout { background: transparent; border: 1px solid #555; width: auto; font-size: 11px; color: #aaa; }
-        .btn-logout:hover { background: var(--danger); color: white; border-color: var(--danger); }
 
-        .system-status { 
-            margin-top: 30px; 
-            padding: 15px; 
-            background: #1a1a1a; 
-            border-radius: 18px; 
-            display: flex; 
-            justify-content: space-around; 
-            font-size: 11px; 
-            color: #777; 
-            border: 1px solid #333;
-        }
+        /* MODALES PROFESIONALES */
+        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); display: none; align-items: center; justify-content: center; z-index: 100; backdrop-filter: blur(5px); }
+        .modal-content { background: var(--card-bg); padding: 30px; border-radius: 25px; width: 90%; max-width: 400px; border: 1px solid #555; text-align: center; }
+        .modal-content h3 { margin-top: 0; color: var(--primary); }
+        .btn-cancel { background: #444; margin-top: 10px; }
+        .btn-danger { background: var(--danger); }
+
+        .system-status { margin-top: 30px; padding: 15px; background: #1a1a1a; border-radius: 18px; display: flex; justify-content: space-around; font-size: 11px; color: #777; border: 1px solid #333; }
         .status-item b { color: var(--primary); display: block; font-size: 15px; }
     </style>
 </head>
@@ -154,62 +82,70 @@
             <a href="monitor.html" class="card live">
                 <span class="card-icon">📡</span>
                 <span class="card-title" style="color: var(--primary);">Live Monitor</span>
-                <span class="card-desc">Vigilancia de activaciones en tiempo real.</span>
+                <span class="card-desc">Vigilancia en tiempo real.</span>
             </a>
 
             <a href="admin/cajero.html" class="card">
                 <span class="card-icon">💰</span>
                 <span class="card-title">Punto de Venta</span>
-                <span class="card-desc">Habilitar placa recién vendida.</span>
+                <span class="card-desc">Habilitar placas vendidas.</span>
             </a>
 
-            <div class="card" onclick="irARegistro()">
+            <div class="card" onclick="abrirModal('modal-activar')">
                 <span class="card-icon">📱</span>
                 <span class="card-title">Activación Asistida</span>
-                <span class="card-desc">Configurar perfil al cliente ahora.</span>
+                <span class="card-desc">Configurar perfil al cliente.</span>
             </div>
 
-            <a href="gestion-socios.html" class="card gold">
-                <span class="card-icon">⭐</span>
-                <span class="card-title">Socios VIP</span>
-                <span class="card-desc">Alta y baja de negocios destacados.</span>
-            </a>
+            <div class="card danger" onclick="abrirModal('modal-reset')">
+                <span class="card-icon">🔄</span>
+                <span class="card-title" style="color: var(--danger);">Resetear Placa</span>
+                <span class="card-desc">Borrar datos de usuario.</span>
+            </div>
 
             <a href="admin/inventario.html" class="card">
                 <span class="card-icon">📦</span>
                 <span class="card-title">Inventario</span>
-                <span class="card-desc">Carga masiva de nuevos IDs.</span>
+                <span class="card-desc">Carga masiva de IDs.</span>
             </a>
 
-            <a href="https://docs.google.com/spreadsheets/d/1CeoOx1GiCAWTbuCKJLlg55FOj_ZRWe9p7LGf0kV2LJc/edit?gid=0#gid=0" target="_blank" class="card sheets">
+            <a href="https://docs.google.com/spreadsheets/d/1CeoOx1GiCAWTbuCKJLlg55FOj_ZRWe9p7LGf0kV2LJc/edit?gid=0#gid=0" target="_blank" class="card">
                 <span class="card-icon">📊</span>
-                <span class="card-title" style="color: var(--sheets);">Base de Datos</span>
-                <span class="card-desc">Abrir hoja de Google Sheets.</span>
-            </a>
-
-            <div class="card danger" onclick="resetearPlaca()">
-                <span class="card-icon">🔄</span>
-                <span class="card-title" style="color: var(--danger);">Resetear Placa</span>
-                <span class="card-desc">Borrar datos y volver a estado inicial.</span>
-            </div>
-
-            <a href="https://console.firebase.google.com/" target="_blank" class="card">
-                <span class="card-icon">🔥</span>
-                <span class="card-title">Firebase Console</span>
-                <span class="card-desc">Acceso técnico a la nube.</span>
+                <span class="card-title">Google Sheets</span>
+                <span class="card-desc">Base de datos externa.</span>
             </a>
         </div>
 
         <div class="system-status">
-            <div class="status-item">NUBE <b id="status-cloud">En línea</b></div>
-            <div class="status-item">SEGURIDAD <b>Encriptada</b></div>
+            <div class="status-item">NUBE <b>En línea</b></div>
             <div class="status-item">MODO <b>Super User</b></div>
+        </div>
+    </div>
+
+    <div id="modal-activar" class="modal-overlay">
+        <div class="modal-content">
+            <h3>📱 Activación Asistida</h3>
+            <p style="font-size: 13px; color: #999;">Ingresa el ID de la placa para empezar la configuración.</p>
+            <input type="text" id="id-activar" placeholder="ABC123" maxlength="6">
+            <button class="btn" onclick="procesarActivacion()">Comenzar Configuración</button>
+            <button class="btn btn-cancel" onclick="cerrarModal('modal-activar')">Cancelar</button>
+        </div>
+    </div>
+
+    <div id="modal-reset" class="modal-overlay">
+        <div class="modal-content">
+            <h3 style="color: var(--danger);">🔄 Resetear Placa</h3>
+            <p style="font-size: 13px; color: #999;">Esta acción borrará todos los datos del cliente permanentemente.</p>
+            <input type="text" id="id-reset" placeholder="ID DE PLACA">
+            <input type="password" id="pin-confirm" placeholder="CONFIRMAR PIN MAESTRO">
+            <button class="btn btn-danger" onclick="procesarReset()">Confirmar Borrado Total</button>
+            <button class="btn btn-cancel" onclick="cerrarModal('modal-reset')">Cancelar</button>
         </div>
     </div>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-        import { getFirestore, doc, updateDoc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+        import { getFirestore, doc, updateDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyCqROIzmp2guo2XLbdYrSW3ujlUBc7ngOc",
@@ -223,78 +159,59 @@
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
 
-        // --- VALIDACIÓN DE PIN (LÓGICA ORIGINAL) ---
+        // --- GESTIÓN DE MODALES ---
+        window.abrirModal = (id) => document.getElementById(id).style.display = 'flex';
+        window.cerrarModal = (id) => {
+            document.getElementById(id).style.display = 'none';
+            document.querySelectorAll('input').forEach(i => i.value = "");
+        }
+
+        // --- VALIDACIÓN LOGIN ---
         window.checkPin = async function() {
-            const inputField = document.getElementById("admin-pin");
-            const loginScreen = document.getElementById("login-screen");
-            
+            const pin = document.getElementById("admin-pin").value;
+            const login = document.getElementById("login-screen");
             try {
-                const pinRef = doc(db, "configuracion", "seguridad");
-                const pinSnap = await getDoc(pinRef);
-                const pinMaestro = pinSnap.exists() ? pinSnap.data().pin_admin : "2026";
-
-                if (inputField.value === pinMaestro) {
-                    loginScreen.style.display = "none";
+                const snap = await getDoc(doc(db, "configuracion", "seguridad"));
+                const maestro = snap.exists() ? snap.data().pin_admin : "2026";
+                if (pin === maestro) {
+                    login.style.display = "none";
                     document.getElementById("admin-panel").style.display = "block";
                 } else {
-                    loginScreen.classList.add("shake");
-                    setTimeout(() => loginScreen.classList.remove("shake"), 400);
-                    alert("PIN Maestro Incorrecto.");
-                    inputField.value = "";
+                    login.classList.add("shake");
+                    setTimeout(() => login.classList.remove("shake"), 400);
                 }
-            } catch (e) {
-                if (inputField.value === "2026") {
-                    loginScreen.style.display = "none";
-                    document.getElementById("admin-panel").style.display = "block";
-                } else {
-                    alert("Error de conexión con la seguridad.");
-                }
-            }
+            } catch (e) { if(pin === "2026") { login.style.display = "none"; document.getElementById("admin-panel").style.display = "block"; } }
         };
 
-        // --- ACTIVACIÓN ASISTIDA ---
-        window.irARegistro = function() {
-            const id = prompt("Ingresa el ID de la placa a configurar:");
-            if (id) {
-                window.location.href = `index.html?id=${id.toUpperCase().trim()}`;
-            }
+        // --- PROCESAR ACTIVACIÓN ---
+        window.procesarActivacion = () => {
+            const id = document.getElementById("id-activar").value.toUpperCase().trim();
+            if(id) window.location.href = `index.html?id=${id}`;
         };
 
-        // --- RESETEAR PLACA ---
-        window.resetearPlaca = async function() {
-            const id = prompt("Ingrese el ID de la placa a RESETEAR:").toUpperCase().trim();
-            if (!id) return;
+        // --- PROCESAR RESET ---
+        window.procesarReset = async () => {
+            const id = document.getElementById("id-reset").value.toUpperCase().trim();
+            const pinConfirm = document.getElementById("pin-confirm").value;
+            
+            const snap = await getDoc(doc(db, "configuracion", "seguridad"));
+            const maestro = snap.exists() ? snap.data().pin_admin : "2026";
 
-            const confirmPin = prompt("SEGURIDAD: Ingrese el PIN MAESTRO para confirmar:");
-            const pinRef = doc(db, "configuracion", "seguridad");
-            const pinSnap = await getDoc(pinRef);
-            const pinMaestro = pinSnap.exists() ? pinSnap.data().pin_admin : "2026";
+            if (pinConfirm !== maestro) { alert("PIN Maestro incorrecto."); return; }
+            if (!id) { alert("ID requerido."); return; }
 
-            if (confirmPin !== pinMaestro) {
-                alert("PIN Incorrecto.");
-                return;
-            }
-
-            if (confirm(`¿Borrar permanentemente los datos de la placa ${id}?`)) {
+            if (confirm(`¿Resetear permanentemente la placa ${id}?`)) {
                 try {
                     await updateDoc(doc(db, "placas", id), {
-                        activa: false,
-                        vendida: false,
-                        mascota: "Nueva Mascota",
-                        foto: "",
-                        telefono: "",
-                        pin: "1234"
+                        activa: false, vendida: false, mascota: "Nueva Mascota", foto: "", telefono: "", pin: "1234"
                     });
-                    alert("✅ Placa reseteada.");
-                } catch (error) {
-                    alert("Error al procesar el reseteo.");
-                }
+                    alert("✅ Éxito: Placa liberada.");
+                    cerrarModal('modal-reset');
+                } catch (e) { alert("Error al resetear."); }
             }
         };
 
-        document.getElementById("admin-pin").addEventListener("keypress", (e) => { 
-            if(e.key === "Enter") window.checkPin(); 
-        });
+        document.getElementById("admin-pin").addEventListener("keypress", (e) => { if(e.key === "Enter") window.checkPin(); });
     </script>
 </body>
 </html>
