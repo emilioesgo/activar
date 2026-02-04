@@ -35,13 +35,29 @@
             height: fit-content;
         }
 
-        /* Encabezado */
+        /* --- NUEVO: PANTALLA DE BLOQUEO CON PERRITO --- */
+        #mensaje-bloqueo {
+            display: none;
+            text-align: center;
+            padding: 20px 10px;
+        }
+        #mensaje-bloqueo img {
+            width: 120px;
+            margin-bottom: 20px;
+            opacity: 0.8;
+            animation: float 3s ease-in-out infinite;
+        }
+        #mensaje-bloqueo h2 { color: var(--error); margin-bottom: 10px; font-size: 22px; }
+        #mensaje-bloqueo p { color: #666; font-size: 15px; line-height: 1.5; margin-bottom: 30px; }
+        
+        @keyframes float { 0% { transform: translateY(0px); } 50% { transform: translateY(-10px); } 100% { transform: translateY(0px); } }
+
+        /* Estilos Originales del Formulario */
         .logo-header { text-align: center; margin-bottom: 30px; }
         .logo-header i { font-size: 40px; color: var(--primary); margin-bottom: 10px; }
         h2 { margin: 5px 0; font-size: 24px; font-weight: 800; color: var(--text); }
         p.subtitle { color: #888; font-size: 14px; margin: 0; }
 
-        /* Foto Avatar */
         .photo-upload { text-align: center; margin-bottom: 30px; position: relative; }
         .avatar-wrapper {
             width: 120px; height: 120px; margin: 0 auto;
@@ -58,91 +74,43 @@
             position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
             font-size: 40px; color: #ccc; 
         }
-        .camera-badge {
-            position: absolute; bottom: 0; right: 0;
-            background: var(--primary); color: white;
-            width: 35px; height: 35px; border-radius: 50%;
-            display: flex; align-items: center; justify-content: center;
-            border: 3px solid white; font-size: 14px;
-        }
 
-        /* Formulario */
         .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
         .full { grid-column: span 2; }
-        
         .form-group { margin-bottom: 15px; position: relative; }
-        .form-group i { 
-            position: absolute; left: 15px; top: 42px; 
-            color: #aaa; font-size: 16px; transition: 0.3s; 
-        }
-        
+        .form-group i { position: absolute; left: 15px; top: 42px; color: #aaa; font-size: 16px; transition: 0.3s; }
         label { display: block; margin-bottom: 8px; font-weight: 700; font-size: 12px; color: #666; text-transform: uppercase; letter-spacing: 0.5px; }
         
         input, select, textarea { 
-            width: 100%; 
-            padding: 14px 14px 14px 45px; 
-            border: 2px solid #f0f0f0; 
-            border-radius: 15px; 
-            font-size: 15px; 
-            box-sizing: border-box; 
-            transition: 0.3s; 
-            background: #fafafa;
-            font-family: inherit;
+            width: 100%; padding: 14px 14px 14px 45px; 
+            border: 2px solid #f0f0f0; border-radius: 15px; 
+            font-size: 15px; box-sizing: border-box; background: #fafafa;
+            transition: 0.3s;
         }
         textarea { padding-left: 15px; resize: none; }
         
-        input:focus, select:focus, textarea:focus { 
-            border-color: var(--primary); 
-            outline: none; 
-            background: white; 
-            box-shadow: 0 4px 10px rgba(43, 182, 115, 0.1); 
-        }
+        input:focus { border-color: var(--primary); outline: none; background: white; }
         input:focus + i { color: var(--primary); }
 
         .id-input { text-align: center; font-weight: bold; letter-spacing: 2px; text-transform: uppercase; padding-left: 15px !important; }
-        
-        .toggle-btn { 
-            position: absolute; right: 15px; top: 42px; 
-            background: none; border: none; cursor: pointer; 
-            color: #ccc; font-size: 16px; padding: 0;
-        }
-        .toggle-btn:hover { color: var(--primary); }
+        .toggle-btn { position: absolute; right: 15px; top: 42px; background: none; border: none; cursor: pointer; color: #ccc; font-size: 16px; }
 
-        /* Botón */
         .btn-submit { 
-            width: 100%; 
-            background: var(--primary); 
-            color: white; 
-            border: none; 
-            padding: 18px; 
-            border-radius: 15px; 
-            font-weight: bold; 
-            font-size: 16px; 
-            cursor: pointer; 
-            margin-top: 25px; 
+            width: 100%; background: var(--primary); color: white; border: none; 
+            padding: 18px; border-radius: 15px; font-weight: bold; font-size: 16px; 
+            cursor: pointer; margin-top: 25px; transition: 0.3s;
             box-shadow: 0 8px 20px rgba(43,182,115,0.3); 
-            transition: 0.3s; 
-            display: flex; align-items: center; justify-content: center; gap: 10px;
         }
-        .btn-submit:hover { transform: translateY(-3px); box-shadow: 0 12px 25px rgba(43,182,115,0.4); }
+        .btn-submit:hover { transform: translateY(-3px); }
 
-        /* Loader Overlay */
         #loader { 
-            display: none; 
-            position: absolute; top: 0; left: 0; width: 100%; height: 100%; 
-            background: rgba(255,255,255,0.95); 
-            flex-direction: column; justify-content: center; align-items: center; 
-            z-index: 100; backdrop-filter: blur(2px);
+            display: none; position: absolute; top: 0; left: 0; width: 100%; height: 100%; 
+            background: rgba(255,255,255,0.95); flex-direction: column; justify-content: center; 
+            align-items: center; z-index: 100; backdrop-filter: blur(2px);
         }
-        .spinner { 
-            width: 50px; height: 50px; 
-            border: 4px solid #f3f3f3; border-top: 4px solid var(--primary); 
-            border-radius: 50%; animation: spin 1s linear infinite; 
-            margin-bottom: 15px;
-        }
+        .spinner { width: 50px; height: 50px; border: 4px solid #f3f3f3; border-top: 4px solid var(--primary); border-radius: 50%; animation: spin 1s linear infinite; margin-bottom: 15px;}
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
-        /* Mensajes */
         #msg { margin-top: 20px; padding: 15px; border-radius: 12px; text-align: center; display: none; font-size: 14px; font-weight: bold; }
         .err { background: #fff5f5; color: var(--error); border: 1px solid #ffcdd2; }
     </style>
@@ -152,97 +120,105 @@
 <div class="container">
     <div id="loader">
         <div class="spinner"></div>
-        <p style="font-weight: bold; color: var(--primary);">Guardando perfil...</p>
-        <small style="color:#888;">Enviando credenciales por correo</small>
+        <p style="font-weight: bold; color: var(--primary);">Verificando placa...</p>
     </div>
 
-    <div class="logo-header">
-        <i class="fas fa-paw"></i>
-        <h2>Registro de Mascota</h2>
-        <p class="subtitle">Completa los datos para activar la placa</p>
+    <div id="mensaje-bloqueo">
+        <img src="https://cdn-icons-png.flaticon.com/512/3563/3563395.png" alt="Perrito Triste">
+        <h2>¡Oh no! Placa Inactiva</h2>
+        <p>Esta huellita aún no ha sido activada en el punto de venta. Por favor, pide al vendedor que la habilite.</p>
+        <button class="btn-submit" onclick="window.location.href='activar.html'" style="background: var(--error); box-shadow: 0 8px 20px rgba(231, 76, 60, 0.3);">Volver a intentar</button>
     </div>
 
-    <div class="photo-upload">
-        <div class="avatar-wrapper" onclick="document.getElementById('fotoInput').click()">
-            <i class="fas fa-camera placeholder-icon"></i>
-            <img id="preview" src="#" alt="Foto">
+    <div id="registro-content" style="display: none;">
+        <div class="logo-header">
+            <i class="fas fa-paw"></i>
+            <h2>Registro de Mascota</h2>
+            <p class="subtitle">Completa los datos para activar la placa</p>
         </div>
-        <input type="file" id="fotoInput" accept="image/*" style="display:none">
-        <p style="font-size:12px; color:#aaa; margin-top:10px;">Toca para subir foto</p>
+
+        <div class="photo-upload">
+            <div class="avatar-wrapper" onclick="document.getElementById('fotoInput').click()">
+                <i class="fas fa-camera placeholder-icon"></i>
+                <img id="preview" src="#" alt="Foto">
+            </div>
+            <input type="file" id="fotoInput" accept="image/*" style="display:none">
+            <p style="font-size:12px; color:#aaa; margin-top:10px;">Toca para subir foto</p>
+        </div>
+
+        <div class="form-grid">
+            <div class="form-group full">
+                <label>ID de la Placa</label>
+                <input type="text" id="placaId" class="id-input" maxlength="6" placeholder="EJ: A12B34" readonly style="background:#f9f9f9;">
+            </div>
+            
+            <div class="form-group full">
+                <label>Nombre de la Mascota</label>
+                <i class="fas fa-dog"></i>
+                <input type="text" id="nombreMascota" placeholder="¿Cómo se llama?">
+            </div>
+            
+            <div class="form-group">
+                <label>Código País</label>
+                <i class="fas fa-globe"></i>
+                <select id="paisCod">
+                    <option value="52">🇲🇽 +52</option>
+                    <option value="1">🇺🇸 +1</option>
+                    <option value="57">🇨🇴 +57</option>
+                    <option value="34">🇪🇸 +34</option>
+                    <option value="54">🇦🇷 +54</option>
+                    <option value="56">🇨🇱 +56</option>
+                    <option value="51">🇵🇪 +51</option>
+                    <option value="593">🇪🇨 +593</option>
+                    <option value="506">🇨🇷 +506</option>
+                    <option value="502">🇬🇹 +502</option>
+                </select>
+            </div>
+            
+            <div class="form-group">
+                <label>Celular</label>
+                <i class="fas fa-phone"></i>
+                <input type="tel" id="telefono" placeholder="1234567890">
+            </div>
+
+            <div class="form-group full">
+                <label>Email (Usuario)</label>
+                <i class="fas fa-envelope"></i>
+                <input type="email" id="email" placeholder="ejemplo@correo.com">
+            </div>
+            
+            <div class="form-group full">
+                <label>Confirmar Email</label>
+                <i class="fas fa-check-circle"></i>
+                <input type="email" id="emailConf" placeholder="Repite tu correo">
+            </div>
+
+            <div class="form-group">
+                <label>Crear PIN (4 dígitos)</label>
+                <i class="fas fa-lock"></i>
+                <input type="password" id="pin" maxlength="4" placeholder="****">
+                <button type="button" class="toggle-btn" onclick="togglePin('pin')"><i class="fas fa-eye"></i></button>
+            </div>
+            
+            <div class="form-group">
+                <label>Confirmar PIN</label>
+                <i class="fas fa-lock"></i>
+                <input type="password" id="pinConf" maxlength="4" placeholder="****">
+                <button type="button" class="toggle-btn" onclick="togglePin('pinConf')"><i class="fas fa-eye"></i></button>
+            </div>
+
+            <div class="form-group full">
+                <label>Notas Médicas / Observaciones</label>
+                <textarea id="observaciones" rows="3" placeholder="Alergias, medicinas, carácter..."></textarea>
+            </div>
+        </div>
+
+        <button id="btnRegistrar" class="btn-submit">
+            Finalizar Registro <i class="fas fa-check"></i>
+        </button>
+        
+        <div id="msg"></div>
     </div>
-
-    <div class="form-grid">
-        <div class="form-group full">
-            <label>ID de la Placa</label>
-            <input type="text" id="placaId" class="id-input" maxlength="6" placeholder="EJ: A12B34" readonly style="background:#f9f9f9;">
-        </div>
-        
-        <div class="form-group full">
-            <label>Nombre de la Mascota</label>
-            <i class="fas fa-dog"></i>
-            <input type="text" id="nombreMascota" placeholder="¿Cómo se llama?">
-        </div>
-        
-        <div class="form-group">
-            <label>Código País</label>
-            <i class="fas fa-globe"></i>
-            <select id="paisCod">
-                <option value="52">🇲🇽 +52</option>
-                <option value="1">🇺🇸 +1</option>
-                <option value="57">🇨🇴 +57</option>
-                <option value="34">🇪🇸 +34</option>
-                <option value="54">🇦🇷 +54</option>
-                <option value="56">🇨🇱 +56</option>
-                <option value="51">🇵🇪 +51</option>
-                <option value="593">🇪🇨 +593</option>
-                <option value="506">🇨🇷 +506</option>
-                <option value="502">🇬🇹 +502</option>
-            </select>
-        </div>
-        
-        <div class="form-group">
-            <label>Celular</label>
-            <i class="fas fa-phone"></i>
-            <input type="tel" id="telefono" placeholder="1234567890">
-        </div>
-
-        <div class="form-group full">
-            <label>Email (Usuario)</label>
-            <i class="fas fa-envelope"></i>
-            <input type="email" id="email" placeholder="ejemplo@correo.com">
-        </div>
-        
-        <div class="form-group full">
-            <label>Confirmar Email</label>
-            <i class="fas fa-check-circle"></i>
-            <input type="email" id="emailConf" placeholder="Repite tu correo">
-        </div>
-
-        <div class="form-group">
-            <label>Crear PIN (4 dígitos)</label>
-            <i class="fas fa-lock"></i>
-            <input type="password" id="pin" maxlength="4" placeholder="****">
-            <button type="button" class="toggle-btn" onclick="togglePin('pin')"><i class="fas fa-eye"></i></button>
-        </div>
-        
-        <div class="form-group">
-            <label>Confirmar PIN</label>
-            <i class="fas fa-lock"></i>
-            <input type="password" id="pinConf" maxlength="4" placeholder="****">
-            <button type="button" class="toggle-btn" onclick="togglePin('pinConf')"><i class="fas fa-eye"></i></button>
-        </div>
-
-        <div class="form-group full">
-            <label>Notas Médicas / Observaciones</label>
-            <textarea id="observaciones" rows="3" placeholder="Alergias, medicinas, carácter..."></textarea>
-        </div>
-    </div>
-
-    <button id="btnRegistrar" class="btn-submit">
-        Finalizar Registro <i class="fas fa-check"></i>
-    </button>
-    
-    <div id="msg"></div>
 </div>
 
 <script type="module">
@@ -278,8 +254,12 @@
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
     const storage = getStorage(app);
-
     const URL_SHEETS = "https://script.google.com/macros/s/AKfycbzH1tsICupT_eLE1aNzsUMUx_0w3Wl6ZcAckHGmtuvXLmuOBKg2kBHf285e1DVGY6iVSA/exec"; 
+
+    // Referencias UI
+    const loader = document.getElementById("loader");
+    const registroContent = document.getElementById("registro-content");
+    const mensajeBloqueo = document.getElementById("mensaje-bloqueo");
 
     window.onload = async () => {
         const urlParams = new URLSearchParams(window.location.search);
@@ -289,36 +269,44 @@
             const idUpper = idFromUrl.toUpperCase();
             document.getElementById('placaId').value = idUpper;
             
+            // Mostrar loader y ocultar todo
+            loader.style.display = "flex";
+            registroContent.style.display = "none";
+            mensajeBloqueo.style.display = "none";
+
             try {
                 const docSnap = await getDoc(doc(db, "placas", idUpper));
+                loader.style.display = "none";
+
                 if (docSnap.exists()) {
                     const data = docSnap.data();
+                    
+                    // 1. Si ya está activa -> Perfil
                     if (data.activa) {
                         window.location.href = `perfil.html?id=${idUpper}`;
-                    } else if (!data.vendida) {
-                        mostrarError("Esta placa no está habilitada para registro.");
-                        document.getElementById("btnRegistrar").disabled = true;
+                        return;
+                    } 
+                    
+                    // 2. Si está vendida -> Mostrar Formulario
+                    if (data.vendida === true) {
+                        registroContent.style.display = "block";
+                    } 
+                    
+                    // 3. Si NO está vendida -> Mostrar Perrito Triste
+                    else {
+                        mensajeBloqueo.style.display = "block";
                     }
+
                 } else {
                     mostrarError("ID de placa no encontrado.");
-                    document.getElementById("btnRegistrar").disabled = true;
+                    setTimeout(() => window.location.href='activar.html', 2000);
                 }
-            } catch(e) { console.log("Verificando..."); }
+            } catch(e) { 
+                console.log(e);
+                loader.style.display = "none";
+            }
         }
     };
-
-    // DISPARADOR DE LOGS DE ACTIVACIÓN FINAL
-    async function registrarLogActivacionFinal(placaId, ownerEmail) {
-        try {
-            await addDoc(collection(db, "logs"), {
-                placaId: placaId,
-                evento: "REGISTRO_COMPLETADO",
-                fecha: serverTimestamp(),
-                usuario: ownerEmail,
-                origen: "index.html"
-            });
-        } catch (e) { console.error("Error log final:", e); }
-    }
 
     async function comprimirImagen(archivo) {
         return new Promise((resolve) => {
@@ -374,13 +362,15 @@
         if (email !== emailConf) { alert("Los correos electrónicos no coinciden."); return; }
         if (pin !== pinConf) { alert("Los PIN no coinciden."); return; }
 
-        document.getElementById("loader").style.display = "flex";
+        loader.style.display = "flex";
+        loader.querySelector("p").innerText = "Creando perfil...";
 
         try {
             const docRef = doc(db, "placas", id);
-            const docSnap = await getDoc(docRef);
-
-            if (docSnap.exists() && docSnap.data().vendida === true) {
+            
+            // Doble verificación por seguridad
+            const checkSnap = await getDoc(docRef);
+            if (checkSnap.exists() && checkSnap.data().vendida === true) {
                 
                 let urlFoto = "";
                 if (selectedFile) {
@@ -390,6 +380,7 @@
                     urlFoto = await getDownloadURL(storageRef);
                 }
 
+                // ACTUALIZAR BASE DE DATOS
                 await updateDoc(docRef, {
                     mascota: nombre,
                     telefono: tel,
@@ -403,8 +394,17 @@
                     fechaActivacion: new Date().toISOString()
                 });
 
-                // DISPARAR LOG AL MONITOR
-                await registrarLogActivacionFinal(id, email);
+                // --- NUEVO: LOG PARA MONITOR ---
+                try {
+                    await addDoc(collection(db, "logs"), {
+                        placaId: id,
+                        evento: "REGISTRO_COMPLETADO",
+                        fecha: serverTimestamp(),
+                        usuario: email,
+                        origen: "index.html"
+                    });
+                } catch(e) { console.error("Log monitor error", e); }
+                // --------------------------------
 
                 try {
                     await emailjs.send("service_xwx9czt", "template_zgl2oii", {
@@ -428,7 +428,7 @@
                     window.location.href = `perfil.html?id=${id}`;
                 }, 1000);
             } else {
-                mostrarError("Placa no válida o no activada en tienda.");
+                mostrarError("Error crítico: Placa no habilitada.");
             }
         } catch (e) {
             console.error(e);
@@ -441,7 +441,7 @@
         msg.innerText = txt;
         msg.className = "err";
         msg.style.display = "block";
-        document.getElementById("loader").style.display = "none";
+        loader.style.display = "none";
     }
 </script>
 </body>
