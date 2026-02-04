@@ -52,7 +52,7 @@
         .btn { background: var(--primary); color: white; border: none; padding: 14px 25px; border-radius: 12px; font-weight: bold; cursor: pointer; width: 100%; transition: 0.2s; }
         .btn-logout { background: transparent; border: 1px solid #555; width: auto; font-size: 11px; color: #aaa; }
 
-        /* MODALES PROFESIONALES */
+        /* MODALES */
         .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); display: none; align-items: center; justify-content: center; z-index: 100; backdrop-filter: blur(5px); }
         .modal-content { background: var(--card-bg); padding: 30px; border-radius: 25px; width: 90%; max-width: 400px; border: 1px solid #555; text-align: center; }
         .modal-content h3 { margin-top: 0; color: var(--primary); }
@@ -97,16 +97,16 @@
                 <span class="card-desc">Configurar perfil al cliente.</span>
             </div>
 
-            <div class="card danger" onclick="abrirModal('modal-reset')">
-                <span class="card-icon">🔄</span>
-                <span class="card-title" style="color: var(--danger);">Resetear Placa</span>
-                <span class="card-desc">Borrar datos de usuario.</span>
-            </div>
-
             <a href="admin/inventario.html" class="card">
                 <span class="card-icon">📦</span>
                 <span class="card-title">Inventario</span>
                 <span class="card-desc">Carga masiva de IDs.</span>
+            </a>
+
+            <a href="gestion-socios.html" class="card gold">
+                <span class="card-icon">⭐</span>
+                <span class="card-title">Socios VIP</span>
+                <span class="card-desc">Gestión de negocios destacados.</span>
             </a>
 
             <a href="https://docs.google.com/spreadsheets/d/1CeoOx1GiCAWTbuCKJLlg55FOj_ZRWe9p7LGf0kV2LJc/edit?gid=0#gid=0" target="_blank" class="card">
@@ -114,6 +114,12 @@
                 <span class="card-title">Google Sheets</span>
                 <span class="card-desc">Base de datos externa.</span>
             </a>
+
+            <div class="card danger" onclick="abrirModal('modal-reset')">
+                <span class="card-icon">🔄</span>
+                <span class="card-title" style="color: var(--danger);">Resetear Placa</span>
+                <span class="card-desc">Borrar datos de usuario.</span>
+            </div>
         </div>
 
         <div class="system-status">
@@ -125,9 +131,9 @@
     <div id="modal-activar" class="modal-overlay">
         <div class="modal-content">
             <h3>📱 Activación Asistida</h3>
-            <p style="font-size: 13px; color: #999;">Ingresa el ID de la placa para empezar la configuración.</p>
+            <p style="font-size: 13px; color: #999;">Ingresa el ID de la placa para empezar.</p>
             <input type="text" id="id-activar" placeholder="ABC123" maxlength="6">
-            <button class="btn" onclick="procesarActivacion()">Comenzar Configuración</button>
+            <button class="btn" onclick="procesarActivacion()">Comenzar</button>
             <button class="btn btn-cancel" onclick="cerrarModal('modal-activar')">Cancelar</button>
         </div>
     </div>
@@ -135,10 +141,10 @@
     <div id="modal-reset" class="modal-overlay">
         <div class="modal-content">
             <h3 style="color: var(--danger);">🔄 Resetear Placa</h3>
-            <p style="font-size: 13px; color: #999;">Esta acción borrará todos los datos del cliente permanentemente.</p>
+            <p style="font-size: 13px; color: #999;">Borrar datos del cliente permanentemente.</p>
             <input type="text" id="id-reset" placeholder="ID DE PLACA">
-            <input type="password" id="pin-confirm" placeholder="CONFIRMAR PIN MAESTRO">
-            <button class="btn btn-danger" onclick="procesarReset()">Confirmar Borrado Total</button>
+            <input type="password" id="pin-confirm" placeholder="PIN MAESTRO">
+            <button class="btn btn-danger" onclick="procesarReset()">Confirmar Borrado</button>
             <button class="btn btn-cancel" onclick="cerrarModal('modal-reset')">Cancelar</button>
         </div>
     </div>
@@ -159,14 +165,12 @@
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
 
-        // --- GESTIÓN DE MODALES ---
         window.abrirModal = (id) => document.getElementById(id).style.display = 'flex';
         window.cerrarModal = (id) => {
             document.getElementById(id).style.display = 'none';
             document.querySelectorAll('input').forEach(i => i.value = "");
         }
 
-        // --- VALIDACIÓN LOGIN ---
         window.checkPin = async function() {
             const pin = document.getElementById("admin-pin").value;
             const login = document.getElementById("login-screen");
@@ -183,24 +187,19 @@
             } catch (e) { if(pin === "2026") { login.style.display = "none"; document.getElementById("admin-panel").style.display = "block"; } }
         };
 
-        // --- PROCESAR ACTIVACIÓN ---
         window.procesarActivacion = () => {
             const id = document.getElementById("id-activar").value.toUpperCase().trim();
             if(id) window.location.href = `index.html?id=${id}`;
         };
 
-        // --- PROCESAR RESET ---
         window.procesarReset = async () => {
             const id = document.getElementById("id-reset").value.toUpperCase().trim();
             const pinConfirm = document.getElementById("pin-confirm").value;
-            
             const snap = await getDoc(doc(db, "configuracion", "seguridad"));
             const maestro = snap.exists() ? snap.data().pin_admin : "2026";
 
             if (pinConfirm !== maestro) { alert("PIN Maestro incorrecto."); return; }
-            if (!id) { alert("ID requerido."); return; }
-
-            if (confirm(`¿Resetear permanentemente la placa ${id}?`)) {
+            if (confirm(`¿Borrar permanentemente los datos de la placa ${id}?`)) {
                 try {
                     await updateDoc(doc(db, "placas", id), {
                         activa: false, vendida: false, mascota: "Nueva Mascota", foto: "", telefono: "", pin: "1234"
