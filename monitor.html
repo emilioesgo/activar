@@ -97,20 +97,42 @@
     const q = query(collection(db, "logs"), orderBy("fecha", "desc"), limit(20));
 
     onSnapshot(q, (snapshot) => {
-        let firstLoad = true;
         snapshot.docChanges().forEach((change) => {
             if (change.type === "added") {
                 const data = change.doc.data();
-                const hora = data.fecha ? data.fecha.toDate().toLocaleTimeString() : '...';
+                
+                // --- CORRECCIÓN DE FECHA ---
+                let hora = '...';
+                if (data.fecha) {
+                    // Caso 1: Es un Timestamp de Firestore (Correcto)
+                    if (typeof data.fecha.toDate === 'function') {
+                        hora = data.fecha.toDate().toLocaleTimeString();
+                    } 
+                    // Caso 2: Es un objeto Date de Javascript
+                    else if (data.fecha instanceof Date) {
+                        hora = data.fecha.toLocaleTimeString();
+                    }
+                    // Caso 3: Es un Timestamp serializado (objeto con seconds)
+                    else if (data.fecha.seconds) {
+                        hora = new Date(data.fecha.seconds * 1000).toLocaleTimeString();
+                    }
+                    // Caso 4: Es un String o cualquier otra cosa (Intento forzoso)
+                    else {
+                        try {
+                            hora = new Date(data.fecha).toLocaleTimeString();
+                        } catch(e) { hora = 'Error Fmt'; }
+                    }
+                }
+                // ---------------------------
                 
                 // Crear fila de log
                 const div = document.createElement('div');
                 div.className = `log-entry ${!snapshot.metadata.fromCache ? 'new-entry' : ''}`;
                 div.innerHTML = `
-                    <span class="placa-id">${data.placaId}</span>
+                    <span class="placa-id">${data.placaId || '---'}</span>
                     <span>
-                        <span class="tag tag-activation">${data.evento}</span> 
-                        <small style="color:#666; margin-left:10px;">via ${data.origen}</small>
+                        <span class="tag tag-activation">${data.evento || 'INFO'}</span> 
+                        <small style="color:#666; margin-left:10px;">via ${data.origen || 'system'}</small>
                     </span>
                     <span class="time">${hora}</span>
                 `;
@@ -118,11 +140,11 @@
                 logList.insertBefore(div, logList.firstChild);
                 
                 // Actualizar contadores
-                lastId.innerText = data.placaId;
+                if(data.placaId) lastId.innerText = data.placaId;
             }
         });
         
-        // Actualizar contador total (basado en los cargados)
+        // Actualizar contador total
         countToday.innerText = snapshot.size;
     });
 </script>
