@@ -6,7 +6,8 @@
     <title>Live Monitor | Huellitas Digitales</title>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <style>
-        :root { --primary: #2bb673; --dark: #1a1a1a; --card: #2d2d2d; --text: #eee; --blue: #3498db; }
+        /* AGREGADO: Variable --yellow para el estado Vendida */
+        :root { --primary: #2bb673; --dark: #1a1a1a; --card: #2d2d2d; --text: #eee; --blue: #3498db; --yellow: #f1c40f; }
         
         body { 
             font-family: 'Courier New', monospace; 
@@ -20,11 +21,12 @@
         
         @keyframes blink { 0% { opacity: 1; } 50% { opacity: 0.3; } 100% { opacity: 1; } }
 
-        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 15px; margin-bottom: 30px; }
+        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 15px; margin-bottom: 30px; }
         .stat-card { background: var(--card); padding: 20px; border-radius: 12px; text-align: center; border: 1px solid #444; }
         .stat-card h3 { margin: 0; font-size: 11px; color: #888; text-transform: uppercase; }
         .stat-card p { margin: 10px 0 0; font-size: 22px; font-weight: bold; color: var(--primary); }
         .stat-card p.blue { color: var(--blue); }
+        .stat-card p.yellow { color: var(--yellow); }
 
         .main-layout { display: grid; grid-template-columns: 1.2fr 1fr; gap: 20px; }
         @media (max-width: 900px) { .main-layout { grid-template-columns: 1fr; } }
@@ -41,7 +43,7 @@
         .new-entry { animation: highlight 2s ease-out; }
         @keyframes highlight { from { background: rgba(43, 182, 115, 0.3); } to { background: transparent; } }
 
-        /* --- NUEVOS ESTILOS PARA HERRAMIENTAS DE INVENTARIO --- */
+        /* INVENTARIO */
         .inventory-container { background: var(--card); border-radius: 15px; border: 1px solid #444; padding: 20px; height: 500px; overflow: hidden; display: flex; flex-direction: column; }
         
         .filter-bar { display: flex; gap: 8px; margin-bottom: 10px; flex-wrap: wrap; }
@@ -53,6 +55,8 @@
         .filter-btn:hover { background: #444; color: #fff; }
         .filter-btn.active { border-color: var(--primary); color: var(--primary); background: rgba(43, 182, 115, 0.1); }
         .filter-btn.btn-blue.active { border-color: var(--blue); color: var(--blue); background: rgba(52, 152, 219, 0.1); }
+        /* Estilo botón amarillo */
+        .filter-btn.btn-yellow.active { border-color: var(--yellow); color: var(--yellow); background: rgba(241, 196, 15, 0.1); }
 
         .inventory-tools { display: flex; gap: 10px; margin-bottom: 15px; }
         .search-wrapper { position: relative; flex: 1; }
@@ -74,8 +78,13 @@
             padding: 10px 5px; border-radius: 8px; font-size: 11px; font-weight: bold; text-align: center;
             cursor: pointer; transition: 0.2s; border: 1px solid transparent;
         }
+        
+        /* ESTILOS DE ESTADO */
         .p-disponible { background: rgba(43, 182, 115, 0.1); color: var(--primary); border-color: var(--primary); }
         .p-ocupada { background: rgba(52, 152, 219, 0.1); color: var(--blue); border-color: var(--blue); }
+        /* Nuevo estilo Vendida */
+        .p-vendida { background: rgba(241, 196, 15, 0.1); color: var(--yellow); border-color: var(--yellow); }
+        
         .placa-item:hover { transform: scale(1.05); filter: brightness(1.2); }
 
         /* MODAL RESUMEN */
@@ -119,6 +128,10 @@
             <p id="total-disp">0</p>
         </div>
         <div class="stat-card">
+            <h3>Vendidas</h3>
+            <p id="total-vend" class="yellow">0</p>
+        </div>
+        <div class="stat-card">
             <h3>Ocupadas</h3>
             <p id="total-ocup" class="blue">0</p>
         </div>
@@ -138,6 +151,7 @@
             <div class="filter-bar">
                 <button class="filter-btn active" onclick="filtrarEstado('todas', this)">TODAS</button>
                 <button class="filter-btn" onclick="filtrarEstado('disponible', this)">LIBRES</button>
+                <button class="filter-btn btn-yellow" onclick="filtrarEstado('vendida', this)">VENDIDAS</button>
                 <button class="filter-btn btn-blue" onclick="filtrarEstado('ocupada', this)">OCUPADAS</button>
             </div>
             
@@ -182,11 +196,10 @@
     const logList = document.getElementById('log-list');
     const countToday = document.getElementById('count-today');
 
-    // VARIABLES GLOBALES PARA FILTROS Y EXPORTACIÓN
     let placasDataGlobal = [];
     let filtroActual = 'todas';
 
-    // 1. MONITOR DE LOGS (ACTIVIDAD RECIENTE)
+    // 1. MONITOR DE LOGS
     const q = query(collection(db, "logs"), orderBy("fecha", "desc"), limit(20));
 
     onSnapshot(q, (snapshot) => {
@@ -226,35 +239,48 @@
         const grid = document.getElementById('grid-placas');
         const countDisp = document.getElementById('total-disp');
         const countOcup = document.getElementById('total-ocup');
+        const countVend = document.getElementById('total-vend'); // Nuevo contador
         
         let disp = 0;
         let ocup = 0;
+        let vend = 0;
+        
         grid.innerHTML = "";
-        placasDataGlobal = []; // Limpiamos datos para reconstruir
+        placasDataGlobal = []; 
 
         snapshot.docs.sort((a, b) => a.id.localeCompare(b.id)).forEach(docSnap => {
             const data = docSnap.data();
             const id = docSnap.id;
-            const esActiva = data.activa === true;
+            
+            // --- LÓGICA DE ESTADOS ACTUALIZADA ---
+            let status = 'disponible';
+            let estiloClase = 'p-disponible';
+            
+            if (data.activa === true) {
+                status = 'ocupada';
+                estiloClase = 'p-ocupada';
+                ocup++;
+            } else if (data.vendida === true) {
+                status = 'vendida';
+                estiloClase = 'p-vendida';
+                vend++;
+            } else {
+                disp++;
+            }
+            // -------------------------------------
 
-            // Guardamos en memoria para exportar después
             placasDataGlobal.push({
                 id: id,
-                estado: esActiva ? 'OCUPADA' : 'DISPONIBLE',
+                estado: status.toUpperCase(),
                 mascota: data.mascota || 'N/A',
                 email: data.email || 'N/A'
             });
 
-            esActiva ? ocup++ : disp++;
-
             const div = document.createElement('div');
-            div.className = `placa-item ${esActiva ? 'p-ocupada' : 'p-disponible'}`;
+            div.className = `placa-item ${estiloClase}`;
             div.innerText = id;
-            
-            // Atributo para filtrado rápido por CSS/JS
-            div.setAttribute('data-status', esActiva ? 'ocupada' : 'disponible');
+            div.setAttribute('data-status', status); // Guardamos estado para filtro
 
-            // Acción al hacer clic
             div.onclick = () => verResumen(id, data);
             
             grid.appendChild(div);
@@ -262,14 +288,14 @@
 
         countDisp.innerText = disp;
         countOcup.innerText = ocup;
+        countVend.innerText = vend;
         
-        // Re-aplicar filtros si había alguno activo
         ejecutarFiltros();
     });
 
     // 3. FUNCIÓN PARA VER RESUMEN
     function verResumen(id, data) {
-        if (!data.activa) return; // Solo mostrar si está ocupada
+        if (!data.activa) return; 
         
         const modal = document.getElementById('modal-resumen');
         const content = document.getElementById('resumen-content');
@@ -285,14 +311,11 @@
         modal.style.display = 'flex';
     }
 
-    // 4. LÓGICA DE FILTROS Y BUSCADOR
+    // 4. LÓGICA DE FILTROS
     window.filtrarEstado = (estado, btn) => {
         filtroActual = estado;
-        
-        // Actualizar visual de botones
         document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
         btn.classList.add('active');
-
         ejecutarFiltros();
     }
 
@@ -304,10 +327,7 @@
             const idTexto = item.innerText;
             const statusItem = item.getAttribute('data-status');
 
-            // Condición 1: Coincide con texto
             const matchTexto = idTexto.includes(busqueda);
-            
-            // Condición 2: Coincide con botón filtro
             const matchEstado = (filtroActual === 'todas') || (statusItem === filtroActual);
 
             if (matchTexto && matchEstado) {
@@ -318,7 +338,7 @@
         });
     }
 
-    // 5. EXPORTAR A EXCEL (CSV)
+    // 5. EXPORTAR A EXCEL
     window.exportarCSV = () => {
         if (placasDataGlobal.length === 0) {
             alert("No hay datos para exportar.");
@@ -326,7 +346,7 @@
         }
 
         let csvContent = "data:text/csv;charset=utf-8,";
-        csvContent += "ID PLACA,ESTADO,NOMBRE MASCOTA,EMAIL DUEÑO\n"; // Cabeceras
+        csvContent += "ID PLACA,ESTADO,NOMBRE MASCOTA,EMAIL DUEÑO\n"; 
 
         placasDataGlobal.forEach(row => {
             csvContent += `${row.id},${row.estado},${row.mascota},${row.email}\n`;
@@ -341,7 +361,6 @@
         document.body.removeChild(link);
     }
 
-    // Exponer funciones al window para que el HTML las vea
     window.verResumen = verResumen;
 </script>
 </body>
