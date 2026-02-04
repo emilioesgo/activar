@@ -26,14 +26,12 @@
 
         body { font-family: 'Segoe UI', system-ui, sans-serif; background: var(--dark-bg); color: var(--text); margin: 0; display: flex; justify-content: center; align-items: center; min-height: 100vh; padding: 20px; box-sizing: border-box; }
         
-        /* LOGIN */
         #login-screen { background: var(--card-bg); padding: 40px; border-radius: 25px; box-shadow: 0 20px 50px rgba(0,0,0,0.5); text-align: center; width: 100%; max-width: 320px; border: 1px solid #444; }
         .shake { animation: shake 0.4s; }
         @keyframes shake { 0%, 100% {transform: translateX(0);} 25% {transform: translateX(-10px);} 75% {transform: translateX(10px);} }
         
         input { width: 100%; padding: 14px; margin: 15px 0; border: 1px solid #444; border-radius: 12px; text-align: center; font-size: 18px; box-sizing: border-box; background: #111; color: var(--primary); font-weight: bold; }
         
-        /* PANEL */
         #admin-panel { display: none; width: 100%; max-width: 900px; background: var(--card-bg); padding: 30px; border-radius: 30px; border: 1px solid #444; box-shadow: 0 15px 40px rgba(0,0,0,0.4); }
         .header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #444; padding-bottom: 20px; margin-bottom: 30px; }
         .grid-menu { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 20px; }
@@ -43,7 +41,6 @@
         .card.danger:hover { border-color: var(--danger); background: #352626; }
         .card.gold { border: 1px solid var(--gold); background: #2d2a1e; }
         .card.live { border: 1px solid var(--primary); background: rgba(43, 182, 115, 0.1); animation: pulse-border 2s infinite; }
-        /* Nuevo estilo para Firebase */
         .card.firebase:hover { border-color: var(--firebase); background: #332b1e; }
         
         @keyframes pulse-border { 0%, 100% { border-color: var(--primary); } 50% { border-color: #fff; } }
@@ -55,7 +52,6 @@
         .btn { background: var(--primary); color: white; border: none; padding: 14px 25px; border-radius: 12px; font-weight: bold; cursor: pointer; width: 100%; transition: 0.2s; }
         .btn-logout { background: transparent; border: 1px solid #555; width: auto; font-size: 11px; color: #aaa; }
 
-        /* MODALES */
         .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); display: none; align-items: center; justify-content: center; z-index: 100; backdrop-filter: blur(5px); }
         .modal-content { background: var(--card-bg); padding: 30px; border-radius: 25px; width: 90%; max-width: 400px; border: 1px solid #555; text-align: center; }
         .modal-content h3 { margin-top: 0; color: var(--primary); }
@@ -150,7 +146,7 @@
     <div id="modal-reset" class="modal-overlay">
         <div class="modal-content">
             <h3 style="color: var(--danger);">🔄 Resetear Placa</h3>
-            <p style="font-size: 13px; color: #999;">Esta acción ELIMINARÁ la placa del sistema.</p>
+            <p style="font-size: 13px; color: #999;">Borrará placa, recordatorios y foto.</p>
             <input type="text" id="id-reset" placeholder="ID DE PLACA">
             <input type="password" id="pin-confirm" placeholder="PIN MAESTRO">
             <button class="btn btn-danger" onclick="procesarReset()">Confirmar Eliminación</button>
@@ -160,8 +156,9 @@
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-        // Importamos deleteDoc para la eliminación total
-        import { getFirestore, doc, updateDoc, deleteDoc, getDoc, collection, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+        // Importamos getStorage y deleteObject para la foto
+        import { getFirestore, doc, deleteDoc, getDoc, collection, addDoc, serverTimestamp, query, where, getDocs } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+        import { getStorage, ref, deleteObject } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-storage.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyCqROIzmp2guo2XLbdYrSW3ujlUBc7ngOc",
@@ -174,6 +171,7 @@
 
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
+        const storage = getStorage(app);
 
         window.abrirModal = (id) => document.getElementById(id).style.display = 'flex';
         window.cerrarModal = (id) => {
@@ -210,25 +208,40 @@
 
             if (pinConfirm !== maestro) { alert("PIN Maestro incorrecto."); return; }
             
-            // Confirmación de seguridad
-            if (confirm(`⚠️ PELIGRO ⚠️\n\n¿Estás seguro de que deseas ELIMINAR DEFINITIVAMENTE la placa ${id} del sistema?\n\nEsta acción no se puede deshacer y el cliente perderá acceso inmediato.`)) {
+            if (confirm(`⚠️ PURGA TOTAL ⚠️\n\n¿Eliminar la placa ${id}?\n\nSe borrarán:\n- Perfil de Mascota\n- Foto del Servidor\n- Recordatorios asociados`)) {
                 try {
-                    // 1. ELIMINACIÓN FÍSICA DEL DOCUMENTO (Ya no solo update)
+                    // 1. ELIMINAR FOTO DEL STORAGE
+                    // Asumimos la ruta: fotos_mascotas/ID.jpg
+                    const fotoRef = ref(storage, `fotos_mascotas/${id}.jpg`);
+                    try {
+                        await deleteObject(fotoRef);
+                        console.log("Foto eliminada del servidor.");
+                    } catch (err) {
+                        console.warn("No se encontró foto para eliminar o ya estaba borrada.");
+                    }
+
+                    // 2. ELIMINAR RECORDATORIOS ASOCIADOS
+                    const qRecordatorios = query(collection(db, "recordatorios"), where("placaId", "==", id));
+                    const snapRecordatorios = await getDocs(qRecordatorios);
+                    const promesasBorrado = snapRecordatorios.docs.map(docu => deleteDoc(docu.ref));
+                    await Promise.all(promesasBorrado);
+
+                    // 3. ELIMINAR LA PLACA DE FIRESTORE
                     await deleteDoc(doc(db, "placas", id));
 
-                    // 2. DISPARADOR AL MONITOR (LOG DE ALERTA ROJA)
+                    // 4. LOG DE MONITOR
                     await addDoc(collection(db, "logs"), {
                         placaId: id,
-                        evento: "ELIMINACIÓN TOTAL",
+                        evento: "PURGA TOTAL (PLACA+FOTO+REC)",
                         fecha: serverTimestamp(),
                         usuario: "Admin",
                         origen: "admin.html"
                     });
 
-                    alert("🔥 Placa eliminada correctamente de la base de datos.");
+                    alert("🔥 Éxito: Sistema purgado correctamente.");
                     cerrarModal('modal-reset');
                 } catch (e) { 
-                    alert("Error al intentar eliminar la placa."); 
+                    alert("Error en el proceso de purga."); 
                     console.error(e); 
                 }
             }
