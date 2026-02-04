@@ -35,9 +35,10 @@
         .new-entry { animation: highlight 2s ease-out; }
         @keyframes highlight { from { background: rgba(43, 182, 115, 0.3); } to { background: transparent; } }
 
+        /* CLASES DE COLORES */
         .tag { padding: 3px 8px; border-radius: 4px; font-size: 10px; font-weight: bold; }
-        .tag-activation { background: #2ecc71; color: #000; }
-        .tag-reset { background: #e74c3c; color: #fff; }
+        .tag-activation { background: #2ecc71; color: #000; } /* VERDE */
+        .tag-reset { background: #e74c3c; color: #fff; }      /* ROJO */
 
         .time { color: #888; text-align: right; }
         .placa-id { color: var(--primary); font-weight: bold; }
@@ -93,7 +94,6 @@
     const countToday = document.getElementById('count-today');
     const lastId = document.getElementById('last-id');
 
-    // Escuchar cambios en tiempo real
     const q = query(collection(db, "logs"), orderBy("fecha", "desc"), limit(20));
 
     onSnapshot(q, (snapshot) => {
@@ -101,37 +101,34 @@
             if (change.type === "added") {
                 const data = change.doc.data();
                 
-                // --- CORRECCIÓN DE FECHA ---
+                // 1. CORRECCIÓN DE FECHA
                 let hora = '...';
                 if (data.fecha) {
-                    // Caso 1: Es un Timestamp de Firestore (Correcto)
                     if (typeof data.fecha.toDate === 'function') {
                         hora = data.fecha.toDate().toLocaleTimeString();
-                    } 
-                    // Caso 2: Es un objeto Date de Javascript
-                    else if (data.fecha instanceof Date) {
-                        hora = data.fecha.toLocaleTimeString();
-                    }
-                    // Caso 3: Es un Timestamp serializado (objeto con seconds)
-                    else if (data.fecha.seconds) {
+                    } else if (data.fecha.seconds) {
                         hora = new Date(data.fecha.seconds * 1000).toLocaleTimeString();
-                    }
-                    // Caso 4: Es un String o cualquier otra cosa (Intento forzoso)
-                    else {
-                        try {
-                            hora = new Date(data.fecha).toLocaleTimeString();
-                        } catch(e) { hora = 'Error Fmt'; }
+                    } else {
+                        try { hora = new Date(data.fecha).toLocaleTimeString(); } catch(e){}
                     }
                 }
-                // ---------------------------
+
+                // 2. LÓGICA DE COLOR (VERDE O ROJO)
+                // Si el evento contiene la palabra "RESET" o "BORRADO", se pone rojo.
+                let estiloTag = "tag-activation"; // Verde por defecto
+                const eventoTexto = data.evento || 'INFO';
                 
-                // Crear fila de log
+                if (eventoTexto.toUpperCase().includes("RESET") || eventoTexto.toUpperCase().includes("BORRADO")) {
+                    estiloTag = "tag-reset"; // Rojo
+                }
+
+                // CREAR ELEMENTO HTML
                 const div = document.createElement('div');
                 div.className = `log-entry ${!snapshot.metadata.fromCache ? 'new-entry' : ''}`;
                 div.innerHTML = `
                     <span class="placa-id">${data.placaId || '---'}</span>
                     <span>
-                        <span class="tag tag-activation">${data.evento || 'INFO'}</span> 
+                        <span class="tag ${estiloTag}">${eventoTexto}</span> 
                         <small style="color:#666; margin-left:10px;">via ${data.origen || 'system'}</small>
                     </span>
                     <span class="time">${hora}</span>
@@ -139,12 +136,10 @@
 
                 logList.insertBefore(div, logList.firstChild);
                 
-                // Actualizar contadores
                 if(data.placaId) lastId.innerText = data.placaId;
             }
         });
         
-        // Actualizar contador total
         countToday.innerText = snapshot.size;
     });
 </script>
