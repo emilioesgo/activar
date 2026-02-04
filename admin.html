@@ -9,60 +9,154 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <link rel="apple-touch-icon" href="assets/img/icon-192.png">
-    <meta name="theme-color" content="#2bb673">
+    <meta name="theme-color" content="#1a1a1a">
 
     <link rel="icon" type="image/png" href="assets/img/favicon.png">
     <style>
-        :root { --primary: #2bb673; --dark: #2c3e50; --bg: #f0f2f5; --danger: #ff4757; --sheets: #0f9d58; --gold: #ffc107; }
-        body { font-family: 'Segoe UI', sans-serif; background: var(--bg); margin: 0; display: flex; justify-content: center; align-items: center; min-height: 100vh; padding: 20px; box-sizing: border-box; }
+        :root { 
+            --primary: #2bb673; 
+            --dark-bg: #1a1a1a; 
+            --card-bg: #2d2d2d; 
+            --text: #eeeeee; 
+            --danger: #ff4757; 
+            --sheets: #0f9d58; 
+            --gold: #ffc107; 
+        }
+
+        body { 
+            font-family: 'Segoe UI', system-ui, sans-serif; 
+            background: var(--dark-bg); 
+            color: var(--text);
+            margin: 0; 
+            display: flex; 
+            justify-content: center; 
+            align-items: center; 
+            min-height: 100vh; 
+            padding: 20px; 
+            box-sizing: border-box; 
+        }
         
-        #login-screen { background: white; padding: 40px; border-radius: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); text-align: center; width: 100%; max-width: 320px; transition: transform 0.2s; }
+        /* LOGIN SCREEN OSCURO */
+        #login-screen { 
+            background: var(--card-bg); 
+            padding: 40px; 
+            border-radius: 25px; 
+            box-shadow: 0 20px 50px rgba(0,0,0,0.5); 
+            text-align: center; 
+            width: 100%; 
+            max-width: 320px; 
+            border: 1px solid #444;
+        }
+        
         .shake { animation: shake 0.4s; }
         @keyframes shake { 0%, 100% {transform: translateX(0);} 25% {transform: translateX(-10px);} 75% {transform: translateX(10px);} }
         
-        input { width: 100%; padding: 12px; margin: 15px 0; border: 1px solid #ddd; border-radius: 10px; text-align: center; font-size: 18px; box-sizing: border-box; }
+        input { 
+            width: 100%; 
+            padding: 14px; 
+            margin: 20px 0; 
+            border: 1px solid #444; 
+            border-radius: 12px; 
+            text-align: center; 
+            font-size: 20px; 
+            box-sizing: border-box; 
+            background: #111; 
+            color: var(--primary);
+            font-weight: bold;
+        }
         
-        #admin-panel { display: none; width: 100%; max-width: 900px; background: white; padding: 30px; border-radius: 25px; box-shadow: 0 15px 35px rgba(0,0,0,0.1); }
+        /* PANEL ADMIN OSCURO */
+        #admin-panel { 
+            display: none; 
+            width: 100%; 
+            max-width: 900px; 
+            background: var(--card-bg); 
+            padding: 30px; 
+            border-radius: 30px; 
+            box-shadow: 0 15px 40px rgba(0,0,0,0.4); 
+            border: 1px solid #444;
+        }
         
-        .header { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #eee; padding-bottom: 20px; margin-bottom: 30px; }
-        .header h1 { margin: 0; color: var(--dark); font-size: 24px; }
+        .header { 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center; 
+            border-bottom: 1px solid #444; 
+            padding-bottom: 20px; 
+            margin-bottom: 30px; 
+        }
+        .header h1 { margin: 0; font-size: 24px; color: #fff; }
 
         .grid-menu { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 20px; }
         
-        .card { background: #f8f9fa; padding: 25px; border-radius: 20px; text-decoration: none; color: var(--dark); transition: 0.3s; border: 1px solid #eee; text-align: center; cursor: pointer; }
-        .card:hover { transform: translateY(-5px); border-color: var(--primary); background: #f0fff4; }
-        .card.danger:hover { border-color: var(--danger); background: #fff5f5; }
-        .card.sheets:hover { border-color: var(--sheets); background: #e8f5e9; }
-        .card.gold { border: 2px solid var(--gold); background: #fffdf5; }
-        .card.gold:hover { background: #fff9e6; border-color: #e6ac00; }
+        .card { 
+            background: #252525; 
+            padding: 25px; 
+            border-radius: 20px; 
+            text-decoration: none; 
+            color: #ddd; 
+            transition: 0.3s; 
+            border: 1px solid #3d3d3d; 
+            text-align: center; 
+            cursor: pointer; 
+        }
+        .card:hover { transform: translateY(-5px); border-color: var(--primary); background: #2a352e; }
+        .card.danger:hover { border-color: var(--danger); background: #352626; }
+        .card.sheets:hover { border-color: var(--sheets); background: #1e2a21; }
+        .card.gold { border: 1px solid var(--gold); background: #2d2a1e; }
+        .card.live { border: 1px solid var(--primary); background: rgba(43, 182, 115, 0.1); animation: pulse-border 2s infinite; }
         
-        .card-icon { font-size: 40px; margin-bottom: 15px; display: block; }
-        .card-title { font-weight: bold; font-size: 18px; display: block; margin-bottom: 5px; }
-        .card-desc { font-size: 13px; color: #777; }
+        @keyframes pulse-border {
+            0% { border-color: var(--primary); }
+            50% { border-color: #fff; }
+            100% { border-color: var(--primary); }
+        }
+        
+        .card-icon { font-size: 35px; margin-bottom: 12px; display: block; }
+        .card-title { font-weight: bold; font-size: 17px; display: block; margin-bottom: 5px; color: #fff; }
+        .card-desc { font-size: 12px; color: #999; }
 
-        .btn { background: var(--primary); color: white; border: none; padding: 12px 25px; border-radius: 10px; font-weight: bold; cursor: pointer; width: 100%; }
-        .btn-logout { background: var(--danger); width: auto; font-size: 12px; }
+        .btn { background: var(--primary); color: white; border: none; padding: 14px 25px; border-radius: 12px; font-weight: bold; cursor: pointer; width: 100%; transition: 0.2s; }
+        .btn:active { transform: scale(0.98); }
+        .btn-logout { background: transparent; border: 1px solid #555; width: auto; font-size: 11px; color: #aaa; }
+        .btn-logout:hover { background: var(--danger); color: white; border-color: var(--danger); }
 
-        .system-status { margin-top: 30px; padding: 15px; background: #f1f2f6; border-radius: 15px; display: flex; justify-content: space-around; font-size: 12px; color: #57606f; }
-        .status-item b { color: var(--primary); display: block; font-size: 16px; }
+        .system-status { 
+            margin-top: 30px; 
+            padding: 15px; 
+            background: #1a1a1a; 
+            border-radius: 18px; 
+            display: flex; 
+            justify-content: space-around; 
+            font-size: 11px; 
+            color: #777; 
+            border: 1px solid #333;
+        }
+        .status-item b { color: var(--primary); display: block; font-size: 15px; }
     </style>
 </head>
 <body>
 
     <div id="login-screen">
-        <div style="font-size: 50px;">🔑</div>
-        <h2>Acceso Admin</h2>
+        <div style="font-size: 50px; margin-bottom: 10px;">🔐</div>
+        <h2>Admin Login</h2>
         <input type="password" id="admin-pin" placeholder="PIN Maestro" maxlength="4">
-        <button class="btn" onclick="checkPin()">Entrar</button>
+        <button class="btn" onclick="checkPin()">Acceder al Sistema</button>
     </div>
 
     <div id="admin-panel">
         <div class="header">
-            <h1>🐾 Huellitas <span style="color: var(--primary);">Admin</span></h1>
-            <button class="btn btn-logout" onclick="location.reload()">Cerrar Sesión</button>
+            <h1>🐾 Huellitas <span style="color: var(--primary);">Control</span></h1>
+            <button class="btn btn-logout" onclick="location.reload()">Salir</button>
         </div>
 
         <div class="grid-menu">
+            <a href="monitor.html" class="card live">
+                <span class="card-icon">📡</span>
+                <span class="card-title" style="color: var(--primary);">Live Monitor</span>
+                <span class="card-desc">Vigilancia de activaciones en tiempo real.</span>
+            </a>
+
             <a href="admin/cajero.html" class="card">
                 <span class="card-icon">💰</span>
                 <span class="card-title">Punto de Venta</span>
@@ -102,14 +196,14 @@
             <a href="https://console.firebase.google.com/" target="_blank" class="card">
                 <span class="card-icon">🔥</span>
                 <span class="card-title">Firebase Console</span>
-                <span class="card-desc">Base de datos técnica.</span>
+                <span class="card-desc">Acceso técnico a la nube.</span>
             </a>
         </div>
 
         <div class="system-status">
-            <div class="status-item">ESTADO <b id="status-cloud">Conectado</b></div>
-            <div class="status-item">SESIÓN <b>Activa</b></div>
-            <div class="status-item">MODO <b>Admin PWA</b></div>
+            <div class="status-item">NUBE <b id="status-cloud">En línea</b></div>
+            <div class="status-item">SEGURIDAD <b>Encriptada</b></div>
+            <div class="status-item">MODO <b>Super User</b></div>
         </div>
     </div>
 
@@ -129,7 +223,7 @@
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
 
-        // --- VALIDACIÓN DE PIN (FIREBASE) ---
+        // --- VALIDACIÓN DE PIN (LÓGICA ORIGINAL) ---
         window.checkPin = async function() {
             const inputField = document.getElementById("admin-pin");
             const loginScreen = document.getElementById("login-screen");
@@ -149,7 +243,6 @@
                     inputField.value = "";
                 }
             } catch (e) {
-                // Respaldo offline/error
                 if (inputField.value === "2026") {
                     loginScreen.style.display = "none";
                     document.getElementById("admin-panel").style.display = "block";
@@ -199,7 +292,6 @@
             }
         };
 
-        // Escuchar Enter en el login
         document.getElementById("admin-pin").addEventListener("keypress", (e) => { 
             if(e.key === "Enter") window.checkPin(); 
         });
