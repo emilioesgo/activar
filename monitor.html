@@ -41,9 +41,35 @@
         .new-entry { animation: highlight 2s ease-out; }
         @keyframes highlight { from { background: rgba(43, 182, 115, 0.3); } to { background: transparent; } }
 
-        /* LISTADO DE PLACAS */
-        .inventory-container { background: var(--card); border-radius: 15px; border: 1px solid #444; padding: 20px; height: 500px; overflow-y: auto; }
-        .grid-placas { display: grid; grid-template-columns: repeat(auto-fill, minmax(80px, 1fr)); gap: 10px; }
+        /* --- NUEVOS ESTILOS PARA HERRAMIENTAS DE INVENTARIO --- */
+        .inventory-container { background: var(--card); border-radius: 15px; border: 1px solid #444; padding: 20px; height: 500px; overflow: hidden; display: flex; flex-direction: column; }
+        
+        .filter-bar { display: flex; gap: 8px; margin-bottom: 10px; flex-wrap: wrap; }
+        .filter-btn { 
+            background: #333; color: #aaa; border: 1px solid #444; padding: 6px 12px; 
+            border-radius: 6px; cursor: pointer; font-size: 10px; font-weight: bold; transition: 0.2s;
+            font-family: inherit;
+        }
+        .filter-btn:hover { background: #444; color: #fff; }
+        .filter-btn.active { border-color: var(--primary); color: var(--primary); background: rgba(43, 182, 115, 0.1); }
+        .filter-btn.btn-blue.active { border-color: var(--blue); color: var(--blue); background: rgba(52, 152, 219, 0.1); }
+
+        .inventory-tools { display: flex; gap: 10px; margin-bottom: 15px; }
+        .search-wrapper { position: relative; flex: 1; }
+        .search-wrapper i { position: absolute; left: 12px; top: 12px; color: #666; font-size: 12px; }
+        #search-input { 
+            width: 100%; background: #111; border: 1px solid #444; padding: 10px 10px 10px 35px; 
+            border-radius: 8px; color: var(--primary); font-family: inherit; box-sizing: border-box; font-size: 12px;
+        }
+        #search-input:focus { outline: none; border-color: var(--primary); }
+        
+        .btn-export { 
+            background: var(--primary); color: #000; border: none; padding: 0 15px; 
+            border-radius: 8px; cursor: pointer; transition: 0.3s; display: flex; align-items: center; justify-content: center;
+        }
+        .btn-export:hover { background: white; transform: scale(1.05); }
+
+        .grid-placas { display: grid; grid-template-columns: repeat(auto-fill, minmax(80px, 1fr)); gap: 10px; overflow-y: auto; flex: 1; padding-right: 5px; }
         .placa-item { 
             padding: 10px 5px; border-radius: 8px; font-size: 11px; font-weight: bold; text-align: center;
             cursor: pointer; transition: 0.2s; border: 1px solid transparent;
@@ -109,7 +135,22 @@
         </div>
 
         <div class="inventory-container">
-            <h3 style="font-size: 12px; color: #888; margin-top: 0; margin-bottom: 20px;">ESTADO DE INVENTARIO</h3>
+            <div class="filter-bar">
+                <button class="filter-btn active" onclick="filtrarEstado('todas', this)">TODAS</button>
+                <button class="filter-btn" onclick="filtrarEstado('disponible', this)">LIBRES</button>
+                <button class="filter-btn btn-blue" onclick="filtrarEstado('ocupada', this)">OCUPADAS</button>
+            </div>
+            
+            <div class="inventory-tools">
+                <div class="search-wrapper">
+                    <i class="fas fa-search"></i>
+                    <input type="text" id="search-input" placeholder="Buscar ID..." onkeyup="ejecutarFiltros()">
+                </div>
+                <button class="btn-export" title="Exportar a Excel (CSV)" onclick="exportarCSV()">
+                    <i class="fas fa-file-csv"></i>
+                </button>
+            </div>
+
             <div id="grid-placas" class="grid-placas"></div>
         </div>
     </div>
@@ -140,6 +181,10 @@
 
     const logList = document.getElementById('log-list');
     const countToday = document.getElementById('count-today');
+
+    // VARIABLES GLOBALES PARA FILTROS Y EXPORTACIÓN
+    let placasDataGlobal = [];
+    let filtroActual = 'todas';
 
     // 1. MONITOR DE LOGS (ACTIVIDAD RECIENTE)
     const q = query(collection(db, "logs"), orderBy("fecha", "desc"), limit(20));
@@ -185,11 +230,20 @@
         let disp = 0;
         let ocup = 0;
         grid.innerHTML = "";
+        placasDataGlobal = []; // Limpiamos datos para reconstruir
 
         snapshot.docs.sort((a, b) => a.id.localeCompare(b.id)).forEach(docSnap => {
             const data = docSnap.data();
             const id = docSnap.id;
             const esActiva = data.activa === true;
+
+            // Guardamos en memoria para exportar después
+            placasDataGlobal.push({
+                id: id,
+                estado: esActiva ? 'OCUPADA' : 'DISPONIBLE',
+                mascota: data.mascota || 'N/A',
+                email: data.email || 'N/A'
+            });
 
             esActiva ? ocup++ : disp++;
 
@@ -197,6 +251,9 @@
             div.className = `placa-item ${esActiva ? 'p-ocupada' : 'p-disponible'}`;
             div.innerText = id;
             
+            // Atributo para filtrado rápido por CSS/JS
+            div.setAttribute('data-status', esActiva ? 'ocupada' : 'disponible');
+
             // Acción al hacer clic
             div.onclick = () => verResumen(id, data);
             
@@ -205,13 +262,14 @@
 
         countDisp.innerText = disp;
         countOcup.innerText = ocup;
+        
+        // Re-aplicar filtros si había alguno activo
+        ejecutarFiltros();
     });
 
     // 3. FUNCIÓN PARA VER RESUMEN
     function verResumen(id, data) {
-        if (!data.activa) {
-            return; // No mostrar resumen si está disponible
-        }
+        if (!data.activa) return; // Solo mostrar si está ocupada
         
         const modal = document.getElementById('modal-resumen');
         const content = document.getElementById('resumen-content');
@@ -226,6 +284,65 @@
         
         modal.style.display = 'flex';
     }
+
+    // 4. LÓGICA DE FILTROS Y BUSCADOR
+    window.filtrarEstado = (estado, btn) => {
+        filtroActual = estado;
+        
+        // Actualizar visual de botones
+        document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+
+        ejecutarFiltros();
+    }
+
+    window.ejecutarFiltros = () => {
+        const busqueda = document.getElementById('search-input').value.toUpperCase();
+        const items = document.querySelectorAll('.placa-item');
+        
+        items.forEach(item => {
+            const idTexto = item.innerText;
+            const statusItem = item.getAttribute('data-status');
+
+            // Condición 1: Coincide con texto
+            const matchTexto = idTexto.includes(busqueda);
+            
+            // Condición 2: Coincide con botón filtro
+            const matchEstado = (filtroActual === 'todas') || (statusItem === filtroActual);
+
+            if (matchTexto && matchEstado) {
+                item.style.display = 'block';
+            } else {
+                item.style.display = 'none';
+            }
+        });
+    }
+
+    // 5. EXPORTAR A EXCEL (CSV)
+    window.exportarCSV = () => {
+        if (placasDataGlobal.length === 0) {
+            alert("No hay datos para exportar.");
+            return;
+        }
+
+        let csvContent = "data:text/csv;charset=utf-8,";
+        csvContent += "ID PLACA,ESTADO,NOMBRE MASCOTA,EMAIL DUEÑO\n"; // Cabeceras
+
+        placasDataGlobal.forEach(row => {
+            csvContent += `${row.id},${row.estado},${row.mascota},${row.email}\n`;
+        });
+
+        const encodedUri = encodeURI(csvContent);
+        const link = document.createElement("a");
+        link.setAttribute("href", encodedUri);
+        link.setAttribute("download", `Inventario_Huellitas_${new Date().toLocaleDateString()}.csv`);
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+    }
+
+    // Exponer funciones al window para que el HTML las vea
+    window.verResumen = verResumen;
 </script>
 </body>
 </html>
