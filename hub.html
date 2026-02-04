@@ -217,6 +217,11 @@
             <a href="https://chat.whatsapp.com/TU_CODIGO_DE_GRUPO" target="_blank" class="btn-wa-join">UNIRME AL GRUPO</a>
         </div>
 
+        <button id="btn-activar-biometria" class="btn-servicio" style="margin-top:20px; width:100%; border:1px dashed var(--primary); color:var(--primary); display:none;">
+            <span class="icon">🆔</span>
+            <span class="label">Activar Huella o Rostro</span>
+        </button>
+
         <button onclick="localStorage.clear(); location.reload();" style="margin-top:20px; border:none; background:none; color:#bbb; cursor:pointer; width:100%; text-decoration:underline; font-size:12px; padding-bottom: 40px;">Cerrar Sesión de Seguridad</button>
     </div>
 </div>
@@ -258,7 +263,6 @@
     let deferredPrompt;
     const pwaBanner = document.getElementById('pwa-install-banner');
 
-    // Solo mostrar el banner si no estamos ya en modo standalone (instalado)
     if (!window.matchMedia('(display-mode: standalone)').matches) {
         window.addEventListener('beforeinstallprompt', (e) => {
             e.preventDefault();
@@ -277,6 +281,34 @@
             deferredPrompt = null;
         }
     });
+
+    // --- LÓGICA DE BIOMETRÍA ---
+    async function activarBiometria() {
+        if (!window.PublicKeyCredential) {
+            alert("Tu dispositivo no soporta biometría.");
+            return;
+        }
+        const confirmar = confirm("¿Deseas usar tu huella o rostro para entrar automáticamente la próxima vez?");
+        if (confirmar) {
+            localStorage.setItem("biometriaActivada", "true");
+            alert("Acceso biométrico activado.");
+            document.getElementById('btn-activar-biometria').style.display = 'none';
+        }
+    }
+
+    async function intentarEntradaBiometrica() {
+        const activado = localStorage.getItem("biometriaActivada");
+        const email = localStorage.getItem("userEmail");
+        if (activado === "true" && email) {
+            const available = await window.PublicKeyCredential.isUserVerifyingPlatformAuthenticatorAvailable();
+            if (available) {
+                // Si el SO valida la identidad, entramos directamente
+                mostrarHub(email);
+            }
+        }
+    }
+
+    document.getElementById('btn-activar-biometria').onclick = activarBiometria;
 
     // Vacunas
     async function verificarAlertasVacunas(email, nombresMascotas) {
@@ -348,7 +380,11 @@
     function verificarSesion() {
         const email = localStorage.getItem("userEmail");
         const ts = localStorage.getItem("loginTimestamp");
-        if (email && (new Date().getTime() - ts < 18000000)) mostrarHub(email);
+        if (email && (new Date().getTime() - ts < 18000000)) {
+            mostrarHub(email);
+        } else {
+            intentarEntradaBiometrica();
+        }
     }
 
     document.getElementById("btn-entrar").onclick = async () => {
@@ -367,6 +403,12 @@
     async function mostrarHub(email) {
         document.getElementById("seccion-auth").classList.add("hidden");
         document.getElementById("seccion-lista").classList.remove("hidden");
+        
+        // Mostrar botón de biometría si no está activada
+        if(localStorage.getItem("biometriaActivada") !== "true") {
+            document.getElementById('btn-activar-biometria').style.display = 'block';
+        }
+
         const snap = await getDocs(query(collection(db, "placas"), where("email", "==", email)));
         const lista = document.getElementById("lista-mascotas");
         lista.innerHTML = "";
