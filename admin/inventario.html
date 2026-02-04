@@ -3,87 +3,154 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Carga de Inventario | Huellitas Digitales</title>
+    <title>Carga de Inventario | Huellitas Control</title>
     <link rel="icon" type="image/png" href="../assets/img/favicon.png">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <style>
-        :root { --primary: #2bb673; --dark: #2c3e50; --bg: #f4f7f6; }
-        body { font-family: 'Segoe UI', sans-serif; background: var(--bg); margin: 0; padding: 20px; display: flex; justify-content: center; }
-        
-        .card { background: white; padding: 30px; border-radius: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.05); width: 100%; max-width: 500px; }
-        
-        .btn-back { display: inline-flex; align-items: center; text-decoration: none; color: #666; font-size: 14px; margin-bottom: 20px; font-weight: bold; }
-        
-        h2 { margin: 0 0 5px 0; color: var(--dark); }
-        .subtitle { color: #777; font-size: 14px; margin-bottom: 25px; }
+        :root { 
+            --primary: #2bb673; 
+            --dark-bg: #1a1a1a; 
+            --card-bg: #2d2d2d; 
+            --text: #eeeeee; 
+            --danger: #ff4757; 
+            --warning: #ffa502;
+        }
 
-        label { display: block; margin-bottom: 8px; font-size: 13px; font-weight: bold; color: #555; }
+        body { 
+            font-family: 'Segoe UI', system-ui, sans-serif; 
+            background: var(--dark-bg); 
+            color: var(--text);
+            margin: 0; 
+            padding: 20px; 
+            display: flex; 
+            justify-content: center; 
+            align-items: center;
+            min-height: 100vh;
+        }
         
-        /* Area para múltiples IDs */
+        .card { 
+            background: var(--card-bg); 
+            padding: 40px; 
+            border-radius: 30px; 
+            box-shadow: 0 15px 40px rgba(0,0,0,0.4); 
+            width: 100%; 
+            max-width: 500px; 
+            border: 1px solid #444;
+        }
+        
+        .btn-back { 
+            display: inline-flex; 
+            align-items: center; 
+            text-decoration: none; 
+            color: #aaa; 
+            font-size: 13px; 
+            margin-bottom: 20px; 
+            transition: 0.3s;
+        }
+        .btn-back:hover { color: var(--primary); }
+        
+        h2 { margin: 0 0 5px 0; color: #fff; font-size: 24px; }
+        .subtitle { color: #888; font-size: 14px; margin-bottom: 25px; }
+
+        label { 
+            display: block; 
+            margin-bottom: 10px; 
+            font-size: 11px; 
+            font-weight: 800; 
+            color: var(--primary); 
+            letter-spacing: 1px;
+            text-transform: uppercase;
+        }
+        
         textarea { 
             width: 100%; 
             height: 150px; 
             padding: 15px; 
-            border: 2px solid #eee; 
-            border-radius: 12px; 
-            font-family: monospace; 
+            border: 1px solid #444; 
+            border-radius: 15px; 
+            font-family: 'Courier New', monospace; 
             font-size: 16px; 
             box-sizing: border-box; 
             resize: none;
             text-transform: uppercase;
+            background: #111;
+            color: var(--primary);
+            transition: 0.3s;
         }
-        textarea:focus { border-color: var(--primary); outline: none; background: #f0fff4; }
+        textarea:focus { 
+            border-color: var(--primary); 
+            outline: none; 
+            background: #161616;
+            box-shadow: 0 0 15px rgba(43, 182, 115, 0.1);
+        }
 
         .btn-save { 
             width: 100%; 
-            background: var(--dark); 
+            background: var(--primary); 
             color: white; 
             border: none; 
             padding: 18px; 
-            border-radius: 12px; 
+            border-radius: 15px; 
             font-weight: bold; 
             font-size: 16px; 
             cursor: pointer; 
-            margin-top: 20px;
+            margin-top: 25px;
             transition: 0.3s; 
+            box-shadow: 0 5px 15px rgba(43, 182, 115, 0.2);
         }
-        .btn-save:hover { background: #1a252f; }
-        .btn-save:disabled { background: #ccc; cursor: not-allowed; }
+        .btn-save:hover { transform: translateY(-2px); box-shadow: 0 8px 20px rgba(43, 182, 115, 0.3); }
+        .btn-save:active { transform: scale(0.98); }
+        .btn-save:disabled { background: #444; color: #777; cursor: not-allowed; transform: none; }
 
         #log { 
-            margin-top: 20px; 
-            max-height: 200px; 
+            margin-top: 25px; 
+            max-height: 180px; 
             overflow-y: auto; 
             font-size: 12px; 
-            padding: 10px; 
-            background: #f9f9f9; 
-            border-radius: 8px; 
+            padding: 15px; 
+            background: #111; 
+            border-radius: 12px; 
             display: none;
-            border: 1px solid #eee;
+            border: 1px solid #333;
+            text-align: left;
+            font-family: 'Courier New', monospace;
         }
-        .log-entry { margin-bottom: 4px; border-bottom: 1px solid #f0f0f0; padding-bottom: 2px; }
-        .success-text { color: var(--primary); font-weight: bold; }
-        .error-text { color: #e74c3c; }
+        .log-entry { margin-bottom: 6px; padding-bottom: 4px; border-bottom: 1px solid #222; }
+        .success-text { color: var(--primary); }
+        .error-text { color: var(--danger); }
+        .warning-text { color: var(--warning); }
+
+        .note-box {
+            margin-top: 25px; 
+            padding: 15px; 
+            background: rgba(255, 193, 7, 0.05); 
+            border: 1px solid rgba(255, 193, 7, 0.2);
+            border-radius: 15px; 
+            font-size: 12px; 
+            color: #ccc;
+            line-height: 1.4;
+        }
     </style>
 </head>
 <body>
 
 <div class="card">
-    <a href="../admin.html" class="btn-back">⬅️ Volver al Panel</a>
+    <a href="../admin.html" class="btn-back"><i class="fas fa-arrow-left"></i> &nbsp; VOLVER AL PANEL</a>
     
-    <h2>Carga Masiva de Placas</h2>
-    <p class="subtitle">Pega los IDs generados en Sheets (uno por línea o separados por comas).</p>
+    <h2>Carga de Inventario</h2>
+    <p class="subtitle">Registra nuevos identificadores en la base de datos central.</p>
 
     <div class="input-group">
-        <label for="listaIds">LISTADO DE IDS (6 CARACTERES)</label>
+        <label for="listaIds">Listado de IDs (6 caracteres)</label>
         <textarea id="listaIds" placeholder="K9W7X2&#10;BT4M8P&#10;RH9L3Y"></textarea>
     </div>
 
-    <button id="btnGuardar" class="btn-save">🚀 Registrar en Base de Datos</button>
+    <button id="btnGuardar" class="btn-save">🚀 REGISTRAR PLACAS</button>
 
     <div id="log"></div>
 
-    <div style="margin-top: 25px; padding: 15px; background: #fff9db; border-radius: 10px; font-size: 12px; color: #856404;">
-        ⚠️ <b>Nota:</b> Solo se registrarán IDs que no existan previamente. Las placas se crean con estado "Inactiva" hasta que sean habilitadas en el Cajero.
+    <div class="note-box">
+        <i class="fas fa-info-circle" style="color:var(--gold)"></i> &nbsp; <b>Nota:</b> El sistema omitirá automáticamente IDs que ya existan. Las placas nuevas quedarán vinculadas pero inactivas.
     </div>
 </div>
 
@@ -111,22 +178,21 @@
         const contenido = textarea.value.trim();
         if (!contenido) return alert("Pega algunos IDs primero.");
 
-        // Separar por saltos de línea o comas, limpiar espacios y quitar vacíos
         const ids = contenido.split(/[\n,]+/).map(id => id.trim().toUpperCase()).filter(id => id.length > 0);
         
-        if (!confirm(`¿Estás seguro de que quieres subir ${ids.length} placas al sistema?`)) return;
+        if (!confirm(`¿Confirmar subida de ${ids.length} placas al sistema de control?`)) return;
 
         btnGuardar.disabled = true;
-        btnGuardar.innerText = "Subiendo placas...";
+        btnGuardar.innerText = "PROCESANDO NUBE...";
         logDiv.style.display = "block";
-        logDiv.innerHTML = "<b>Iniciando proceso...</b><br>";
+        logDiv.innerHTML = "<b style='color:#888'>Iniciando comunicación...</b><br><br>";
 
         let exitosos = 0;
         let fallidos = 0;
 
         for (const id of ids) {
             if (id.length !== 6) {
-                logDiv.innerHTML += `<div class="log-entry error-text">❌ ${id}: Formato inválido (debe ser de 6 caracteres).</div>`;
+                logDiv.innerHTML += `<div class="log-entry error-text">ERR: ${id} (Formato inválido)</div>`;
                 fallidos++;
                 continue;
             }
@@ -137,31 +203,30 @@
 
                 if (!docSnap.exists()) {
                     await setDoc(docRef, {
-                        activa: false,   // No tiene datos de mascota aún
-                        vendida: false,  // Aún no pasa por caja
+                        activa: false,
+                        vendida: false,
                         mascota: "",
                         telefono: "",
                         foto: "",
                         mensaje: "",
                         pin: ""
                     });
-                    logDiv.innerHTML += `<div class="log-entry success-text">✅ ${id}: Registrada correctamente.</div>`;
+                    logDiv.innerHTML += `<div class="log-entry success-text">OK: ${id} (Registrada)</div>`;
                     exitosos++;
                 } else {
-                    logDiv.innerHTML += `<div class="log-entry" style="color:#e67e22">⚠️ ${id}: Ya existe en la base de datos.</div>`;
+                    logDiv.innerHTML += `<div class="log-entry warning-text">SKIP: ${id} (Ya existe)</div>`;
                     fallidos++;
                 }
             } catch (e) {
-                logDiv.innerHTML += `<div class="log-entry error-text">❌ ${id}: Error de conexión.</div>`;
+                logDiv.innerHTML += `<div class="log-entry error-text">FAIL: ${id} (Error conexión)</div>`;
                 fallidos++;
             }
-            // Auto-scroll al último mensaje del log
             logDiv.scrollTop = logDiv.scrollHeight;
         }
 
         btnGuardar.disabled = false;
-        btnGuardar.innerText = "🚀 Registrar en Base de Datos";
-        alert(`Proceso terminado.\nExitosos: ${exitosos}\nFallidos/Duplicados: ${fallidos}`);
+        btnGuardar.innerText = "🚀 REGISTRAR PLACAS";
+        alert(`Sincronización completa.\nExitosos: ${exitosos}\nOmitidos/Erróneos: ${fallidos}`);
     });
 </script>
 
