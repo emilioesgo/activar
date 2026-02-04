@@ -6,7 +6,7 @@
     <title>Live Monitor | Huellitas Digitales</title>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <style>
-        :root { --primary: #2bb673; --dark: #1a1a1a; --card: #2d2d2d; --text: #eee; }
+        :root { --primary: #2bb673; --dark: #1a1a1a; --card: #2d2d2d; --text: #eee; --blue: #3498db; }
         
         body { 
             font-family: 'Courier New', monospace; 
@@ -20,13 +20,19 @@
         
         @keyframes blink { 0% { opacity: 1; } 50% { opacity: 0.3; } 100% { opacity: 1; } }
 
-        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 15px; margin-bottom: 30px; }
+        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 15px; margin-bottom: 30px; }
         .stat-card { background: var(--card); padding: 20px; border-radius: 12px; text-align: center; border: 1px solid #444; }
-        .stat-card h3 { margin: 0; font-size: 12px; color: #888; text-transform: uppercase; }
-        .stat-card p { margin: 10px 0 0; font-size: 24px; font-weight: bold; color: var(--primary); }
+        .stat-card h3 { margin: 0; font-size: 11px; color: #888; text-transform: uppercase; }
+        .stat-card p { margin: 10px 0 0; font-size: 22px; font-weight: bold; color: var(--primary); }
+        .stat-card p.blue { color: var(--blue); }
 
-        .log-container { background: var(--card); border-radius: 15px; overflow: hidden; border: 1px solid #444; }
+        .main-layout { display: grid; grid-template-columns: 1.2fr 1fr; gap: 20px; }
+        @media (max-width: 900px) { .main-layout { grid-template-columns: 1fr; } }
+
+        .log-container { background: var(--card); border-radius: 15px; overflow: hidden; border: 1px solid #444; height: 500px; display: flex; flex-direction: column; }
         .log-header { background: #333; padding: 10px 20px; font-size: 12px; color: #aaa; display: grid; grid-template-columns: 1fr 2fr 1fr; }
+        #log-list { flex: 1; overflow-y: auto; }
+        
         .log-entry { 
             padding: 15px 20px; border-bottom: 1px solid #3d3d3d; 
             display: grid; grid-template-columns: 1fr 2fr 1fr; 
@@ -35,10 +41,34 @@
         .new-entry { animation: highlight 2s ease-out; }
         @keyframes highlight { from { background: rgba(43, 182, 115, 0.3); } to { background: transparent; } }
 
-        /* CLASES DE COLORES */
+        /* LISTADO DE PLACAS */
+        .inventory-container { background: var(--card); border-radius: 15px; border: 1px solid #444; padding: 20px; height: 500px; overflow-y: auto; }
+        .grid-placas { display: grid; grid-template-columns: repeat(auto-fill, minmax(80px, 1fr)); gap: 10px; }
+        .placa-item { 
+            padding: 10px 5px; border-radius: 8px; font-size: 11px; font-weight: bold; text-align: center;
+            cursor: pointer; transition: 0.2s; border: 1px solid transparent;
+        }
+        .p-disponible { background: rgba(43, 182, 115, 0.1); color: var(--primary); border-color: var(--primary); }
+        .p-ocupada { background: rgba(52, 152, 219, 0.1); color: var(--blue); border-color: var(--blue); }
+        .placa-item:hover { transform: scale(1.05); filter: brightness(1.2); }
+
+        /* MODAL RESUMEN */
+        #modal-resumen {
+            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.8); z-index: 1000; align-items: center; justify-content: center;
+            backdrop-filter: blur(4px);
+        }
+        .modal-body {
+            background: var(--card); padding: 30px; border-radius: 20px; border: 2px solid var(--blue);
+            max-width: 350px; width: 90%; text-align: center; position: relative;
+        }
+        .modal-body h4 { margin: 0 0 15px; color: var(--blue); text-transform: uppercase; }
+        .modal-body p { margin: 8px 0; font-size: 14px; }
+        .btn-close { background: var(--blue); color: white; border: none; padding: 10px 20px; border-radius: 8px; margin-top: 20px; cursor: pointer; font-weight: bold; }
+
         .tag { padding: 3px 8px; border-radius: 4px; font-size: 10px; font-weight: bold; }
-        .tag-activation { background: #2ecc71; color: #000; } /* VERDE */
-        .tag-reset { background: #e74c3c; color: #fff; }      /* ROJO */
+        .tag-activation { background: #2ecc71; color: #000; }
+        .tag-reset { background: #e74c3c; color: #fff; }
 
         .time { color: #888; text-align: right; }
         .placa-id { color: var(--primary); font-weight: bold; }
@@ -59,24 +89,42 @@
             <p id="count-today">0</p>
         </div>
         <div class="stat-card">
-            <h3>Última Placa</h3>
-            <p id="last-id">---</p>
+            <h3>Disponibles</h3>
+            <p id="total-disp">0</p>
+        </div>
+        <div class="stat-card">
+            <h3>Ocupadas</h3>
+            <p id="total-ocup" class="blue">0</p>
         </div>
     </div>
 
-    <div class="log-container">
-        <div class="log-header">
-            <span>PLACA_ID</span>
-            <span>EVENTO / ORIGEN</span>
-            <span style="text-align: right;">TIMESTAMP</span>
-        </div>
-        <div id="log-list">
+    <div class="main-layout">
+        <div class="log-container">
+            <div class="log-header">
+                <span>PLACA_ID</span>
+                <span>EVENTO / ORIGEN</span>
+                <span style="text-align: right;">TIMESTAMP</span>
             </div>
+            <div id="log-list"></div>
+        </div>
+
+        <div class="inventory-container">
+            <h3 style="font-size: 12px; color: #888; margin-top: 0; margin-bottom: 20px;">ESTADO DE INVENTARIO</h3>
+            <div id="grid-placas" class="grid-placas"></div>
+        </div>
+    </div>
+
+    <div id="modal-resumen">
+        <div class="modal-body">
+            <h4>Detalles de Placa</h4>
+            <div id="resumen-content"></div>
+            <button class="btn-close" onclick="document.getElementById('modal-resumen').style.display='none'">Cerrar</button>
+        </div>
     </div>
 
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-    import { getFirestore, collection, query, orderBy, limit, onSnapshot } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+    import { getFirestore, collection, query, orderBy, limit, onSnapshot, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
     const firebaseConfig = {
         apiKey: "AIzaSyCqROIzmp2guo2XLbdYrSW3ujlUBc7ngOc",
@@ -92,56 +140,92 @@
 
     const logList = document.getElementById('log-list');
     const countToday = document.getElementById('count-today');
-    const lastId = document.getElementById('last-id');
 
+    // 1. MONITOR DE LOGS (ACTIVIDAD RECIENTE)
     const q = query(collection(db, "logs"), orderBy("fecha", "desc"), limit(20));
 
     onSnapshot(q, (snapshot) => {
         snapshot.docChanges().forEach((change) => {
             if (change.type === "added") {
                 const data = change.doc.data();
-                
-                // 1. CORRECCIÓN DE FECHA
                 let hora = '...';
                 if (data.fecha) {
-                    if (typeof data.fecha.toDate === 'function') {
-                        hora = data.fecha.toDate().toLocaleTimeString();
-                    } else if (data.fecha.seconds) {
-                        hora = new Date(data.fecha.seconds * 1000).toLocaleTimeString();
-                    } else {
-                        try { hora = new Date(data.fecha).toLocaleTimeString(); } catch(e){}
-                    }
+                    if (typeof data.fecha.toDate === 'function') hora = data.fecha.toDate().toLocaleTimeString();
+                    else if (data.fecha.seconds) hora = new Date(data.fecha.seconds * 1000).toLocaleTimeString();
                 }
 
-                // 2. LÓGICA DE COLOR (VERDE O ROJO)
-                // Si el evento contiene la palabra "RESET" o "BORRADO", se pone rojo.
-                let estiloTag = "tag-activation"; // Verde por defecto
+                let estiloTag = "tag-activation";
                 const eventoTexto = data.evento || 'INFO';
-                
-                if (eventoTexto.toUpperCase().includes("RESET") || eventoTexto.toUpperCase().includes("BORRADO")) {
-                    estiloTag = "tag-reset"; // Rojo
+                if (eventoTexto.toUpperCase().includes("RESET") || eventoTexto.toUpperCase().includes("ELIMINACIÓN")) {
+                    estiloTag = "tag-reset";
                 }
 
-                // CREAR ELEMENTO HTML
                 const div = document.createElement('div');
                 div.className = `log-entry ${!snapshot.metadata.fromCache ? 'new-entry' : ''}`;
                 div.innerHTML = `
                     <span class="placa-id">${data.placaId || '---'}</span>
                     <span>
                         <span class="tag ${estiloTag}">${eventoTexto}</span> 
-                        <small style="color:#666; margin-left:10px;">via ${data.origen || 'system'}</small>
+                        <small style="color:#666; margin-left:10px;">via ${data.origen || 'sys'}</small>
                     </span>
                     <span class="time">${hora}</span>
                 `;
-
                 logList.insertBefore(div, logList.firstChild);
-                
-                if(data.placaId) lastId.innerText = data.placaId;
             }
         });
-        
         countToday.innerText = snapshot.size;
     });
+
+    // 2. MONITOR DE INVENTARIO (LISTADO DE PLACAS)
+    onSnapshot(collection(db, "placas"), (snapshot) => {
+        const grid = document.getElementById('grid-placas');
+        const countDisp = document.getElementById('total-disp');
+        const countOcup = document.getElementById('total-ocup');
+        
+        let disp = 0;
+        let ocup = 0;
+        grid.innerHTML = "";
+
+        snapshot.docs.sort((a, b) => a.id.localeCompare(b.id)).forEach(docSnap => {
+            const data = docSnap.data();
+            const id = docSnap.id;
+            const esActiva = data.activa === true;
+
+            esActiva ? ocup++ : disp++;
+
+            const div = document.createElement('div');
+            div.className = `placa-item ${esActiva ? 'p-ocupada' : 'p-disponible'}`;
+            div.innerText = id;
+            
+            // Acción al hacer clic
+            div.onclick = () => verResumen(id, data);
+            
+            grid.appendChild(div);
+        });
+
+        countDisp.innerText = disp;
+        countOcup.innerText = ocup;
+    });
+
+    // 3. FUNCIÓN PARA VER RESUMEN
+    function verResumen(id, data) {
+        if (!data.activa) {
+            return; // No mostrar resumen si está disponible
+        }
+        
+        const modal = document.getElementById('modal-resumen');
+        const content = document.getElementById('resumen-content');
+        
+        content.innerHTML = `
+            <p><b style="color:#aaa">PLACA:</b> ${id}</p>
+            <p><b style="color:#aaa">MASCOTA:</b> ${data.mascota || 'Sin nombre'}</p>
+            <p><b style="color:#aaa">DUEÑO:</b> ${data.email || 'No registrado'}</p>
+            <p><b style="color:#aaa">TELÉFONO:</b> ${data.telefono || 'N/A'}</p>
+            <p><b style="color:#aaa">ESTADO:</b> <span class="tag tag-activation">ACTIVA</span></p>
+        `;
+        
+        modal.style.display = 'flex';
+    }
 </script>
 </body>
 </html>
