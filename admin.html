@@ -21,6 +21,7 @@
             --danger: #ff4757; 
             --sheets: #0f9d58; 
             --gold: #ffc107; 
+            --firebase: #ffa611;
         }
 
         body { font-family: 'Segoe UI', system-ui, sans-serif; background: var(--dark-bg); color: var(--text); margin: 0; display: flex; justify-content: center; align-items: center; min-height: 100vh; padding: 20px; box-sizing: border-box; }
@@ -42,6 +43,8 @@
         .card.danger:hover { border-color: var(--danger); background: #352626; }
         .card.gold { border: 1px solid var(--gold); background: #2d2a1e; }
         .card.live { border: 1px solid var(--primary); background: rgba(43, 182, 115, 0.1); animation: pulse-border 2s infinite; }
+        /* Nuevo estilo para Firebase */
+        .card.firebase:hover { border-color: var(--firebase); background: #332b1e; }
         
         @keyframes pulse-border { 0%, 100% { border-color: var(--primary); } 50% { border-color: #fff; } }
         
@@ -115,10 +118,16 @@
                 <span class="card-desc">Base de datos externa.</span>
             </a>
 
+            <a href="https://console.firebase.google.com/" target="_blank" class="card firebase">
+                <span class="card-icon">🔥</span>
+                <span class="card-title" style="color: #ffa611;">Firebase Console</span>
+                <span class="card-desc">Acceso a la Nube.</span>
+            </a>
+
             <div class="card danger" onclick="abrirModal('modal-reset')">
                 <span class="card-icon">🔄</span>
                 <span class="card-title" style="color: var(--danger);">Resetear Placa</span>
-                <span class="card-desc">Borrar datos de usuario.</span>
+                <span class="card-desc">Eliminar del sistema.</span>
             </div>
         </div>
 
@@ -141,18 +150,18 @@
     <div id="modal-reset" class="modal-overlay">
         <div class="modal-content">
             <h3 style="color: var(--danger);">🔄 Resetear Placa</h3>
-            <p style="font-size: 13px; color: #999;">Borrar datos del cliente permanentemente.</p>
+            <p style="font-size: 13px; color: #999;">Esta acción ELIMINARÁ la placa del sistema.</p>
             <input type="text" id="id-reset" placeholder="ID DE PLACA">
             <input type="password" id="pin-confirm" placeholder="PIN MAESTRO">
-            <button class="btn btn-danger" onclick="procesarReset()">Confirmar Borrado</button>
+            <button class="btn btn-danger" onclick="procesarReset()">Confirmar Eliminación</button>
             <button class="btn btn-cancel" onclick="cerrarModal('modal-reset')">Cancelar</button>
         </div>
     </div>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-        // SE AGREGARON: collection, addDoc, serverTimestamp
-        import { getFirestore, doc, updateDoc, getDoc, collection, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+        // Importamos deleteDoc para la eliminación total
+        import { getFirestore, doc, updateDoc, deleteDoc, getDoc, collection, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyCqROIzmp2guo2XLbdYrSW3ujlUBc7ngOc",
@@ -200,25 +209,28 @@
             const maestro = snap.exists() ? snap.data().pin_admin : "2026";
 
             if (pinConfirm !== maestro) { alert("PIN Maestro incorrecto."); return; }
-            if (confirm(`¿Borrar permanentemente los datos de la placa ${id}?`)) {
+            
+            // Confirmación de seguridad
+            if (confirm(`⚠️ PELIGRO ⚠️\n\n¿Estás seguro de que deseas ELIMINAR DEFINITIVAMENTE la placa ${id} del sistema?\n\nEsta acción no se puede deshacer y el cliente perderá acceso inmediato.`)) {
                 try {
-                    // 1. Resetear la Placa
-                    await updateDoc(doc(db, "placas", id), {
-                        activa: false, vendida: false, mascota: "Nueva Mascota", foto: "", telefono: "", pin: "1234"
-                    });
+                    // 1. ELIMINACIÓN FÍSICA DEL DOCUMENTO (Ya no solo update)
+                    await deleteDoc(doc(db, "placas", id));
 
-                    // 2. DISPARADOR AL MONITOR (AQUÍ ESTÁ LA MAGIA ROJA)
+                    // 2. DISPARADOR AL MONITOR (LOG DE ALERTA ROJA)
                     await addDoc(collection(db, "logs"), {
                         placaId: id,
-                        evento: "RESET ADMIN",
+                        evento: "ELIMINACIÓN TOTAL",
                         fecha: serverTimestamp(),
                         usuario: "Admin",
                         origen: "admin.html"
                     });
 
-                    alert("✅ Éxito: Placa liberada.");
+                    alert("🔥 Placa eliminada correctamente de la base de datos.");
                     cerrarModal('modal-reset');
-                } catch (e) { alert("Error al resetear."); console.error(e); }
+                } catch (e) { 
+                    alert("Error al intentar eliminar la placa."); 
+                    console.error(e); 
+                }
             }
         };
 
