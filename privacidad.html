@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aviso de Privacidad | Huellitas Digitales</title>
+    <link rel="icon" type="image/png" href="assets/img/favicon.png">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        :root { 
+            --primary: #2bb673; 
+            --dark-bg: #1a1a1a; 
+            --card-bg: #2d2d2d; 
+            --text: #eeeeee; 
+            --accent: #3498db;
+        }
+
+        body { 
+            font-family: 'Segoe UI', system-ui, sans-serif; 
+            background: var(--dark-bg); 
+            color: var(--text);
+            margin: 0; 
+            padding: 40px 20px; 
+            line-height: 1.6;
+        }
+
+        .content-wrapper {
+            max-width: 800px;
+            margin: 0 auto;
+            background: var(--card-bg);
+            padding: 40px;
+            border-radius: 30px;
+            border: 1px solid #444;
+            box-shadow: 0 15px 40px rgba(0,0,0,0.4);
+        }
+
+        .header {
+            text-align: center;
+            border-bottom: 1px solid #444;
+            padding-bottom: 20px;
+            margin-bottom: 30px;
+        }
+
+        .header i { font-size: 50px; color: var(--primary); margin-bottom: 15px; }
+        h1 { margin: 0; font-size: 28px; color: #fff; }
+        h2 { color: var(--primary); font-size: 20px; margin-top: 30px; border-left: 4px solid var(--primary); padding-left: 15px; }
+        
+        p, li { color: #bbb; font-size: 15px; }
+        ul { padding-left: 20px; }
+        li { margin-bottom: 10px; }
+
+        .highlight { color: #fff; font-weight: bold; }
+
+        .btn-back {
+            display: inline-block;
+            margin-top: 30px;
+            background: var(--primary);
+            color: white;
+            text-decoration: none;
+            padding: 12px 25px;
+            border-radius: 12px;
+            font-weight: bold;
+            transition: 0.3s;
+        }
+        .btn-back:hover { transform: translateY(-2px); box-shadow: 0 5px 15px rgba(43, 182, 115, 0.3); }
+
+        footer {
+            text-align: center;
+            margin-top: 40px;
+            font-size: 12px;
+            color: #666;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="content-wrapper">
+        <div class="header">
+            <i class="fas fa-user-shield"></i>
+            <h1>Aviso de Privacidad</h1>
+            <p>Huellitas Digitales: Protegiendo tu privacidad y la de tu mascota.</p>
+        </div>
+
+        <p>En <span class="highlight">Huellitas Digitales</span>, nos tomamos muy en serio la seguridad de tu información. Este aviso explica cómo recolectamos y utilizamos tus datos personales al utilizar nuestras placas inteligentes con tecnología QR y NFC.</p>
+
+        <h2>1. Datos que Recolectamos</h2>
+        <p>Para el correcto funcionamiento de la plataforma, solicitamos los siguientes datos:</p>
+        <ul>
+            <li><span class="highlight">Del Propietario:</span> Nombre, correo electrónico y número de teléfono (WhatsApp).</li>
+            <li><span class="highlight">De la Mascota:</span> Nombre, fotografías, señas particulares e información médica.</li>
+            <li><span class="highlight">Técnicos:</span> Identificador único de placa (ID) y logs de activación.</li>
+        </ul>
+
+        <h2>2. Uso de la Información</h2>
+        <p>Tu información se utiliza exclusivamente para:</p>
+        <ul>
+            <li>Vincular la placa física con un perfil digital gestionable.</li>
+            <li>Facilitar el contacto inmediato entre quien encuentra a tu mascota y tú.</li>
+            <li>Enviar notificaciones críticas sobre el estado de tu cuenta o actualizaciones del sistema.</li>
+            <li>Seguridad: Evitar el uso no autorizado de placas mediante validación de PIN.</li>
+        </ul>
+
+        <h2>3. Transferencia de Datos</h2>
+        <p>Por la naturaleza de nuestro servicio, cuando tu mascota es escaneada por un tercero, el sistema mostrará la información de contacto que tú hayas configurado como pública. <span class="highlight">Nosotros no vendemos ni compartimos tu base de datos con empresas de publicidad externas.</span></p>
+
+        <h2>4. Derechos ARCO</h2>
+        <p>Como usuario, tienes derecho a Acceder, Rectificar, Cancelar u Oponerte al uso de tus datos. Puedes gestionar esto directamente desde el <span class="highlight">Perfil de tu Mascota</span> o contactándonos a través de nuestro soporte técnico oficial.</p>
+
+        <h2>5. Seguridad de Datos</h2>
+        <p>Utilizamos infraestructura de <span class="highlight">Firebase (Google Cloud)</span> para garantizar que tus datos estén encriptados y protegidos contra accesos no autorizados mediante protocolos de seguridad de nivel industrial.</p>
+
+        <center>
+            <a href="javascript:history.back()" class="btn-back">Entendido y Volver</a>
+        </center>
+    </div>
+
+    <footer>
+        &copy; 2026 Huellitas Digitales - Sistema de Identificación Inteligente
+    </footer>
+
+</body>
+</html>
