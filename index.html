@@ -42,9 +42,7 @@
             padding: 20px 10px;
         }
         #mensaje-bloqueo img {
-            width: 120px;
-            margin-bottom: 20px;
-            opacity: 0.8;
+            width: 120px; margin-bottom: 20px; opacity: 0.8;
             animation: float 3s ease-in-out infinite;
         }
         #mensaje-bloqueo h2 { color: var(--error); margin-bottom: 10px; font-size: 22px; }
@@ -68,12 +66,8 @@
             transition: 0.3s;
         }
         .avatar-wrapper:hover { transform: scale(1.05); border-color: var(--primary); }
-        
         #preview { width: 100%; height: 100%; object-fit: cover; display: none; }
-        .placeholder-icon { 
-            position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
-            font-size: 40px; color: #ccc; 
-        }
+        .placeholder-icon { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: 40px; color: #ccc; }
 
         .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
         .full { grid-column: span 2; }
@@ -88,7 +82,6 @@
             transition: 0.3s;
         }
         textarea { padding-left: 15px; resize: none; }
-        
         input:focus { border-color: var(--primary); outline: none; background: white; }
         input:focus + i { color: var(--primary); }
 
@@ -111,8 +104,9 @@
         .legal-check {
             display: flex; align-items: flex-start; gap: 10px; margin-top: 20px; font-size: 13px; color: #555;
         }
-        .legal-check input { width: 20px; height: 20px; margin: 0; padding: 0; flex-shrink: 0; }
-        .legal-check a { color: var(--primary); text-decoration: none; font-weight: bold; }
+        .legal-check input { width: 20px; height: 20px; margin: 0; padding: 0; flex-shrink: 0; cursor: pointer; }
+        .legal-check label { text-transform: none; font-weight: normal; font-size: 13px; cursor: pointer; }
+        .legal-check a { color: var(--primary); text-decoration: none; font-weight: bold; cursor: pointer; }
 
         .btn-submit { 
             width: 100%; background: var(--primary); color: white; border: none; 
@@ -132,6 +126,30 @@
 
         #msg { margin-top: 20px; padding: 15px; border-radius: 12px; text-align: center; display: none; font-size: 14px; font-weight: bold; }
         .err { background: #fff5f5; color: var(--error); border: 1px solid #ffcdd2; }
+
+        /* --- NUEVO: ESTILOS PARA VENTANAS MODALES --- */
+        .modal-legal-overlay {
+            display: none; /* Oculto por defecto */
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.8); z-index: 2000;
+            align-items: center; justify-content: center;
+            backdrop-filter: blur(4px);
+        }
+        .modal-legal-content {
+            background: white; width: 90%; max-width: 450px; max-height: 80vh;
+            border-radius: 20px; padding: 25px; box-sizing: border-box;
+            overflow-y: auto; position: relative; animation: popUp 0.3s ease;
+        }
+        .modal-legal-content h3 { color: var(--primary); margin-top: 0; font-size: 18px; border-bottom: 1px solid #eee; padding-bottom: 10px; }
+        .modal-legal-content p, .modal-legal-content li { font-size: 13px; color: #555; line-height: 1.5; text-align: left; }
+        .modal-legal-content ul { padding-left: 20px; text-align: left; }
+        .btn-cerrar-modal {
+            background: #333; color: white; border: none; padding: 12px;
+            border-radius: 10px; cursor: pointer; font-weight: bold; width: 100%;
+            margin-top: 15px; transition: 0.2s;
+        }
+        .btn-cerrar-modal:hover { background: #555; }
+        @keyframes popUp { from { transform: scale(0.9); opacity: 0; } to { transform: scale(1); opacity: 1; } }
     </style>
 </head>
 <body>
@@ -240,7 +258,11 @@
 
         <div class="legal-check">
             <input type="checkbox" id="check-legal">
-            <label for="check-legal">He leído y acepto los <a href="privacidad.html" target="_blank">Aviso de Privacidad</a>">Términos y Condiciones</a> y el <a href="#" onclick="alert('Aquí tu aviso de privacidad')">Aviso de Privacidad</a>.</label>
+            <label for="check-legal">
+                He leído y acepto los 
+                <a href="#" onclick="abrirModal('modal-terminos'); return false;">Términos y Condiciones</a> y el 
+                <a href="#" onclick="abrirModal('modal-privacidad'); return false;">Aviso de Privacidad</a>.
+            </label>
         </div>
 
         <button id="btnRegistrar" class="btn-submit">
@@ -251,12 +273,46 @@
     </div>
 </div>
 
+<div id="modal-privacidad" class="modal-legal-overlay">
+    <div class="modal-legal-content">
+        <h3><i class="fas fa-user-shield"></i> Aviso de Privacidad</h3>
+        <p>En <b>Huellitas Digitales</b>, protegemos tus datos.</p>
+        <p><b>1. Recolección:</b> Recabamos nombre, teléfono, correo y datos de la mascota para el funcionamiento del sistema NFC/QR.</p>
+        <p><b>2. Uso:</b> Los datos se usan exclusivamente para localizar al dueño en caso de extravío y gestionar el perfil digital.</p>
+        <p><b>3. Transferencia:</b> Al escanear la placa, se mostrarán los datos de contacto que tú configures como públicos.</p>
+        <p><b>4. Derechos:</b> Puedes editar o borrar tu información desde tu panel de usuario en cualquier momento.</p>
+        <button class="btn-cerrar-modal" onclick="cerrarModals()">Entendido</button>
+    </div>
+</div>
+
+<div id="modal-terminos" class="modal-legal-overlay">
+    <div class="modal-legal-content">
+        <h3><i class="fas fa-file-contract"></i> Términos de Uso</h3>
+        <p>Bienvenido a Huellitas Digitales.</p>
+        <ul>
+            <li>El usuario es responsable de la veracidad de la información ingresada.</li>
+            <li>Huellitas Digitales no se hace responsable por el mal uso de la placa por terceros.</li>
+            <li>La plataforma garantiza una disponibilidad del 99%, salvo mantenimientos programados.</li>
+            <li>El mal uso del sistema o intentos de fraude resultarán en la baja inmediata de la placa.</li>
+        </ul>
+        <button class="btn-cerrar-modal" onclick="cerrarModals()">Aceptar Términos</button>
+    </div>
+</div>
+
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
     import { getFirestore, doc, getDoc, updateDoc, collection, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
     import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-storage.js";
 
     emailjs.init("TWeQlV3AV77UPCLZ6");
+
+    // --- FUNCIONES PARA MODALES LEGALES ---
+    window.abrirModal = (id) => {
+        document.getElementById(id).style.display = 'flex';
+    }
+    window.cerrarModals = () => {
+        document.querySelectorAll('.modal-legal-overlay').forEach(el => el.style.display = 'none');
+    }
 
     // LÓGICA CAPTCHA
     let codigoCaptcha = "";
@@ -303,7 +359,7 @@
     const mensajeBloqueo = document.getElementById("mensaje-bloqueo");
 
     window.onload = async () => {
-        generarCaptcha(); // Inicia Captcha
+        generarCaptcha(); 
         const urlParams = new URLSearchParams(window.location.search);
         const idFromUrl = urlParams.get('id');
         
@@ -311,7 +367,6 @@
             const idUpper = idFromUrl.toUpperCase();
             document.getElementById('placaId').value = idUpper;
             
-            // Mostrar loader y ocultar todo
             loader.style.display = "flex";
             registroContent.style.display = "none";
             mensajeBloqueo.style.display = "none";
@@ -323,19 +378,14 @@
                 if (docSnap.exists()) {
                     const data = docSnap.data();
                     
-                    // 1. Si ya está activa -> Perfil
                     if (data.activa) {
                         window.location.href = `perfil.html?id=${idUpper}`;
                         return;
                     } 
                     
-                    // 2. Si está vendida -> Mostrar Formulario
                     if (data.vendida === true) {
                         registroContent.style.display = "block";
-                    } 
-                    
-                    // 3. Si NO está vendida -> Mostrar Perrito Triste
-                    else {
+                    } else {
                         mensajeBloqueo.style.display = "block";
                     }
 
@@ -397,7 +447,6 @@
         const rawTel = document.getElementById("telefono").value.trim();
         const tel = `+${document.getElementById("paisCod").value}${rawTel}`;
 
-        // Datos nuevos de validación
         const captchaInput = document.getElementById("captcha-input").value.toUpperCase();
         const checkLegal = document.getElementById("check-legal").checked;
 
@@ -408,7 +457,6 @@
         if (email !== emailConf) { alert("Los correos electrónicos no coinciden."); return; }
         if (pin !== pinConf) { alert("Los PIN no coinciden."); return; }
 
-        // Validaciones Captcha y Legales
         if (captchaInput !== codigoCaptcha) { alert("El código Captcha es incorrecto."); return; }
         if (!checkLegal) { alert("Debes aceptar los Términos y Condiciones."); return; }
 
@@ -418,7 +466,6 @@
         try {
             const docRef = doc(db, "placas", id);
             
-            // Doble verificación por seguridad
             const checkSnap = await getDoc(docRef);
             if (checkSnap.exists() && checkSnap.data().vendida === true) {
                 
@@ -430,7 +477,6 @@
                     urlFoto = await getDownloadURL(storageRef);
                 }
 
-                // ACTUALIZAR BASE DE DATOS
                 await updateDoc(docRef, {
                     mascota: nombre,
                     telefono: tel,
@@ -444,7 +490,6 @@
                     fechaActivacion: new Date().toISOString()
                 });
 
-                // --- NUEVO: LOG PARA MONITOR ---
                 try {
                     await addDoc(collection(db, "logs"), {
                         placaId: id,
@@ -454,7 +499,6 @@
                         origen: "index.html"
                     });
                 } catch(e) { console.error("Log monitor error", e); }
-                // --------------------------------
 
                 try {
                     await emailjs.send("service_xwx9czt", "template_zgl2oii", {
@@ -496,4 +540,3 @@
 </script>
 </body>
 </html>
-
