@@ -35,7 +35,7 @@
             height: fit-content;
         }
 
-        /* --- NUEVO: PANTALLA DE BLOQUEO CON PERRITO --- */
+        /* --- PANTALLA DE BLOQUEO CON PERRITO --- */
         #mensaje-bloqueo {
             display: none;
             text-align: center;
@@ -94,6 +94,25 @@
 
         .id-input { text-align: center; font-weight: bold; letter-spacing: 2px; text-transform: uppercase; padding-left: 15px !important; }
         .toggle-btn { position: absolute; right: 15px; top: 42px; background: none; border: none; cursor: pointer; color: #ccc; font-size: 16px; }
+
+        /* --- ESTILOS CAPTCHA Y LEGAL --- */
+        .captcha-box {
+            background: #f8f9fa; border: 1px solid #eee; padding: 15px; border-radius: 15px; margin-top: 15px;
+            display: flex; align-items: center; justify-content: space-between; gap: 10px;
+        }
+        .captcha-code {
+            font-family: 'Courier New', monospace; font-size: 24px; font-weight: bold; letter-spacing: 5px;
+            color: #555; background: #e0e0e0; padding: 5px 15px; border-radius: 8px;
+            text-decoration: line-through; user-select: none; opacity: 0.7;
+        }
+        .captcha-input { padding-left: 15px !important; text-align: center; text-transform: uppercase; width: 100px; }
+        .btn-refresh { border: none; background: white; color: var(--primary); cursor: pointer; font-size: 18px; }
+
+        .legal-check {
+            display: flex; align-items: flex-start; gap: 10px; margin-top: 20px; font-size: 13px; color: #555;
+        }
+        .legal-check input { width: 20px; height: 20px; margin: 0; padding: 0; flex-shrink: 0; }
+        .legal-check a { color: var(--primary); text-decoration: none; font-weight: bold; }
 
         .btn-submit { 
             width: 100%; background: var(--primary); color: white; border: none; 
@@ -213,6 +232,17 @@
             </div>
         </div>
 
+        <div class="captcha-box">
+            <div id="captcha-code" class="captcha-code">----</div>
+            <button class="btn-refresh" onclick="generarCaptcha()"><i class="fas fa-sync-alt"></i></button>
+            <input type="text" id="captcha-input" class="captcha-input" placeholder="CÓDIGO" maxlength="4">
+        </div>
+
+        <div class="legal-check">
+            <input type="checkbox" id="check-legal">
+            <label for="check-legal">He leído y acepto los <a href="#" onclick="alert('Aquí irían tus términos')">Términos y Condiciones</a> y el <a href="#" onclick="alert('Aquí tu aviso de privacidad')">Aviso de Privacidad</a>.</label>
+        </div>
+
         <button id="btnRegistrar" class="btn-submit">
             Finalizar Registro <i class="fas fa-check"></i>
         </button>
@@ -227,6 +257,17 @@
     import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-storage.js";
 
     emailjs.init("TWeQlV3AV77UPCLZ6");
+
+    // LÓGICA CAPTCHA
+    let codigoCaptcha = "";
+    window.generarCaptcha = () => {
+        const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+        codigoCaptcha = "";
+        for (let i = 0; i < 4; i++) {
+            codigoCaptcha += chars.charAt(Math.floor(Math.random() * chars.length));
+        }
+        document.getElementById("captcha-code").innerText = codigoCaptcha;
+    }
 
     window.togglePin = (id) => {
         const input = document.getElementById(id);
@@ -262,6 +303,7 @@
     const mensajeBloqueo = document.getElementById("mensaje-bloqueo");
 
     window.onload = async () => {
+        generarCaptcha(); // Inicia Captcha
         const urlParams = new URLSearchParams(window.location.search);
         const idFromUrl = urlParams.get('id');
         
@@ -355,12 +397,20 @@
         const rawTel = document.getElementById("telefono").value.trim();
         const tel = `+${document.getElementById("paisCod").value}${rawTel}`;
 
+        // Datos nuevos de validación
+        const captchaInput = document.getElementById("captcha-input").value.toUpperCase();
+        const checkLegal = document.getElementById("check-legal").checked;
+
         if (!id || !nombre || !email || !pin || !emailConf || !pinConf) {
             alert("Por favor, completa todos los campos obligatorios.");
             return;
         }
         if (email !== emailConf) { alert("Los correos electrónicos no coinciden."); return; }
         if (pin !== pinConf) { alert("Los PIN no coinciden."); return; }
+
+        // Validaciones Captcha y Legales
+        if (captchaInput !== codigoCaptcha) { alert("El código Captcha es incorrecto."); return; }
+        if (!checkLegal) { alert("Debes aceptar los Términos y Condiciones."); return; }
 
         loader.style.display = "flex";
         loader.querySelector("p").innerText = "Creando perfil...";
