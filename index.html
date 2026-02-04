@@ -89,7 +89,7 @@
             background: #fafafa;
             font-family: inherit;
         }
-        textarea { padding-left: 15px; resize: none; } /* Textarea sin icono */
+        textarea { padding-left: 15px; resize: none; }
         
         input:focus, select:focus, textarea:focus { 
             border-color: var(--primary); 
@@ -247,7 +247,7 @@
 
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-    import { getFirestore, doc, getDoc, updateDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+    import { getFirestore, doc, getDoc, updateDoc, collection, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
     import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-storage.js";
 
     emailjs.init("TWeQlV3AV77UPCLZ6");
@@ -289,16 +289,13 @@
             const idUpper = idFromUrl.toUpperCase();
             document.getElementById('placaId').value = idUpper;
             
-            // VERIFICACIÓN AUTOMÁTICA DE ESTADO
             try {
                 const docSnap = await getDoc(doc(db, "placas", idUpper));
                 if (docSnap.exists()) {
                     const data = docSnap.data();
-                    // Si ya está activa, redirigir al perfil inmediatamente
                     if (data.activa) {
                         window.location.href = `perfil.html?id=${idUpper}`;
                     } else if (!data.vendida) {
-                        // Si no está marcada como vendida (para seguridad)
                         mostrarError("Esta placa no está habilitada para registro.");
                         document.getElementById("btnRegistrar").disabled = true;
                     }
@@ -309,6 +306,19 @@
             } catch(e) { console.log("Verificando..."); }
         }
     };
+
+    // DISPARADOR DE LOGS DE ACTIVACIÓN FINAL
+    async function registrarLogActivacionFinal(placaId, ownerEmail) {
+        try {
+            await addDoc(collection(db, "logs"), {
+                placaId: placaId,
+                evento: "REGISTRO_COMPLETADO",
+                fecha: serverTimestamp(),
+                usuario: ownerEmail,
+                origen: "index.html"
+            });
+        } catch (e) { console.error("Error log final:", e); }
+    }
 
     async function comprimirImagen(archivo) {
         return new Promise((resolve) => {
@@ -393,6 +403,9 @@
                     fechaActivacion: new Date().toISOString()
                 });
 
+                // DISPARAR LOG AL MONITOR
+                await registrarLogActivacionFinal(id, email);
+
                 try {
                     await emailjs.send("service_xwx9czt", "template_zgl2oii", {
                         nombre_mascota: nombre,
@@ -411,7 +424,6 @@
                     body: JSON.stringify({ id: id, status: "ACTIVADA", mascota: nombre, contacto: tel })
                 }).catch(e => console.log("Error Sheets"));
 
-                // Redirección con un pequeño delay para asegurar la UX
                 setTimeout(() => {
                     window.location.href = `perfil.html?id=${id}`;
                 }, 1000);
