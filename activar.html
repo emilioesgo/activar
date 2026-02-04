@@ -35,13 +35,11 @@
             overflow: hidden;
         }
         
-        /* Decoración superior */
         .card::before {
             content: ''; position: absolute; top: 0; left: 0; right: 0; height: 6px;
             background: linear-gradient(90deg, var(--primary), #239b60);
         }
 
-        /* Logo animado */
         .logo-container {
             width: 80px; height: 80px;
             background: #e8f5e9;
@@ -59,7 +57,6 @@
         h1 { font-size: 26px; color: var(--text); margin: 0 0 10px; font-weight: 800; }
         p { color: #888; font-size: 15px; margin-bottom: 30px; line-height: 1.5; }
 
-        /* Input Estilizado */
         .input-wrapper { position: relative; margin-bottom: 25px; }
         .input-wrapper i {
             position: absolute; left: 20px; top: 50%; transform: translateY(-50%);
@@ -68,7 +65,7 @@
 
         input { 
             width: 100%; 
-            padding: 18px 20px 18px 50px; /* Espacio para el icono */
+            padding: 18px 20px 18px 50px; 
             border: 2px solid #f0f0f0; 
             border-radius: 18px; 
             font-size: 20px; 
@@ -89,7 +86,6 @@
         }
         input::placeholder { letter-spacing: 1px; color: #ccc; font-weight: normal; font-size: 16px; }
 
-        /* Botón Estilizado */
         button { 
             width: 100%; 
             padding: 18px; 
@@ -149,18 +145,33 @@
 <audio id="audio-perro" src="https://assets.mixkit.co/active_storage/sfx/1101/1101-preview.mp3"></audio>
 <audio id="audio-gato" src="https://assets.mixkit.co/active_storage/sfx/1110/1110-preview.mp3"></audio>
 
-<script>
+<script type="module">
+    // IMPORTACIÓN PARA EL DISPARADOR DE LOGS
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+    import { getFirestore, collection, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+    const firebaseConfig = {
+        apiKey: "AIzaSyCqROIzmp2guo2XLbdYrSW3ujlUBc7ngOc",
+        authDomain: "huellitas-digitales.firebaseapp.com",
+        projectId: "huellitas-digitales",
+        storageBucket: "huellitas-digitales.firebasestorage.app",
+        messagingSenderId: "523935942496",
+        appId: "1:523935942496:web:0bb3ad3b28c189345fc005"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+
     const input = document.getElementById('id-input');
     const btn = document.getElementById('btn-continuar');
     const error = document.getElementById('error-msg');
     const dogSound = document.getElementById('audio-perro');
     const catSound = document.getElementById('audio-gato');
 
-    function reproducirSonido() {
-        // Elige aleatoriamente entre perro (0) o gato (1)
+    window.reproducirSonido = () => {
         const random = Math.floor(Math.random() * 2);
         if (random === 0) {
-            dogSound.currentTime = 0; // Reinicia el audio
+            dogSound.currentTime = 0;
             dogSound.play();
         } else {
             catSound.currentTime = 0;
@@ -168,24 +179,38 @@
         }
     }
 
-    btn.onclick = () => {
+    // FUNCIÓN DEL DISPARADOR (LOG)
+    async function registrarLogActivacion(placaId) {
+        try {
+            await addDoc(collection(db, "logs"), {
+                placaId: placaId,
+                evento: "INICIO_ACTIVACION",
+                fecha: serverTimestamp(),
+                origen: "activar.html"
+            });
+        } catch (e) {
+            console.error("Error al registrar log:", e);
+        }
+    }
+
+    btn.onclick = async () => {
         const id = input.value.trim().toUpperCase();
 
         if (id.length < 5) {
             error.style.display = 'block';
             input.style.borderColor = '#e74c3c';
         } else {
-            // Reproducir sonido antes de irse
             reproducirSonido();
             
-            // Esperar medio segundo para que se escuche el sonido y luego redirigir
+            // EJECUCIÓN DEL DISPARADOR
+            await registrarLogActivacion(id);
+            
             setTimeout(() => {
                 window.location.href = `index.html?id=${id}`;
             }, 600);
         }
     };
 
-    // También permitir "Enter"
     input.addEventListener("keypress", (event) => {
         if (event.key === "Enter") btn.click();
     });
