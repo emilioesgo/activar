@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Live Monitor | Huellitas Digitales</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        :root { --primary: #2bb673; --dark: #1a1a1a; --card: #2d2d2d; --text: #eee; }
+        
+        body { 
+            font-family: 'Courier New', monospace; 
+            background: var(--dark); color: var(--text); 
+            margin: 0; padding: 20px; 
+        }
+
+        .header { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid var(--primary); padding-bottom: 10px; margin-bottom: 20px; }
+        .live-indicator { display: flex; align-items: center; gap: 8px; font-size: 14px; color: var(--primary); }
+        .dot { width: 10px; height: 10px; background: var(--primary); border-radius: 50%; animation: blink 1s infinite; }
+        
+        @keyframes blink { 0% { opacity: 1; } 50% { opacity: 0.3; } 100% { opacity: 1; } }
+
+        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 15px; margin-bottom: 30px; }
+        .stat-card { background: var(--card); padding: 20px; border-radius: 12px; text-align: center; border: 1px solid #444; }
+        .stat-card h3 { margin: 0; font-size: 12px; color: #888; text-transform: uppercase; }
+        .stat-card p { margin: 10px 0 0; font-size: 24px; font-weight: bold; color: var(--primary); }
+
+        .log-container { background: var(--card); border-radius: 15px; overflow: hidden; border: 1px solid #444; }
+        .log-header { background: #333; padding: 10px 20px; font-size: 12px; color: #aaa; display: grid; grid-template-columns: 1fr 2fr 1fr; }
+        .log-entry { 
+            padding: 15px 20px; border-bottom: 1px solid #3d3d3d; 
+            display: grid; grid-template-columns: 1fr 2fr 1fr; 
+            font-size: 13px; transition: 0.3s;
+        }
+        .new-entry { animation: highlight 2s ease-out; }
+        @keyframes highlight { from { background: rgba(43, 182, 115, 0.3); } to { background: transparent; } }
+
+        .tag { padding: 3px 8px; border-radius: 4px; font-size: 10px; font-weight: bold; }
+        .tag-activation { background: #2ecc71; color: #000; }
+        .tag-reset { background: #e74c3c; color: #fff; }
+
+        .time { color: #888; text-align: right; }
+        .placa-id { color: var(--primary); font-weight: bold; }
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <h2>HUELLITAS_LIVE_MONITOR v1.0</h2>
+        <div class="live-indicator">
+            <div class="dot"></div> EN VIVO
+        </div>
+    </div>
+
+    <div class="stats-grid">
+        <div class="stat-card">
+            <h3>Eventos Hoy</h3>
+            <p id="count-today">0</p>
+        </div>
+        <div class="stat-card">
+            <h3>Última Placa</h3>
+            <p id="last-id">---</p>
+        </div>
+    </div>
+
+    <div class="log-container">
+        <div class="log-header">
+            <span>PLACA_ID</span>
+            <span>EVENTO / ORIGEN</span>
+            <span style="text-align: right;">TIMESTAMP</span>
+        </div>
+        <div id="log-list">
+            </div>
+    </div>
+
+<script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+    import { getFirestore, collection, query, orderBy, limit, onSnapshot } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+    const firebaseConfig = {
+        apiKey: "AIzaSyCqROIzmp2guo2XLbdYrSW3ujlUBc7ngOc",
+        authDomain: "huellitas-digitales.firebaseapp.com",
+        projectId: "huellitas-digitales",
+        storageBucket: "huellitas-digitales.firebasestorage.app",
+        messagingSenderId: "523935942496",
+        appId: "1:523935942496:web:0bb3ad3b28c189345fc005"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+
+    const logList = document.getElementById('log-list');
+    const countToday = document.getElementById('count-today');
+    const lastId = document.getElementById('last-id');
+
+    // Escuchar cambios en tiempo real
+    const q = query(collection(db, "logs"), orderBy("fecha", "desc"), limit(20));
+
+    onSnapshot(q, (snapshot) => {
+        let firstLoad = true;
+        snapshot.docChanges().forEach((change) => {
+            if (change.type === "added") {
+                const data = change.doc.data();
+                const hora = data.fecha ? data.fecha.toDate().toLocaleTimeString() : '...';
+                
+                // Crear fila de log
+                const div = document.createElement('div');
+                div.className = `log-entry ${!snapshot.metadata.fromCache ? 'new-entry' : ''}`;
+                div.innerHTML = `
+                    <span class="placa-id">${data.placaId}</span>
+                    <span>
+                        <span class="tag tag-activation">${data.evento}</span> 
+                        <small style="color:#666; margin-left:10px;">via ${data.origen}</small>
+                    </span>
+                    <span class="time">${hora}</span>
+                `;
+
+                logList.insertBefore(div, logList.firstChild);
+                
+                // Actualizar contadores
+                lastId.innerText = data.placaId;
+            }
+        });
+        
+        // Actualizar contador total (basado en los cargados)
+        countToday.innerText = snapshot.size;
+    });
+</script>
+</body>
+</html>
