@@ -205,7 +205,10 @@
 
     // 2. BUSCAR EN GOOGLE MAPS (PÚBLICO)
     async function buscarEnGoogle() {
-        if (!navigator.geolocation) return;
+        if (!navigator.geolocation) {
+             document.getElementById('main-loader').innerText = "La ubicación no es compatible.";
+             return;
+        }
         
         navigator.geolocation.getCurrentPosition(async (pos) => {
             try {
@@ -252,6 +255,19 @@
             } catch (error) {
                 console.error("Error Google:", error);
                 document.getElementById('main-loader').innerHTML = "<p>Carga finalizada.</p>";
+            }
+        }, (error) => {
+            // MEJORA: Manejo de errores de ubicación denegada
+            const loader = document.getElementById('main-loader');
+            if (error.code === error.PERMISSION_DENIED) {
+                loader.innerHTML = `
+                    <div style="color: var(--primary-dark); padding: 10px;">
+                        <i class="fas fa-hospital-user" style="font-size: 24px; margin-bottom: 10px; opacity: 0.5;"></i>
+                        <p style="font-size: 14px; margin: 0; font-weight: 700;">📍 Ubicación necesaria</p>
+                        <p style="font-size: 12px; opacity: 0.8; margin-top: 5px;">Para mostrarte veterinarias de urgencia cerca de ti, por favor activa los permisos de ubicación.</p>
+                    </div>`;
+            } else {
+                loader.innerText = "No pudimos obtener tu ubicación.";
             }
         });
     }
