@@ -3,90 +3,149 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Punto de Venta | Huellitas Digitales</title>
-
-    <link rel="manifest" href="../manifest.json">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <link rel="apple-touch-icon" href="../assets/img/icon-192.png">
-    <meta name="theme-color" content="#2bb673">
-
+    <title>Punto de Venta | Huellitas Control</title>
     <link rel="icon" type="image/png" href="../assets/img/favicon.png">
-    <script src="https://unpkg.com/html5-qrcode"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <style>
-        :root { --primary: #2bb673; --error: #e74c3c; --dark: #2c3e50; --bg: #f4f7f6; --gray: #95a5a6; }
-        body { font-family: 'Segoe UI', sans-serif; background: var(--bg); margin: 0; padding: 15px; display: flex; justify-content: center; }
-        .card { background: white; padding: 25px; border-radius: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.05); width: 100%; max-width: 400px; }
-        
-        #reader-container { display: none; margin-bottom: 15px; border-radius: 15px; overflow: hidden; border: 2px solid var(--primary); background: #000; }
-        #reader { width: 100%; }
+        :root { 
+            --primary: #2bb673; 
+            --dark-bg: #1a1a1a; 
+            --card-bg: #2d2d2d; 
+            --text: #eeeeee; 
+            --danger: #ff4757; 
+        }
 
-        h2 { margin: 0 0 5px 0; color: var(--dark); text-align: center; font-size: 22px; }
-        p { color: #777; font-size: 13px; margin-bottom: 20px; text-align: center; }
-        
-        .input-container { margin-bottom: 15px; }
-        label { display:block; font-size: 10px; font-weight: bold; color: #bbb; margin-bottom: 5px; text-transform: uppercase; text-align: center; }
-        
-        input { width: 100%; padding: 15px; border: 2px solid #eee; border-radius: 12px; font-size: 22px; box-sizing: border-box; text-transform: uppercase; text-align: center; font-family: monospace; background: #fff; font-weight: bold; transition: 0.3s; }
-        input:focus { border-color: var(--primary); outline: none; background: #f0fff4; }
-        
-        .btn-group { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 10px; }
-        
-        .btn { border: none; padding: 15px; border-radius: 12px; font-weight: bold; font-size: 14px; cursor: pointer; transition: 0.3s; display: flex; align-items: center; justify-content: center; gap: 8px; }
-        .btn-qr { background: var(--dark); color: white; width: 100%; margin-bottom: 15px; }
-        .btn-clear { background: var(--gray); color: white; }
-        .btn-activate { background: var(--primary); color: white; box-shadow: 0 6px 15px rgba(43,182,115,0.3); }
-        .btn:disabled { background: #ccc; box-shadow: none; cursor: not-allowed; }
+        body { 
+            font-family: 'Segoe UI', system-ui, sans-serif; 
+            background: var(--dark-bg); 
+            color: var(--text);
+            margin: 0; 
+            padding: 20px; 
+            display: flex; 
+            justify-content: center; 
+            align-items: center;
+            min-height: 100vh;
+        }
 
-        #mensaje { margin-top: 15px; padding: 12px; border-radius: 12px; display: none; text-align: center; font-size: 14px; font-weight: 500; }
-        .success { background: #e8f5e9; color: #2e7d32; border: 1px solid #c8e6c9; display: block !important; }
-        .error { background: #ffebee; color: #c62828; border: 1px solid #ffcdd2; display: block !important; }
+        .card { 
+            background: var(--card-bg); 
+            padding: 40px; 
+            border-radius: 30px; 
+            box-shadow: 0 15px 40px rgba(0,0,0,0.5); 
+            width: 100%; 
+            max-width: 420px; 
+            text-align: center;
+            border: 1px solid #444;
+        }
 
-        .counter-box { background: var(--dark); color: white; padding: 5px 15px; border-radius: 20px; font-size: 12px; font-weight: bold; }
+        .btn-back { 
+            display: inline-flex; 
+            align-items: center; 
+            text-decoration: none; 
+            color: #aaa; 
+            font-size: 13px; 
+            margin-bottom: 25px; 
+            transition: 0.3s;
+        }
+        .btn-back:hover { color: var(--primary); }
+
+        h2 { margin: 0 0 10px 0; font-size: 26px; color: #fff; }
+        .subtitle { color: #888; font-size: 14px; margin-bottom: 30px; line-height: 1.4; }
+
+        label { 
+            display: block; 
+            text-align: left; 
+            font-size: 11px; 
+            font-weight: 800; 
+            color: var(--primary); 
+            margin-bottom: 8px; 
+            text-transform: uppercase; 
+            letter-spacing: 1px;
+        }
+
+        input { 
+            width: 100%; 
+            padding: 18px; 
+            margin-bottom: 25px; 
+            border: 1px solid #444; 
+            border-radius: 15px; 
+            box-sizing: border-box; 
+            font-size: 22px; 
+            text-align: center; 
+            background: #111; 
+            color: var(--primary); 
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            transition: 0.3s;
+        }
+        input:focus { 
+            border-color: var(--primary); 
+            outline: none; 
+            box-shadow: 0 0 15px rgba(43, 182, 115, 0.2);
+            background: #161616;
+        }
+
+        .btn-vender { 
+            background: var(--primary); 
+            color: white; 
+            border: none; 
+            padding: 18px; 
+            border-radius: 15px; 
+            font-weight: bold; 
+            cursor: pointer; 
+            width: 100%; 
+            font-size: 16px; 
+            box-shadow: 0 8px 20px rgba(43,182,115,0.2);
+            transition: 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+        .btn-vender:hover { transform: translateY(-3px); box-shadow: 0 12px 25px rgba(43,182,115,0.3); }
+        .btn-vender:active { transform: scale(0.98); }
+        .btn-vender:disabled { background: #444; color: #777; cursor: not-allowed; transform: none; }
+
+        #msg { margin-top: 20px; font-size: 14px; font-weight: bold; padding: 12px; border-radius: 10px; display: none; }
+        .msg-success { background: rgba(43, 182, 115, 0.1); color: var(--primary); border: 1px solid var(--primary); }
+        .msg-error { background: rgba(255, 71, 87, 0.1); color: var(--danger); border: 1px solid var(--danger); }
+
+        .info-footer {
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px solid #333;
+            font-size: 11px;
+            color: #666;
+            text-align: center;
+        }
     </style>
 </head>
 <body>
 
 <div class="card">
-    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
-        <a href="../admin.html" style="text-decoration: none; color: var(--gray); font-weight: bold; font-size: 13px;">⬅️ Panel</a>
-        <div class="counter-box">VENTAS HOY: <span id="ventasHoy">0</span></div>
+    <a href="../admin.html" class="btn-back"><i class="fas fa-chevron-left"></i> &nbsp; VOLVER AL PANEL</a>
+    
+    <h2>Venta de Placa</h2>
+    <p class="subtitle">Escanea o escribe el ID de la placa para habilitar su activación inmediata.</p>
+
+    <div class="input-group">
+        <label>ID de la Placa</label>
+        <input type="text" id="placa-id" placeholder="ABC123" maxlength="6" autocomplete="off">
     </div>
 
-    <h2>Cajero Digital</h2>
-    <p>Ingresa el ID manual o usa el escáner QR</p>
-
-    <button id="btnToggleQR" class="btn btn-qr" onclick="toggleQR()">
-        <span id="qrIcon">📷</span> <span id="qrText">Abrir Escáner QR</span>
+    <button class="btn-vender" id="btn-vender">
+        <i class="fas fa-cash-register"></i> HABILITAR VENTA
     </button>
 
-    <div id="reader-container">
-        <div id="reader"></div>
-    </div>
+    <div id="msg"></div>
 
-    <div class="input-container">
-        <label>ID de la Placa (6 caracteres)</label>
-        <input type="text" id="placaId" placeholder="ABC123" maxlength="6">
+    <div class="info-footer">
+        <i class="fas fa-shield-alt"></i> SISTEMA DE CONTROL DE INVENTARIO SEGURO
     </div>
-
-    <div class="btn-group">
-        <button class="btn btn-clear" onclick="limpiarTodo()">Borrar</button>
-        <button id="btnActivar" class="btn btn-activate" onclick="procesarVenta()">✅ Vender</button>
-    </div>
-
-    <div id="mensaje"></div>
 </div>
 
 <script type="module">
-    // Registro del Service Worker para PWA
-    if ('serviceWorker' in navigator) {
-        window.addEventListener('load', () => {
-            navigator.serviceWorker.register('../sw.js')
-                .then(reg => console.log('SW Cajero OK'))
-                .catch(err => console.log('Error SW Cajero', err));
-        });
-    }
-
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
     import { getFirestore, doc, updateDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
@@ -101,117 +160,46 @@
 
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
-    const URL_SHEETS = "https://script.google.com/macros/s/AKfycbzH1tsICupT_eLE1aNzsUMUx_0w3Wl6ZcAckHGmtuvXLmuOBKg2kBHf285e1DVGY6iVSA/exec"; 
 
-    const inputPlaca = document.getElementById("placaId");
-    const btnActivar = document.getElementById("btnActivar");
-    const mensaje = document.getElementById("mensaje");
-    const txtContador = document.getElementById("ventasHoy");
-    const readerContainer = document.getElementById("reader-container");
-    const btnToggleQR = document.getElementById("btnToggleQR");
+    const btn = document.getElementById("btn-vender");
+    const input = document.getElementById("placa-id");
+    const msg = document.getElementById("msg");
 
-    let html5QrCode;
-    let isScannerOpen = false;
+    btn.onclick = async () => {
+        const id = input.value.trim().toUpperCase();
+        if (id.length < 5) return;
 
-    window.toggleQR = async function() {
-        if (!isScannerOpen) {
-            readerContainer.style.display = "block";
-            btnToggleQR.style.background = "#e74c3c";
-            document.getElementById("qrText").innerText = "Cerrar Escáner";
-            document.getElementById("qrIcon").innerText = "❌";
-            
-            html5QrCode = new Html5Qrcode("reader");
-            await html5QrCode.start(
-                { facingMode: "environment" }, 
-                { fps: 10, qrbox: 200 },
-                (text) => {
-                    let id = text.includes("id=") ? new URL(text).searchParams.get("id") : text;
-                    inputPlaca.value = id.toUpperCase().substring(0,6);
-                    if (navigator.vibrate) navigator.vibrate(100);
-                    toggleQR();
-                }
-            );
-            isScannerOpen = true;
-        } else {
-            if(html5QrCode) {
-                await html5QrCode.stop();
-                html5QrCode.clear();
-            }
-            readerContainer.style.display = "none";
-            btnToggleQR.style.background = "var(--dark)";
-            document.getElementById("qrText").innerText = "Abrir Escáner QR";
-            document.getElementById("qrIcon").innerText = "📷";
-            isScannerOpen = false;
-        }
-    };
-
-    window.procesarVenta = async function() {
-        const id = inputPlaca.value.toUpperCase().trim();
-        if (id.length < 4) {
-            mostrarMensaje("❌ Ingresa un ID válido.", "error");
-            return;
-        }
-
-        btnActivar.disabled = true;
-        btnActivar.innerText = "Procesando...";
+        btn.disabled = true;
+        btn.innerText = "PROCESANDO...";
 
         try {
             const docRef = doc(db, "placas", id);
-            const snap = await getDoc(docRef);
+            const docSnap = await getDoc(docRef);
 
-            if (snap.exists()) {
-                const data = snap.data();
-                if (data.activa) {
-                    mostrarMensaje(`🚫 La placa ${id} ya está en uso.`, "error");
-                } else if (data.vendida) {
-                    mostrarMensaje(`⚠️ Ya fue vendida anteriormente.`, "error");
-                } else {
-                    await updateDoc(docRef, {
-                        vendida: true,
-                        fechaVenta: new Date().toISOString()
-                    });
-
-                    fetch(URL_SHEETS, {
-                        method: 'POST',
-                        mode: 'no-cors',
-                        body: JSON.stringify({ id: id, status: "VENDIDA" })
-                    });
-
-                    mostrarMensaje(`✅ Placa ${id} habilitada.`, "success");
-                    actualizarContador(true);
-                    setTimeout(limpiarTodo, 2500);
-                }
+            if (docSnap.exists()) {
+                await updateDoc(docRef, { vendida: true });
+                mostrarMsg("✅ Placa habilitada con éxito", "success");
+                input.value = "";
             } else {
-                mostrarMensaje("❌ ID no existe.", "error");
+                mostrarMsg("❌ El ID no existe en inventario", "error");
             }
         } catch (e) {
-            mostrarMensaje("⚠️ Error de conexión.", "error");
-        } finally {
-            btnActivar.disabled = false;
-            btnActivar.innerText = "✅ Vender";
+            mostrarMsg("❌ Error de conexión", "error");
         }
+        
+        btn.disabled = false;
+        btn.innerHTML = '<i class="fas fa-cash-register"></i> HABILITAR VENTA';
     };
 
-    window.limpiarTodo = function() {
-        inputPlaca.value = "";
-        mensaje.style.display = "none";
-    };
-
-    function mostrarMensaje(texto, tipo) {
-        mensaje.innerText = texto;
-        mensaje.className = tipo;
-        mensaje.style.display = "block";
+    function mostrarMsg(texto, tipo) {
+        msg.innerText = texto;
+        msg.style.display = "block";
+        msg.className = tipo === "success" ? "msg-success" : "msg-error";
+        setTimeout(() => msg.style.display = "none", 4000);
     }
 
-    function actualizarContador(incrementar = false) {
-        const hoy = new Date().toLocaleDateString();
-        let stats = JSON.parse(localStorage.getItem('stats_huellitas')) || { fecha: hoy, total: 0 };
-        if (stats.fecha !== hoy) stats = { fecha: hoy, total: 0 };
-        if (incrementar) stats.total++;
-        localStorage.setItem('stats_huellitas', JSON.stringify(stats));
-        txtContador.innerText = stats.total;
-    }
-    actualizarContador();
+    input.addEventListener("keypress", (e) => { if(e.key === "Enter") btn.click(); });
 </script>
+
 </body>
 </html>
