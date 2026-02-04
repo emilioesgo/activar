@@ -151,7 +151,8 @@
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-        import { getFirestore, doc, updateDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+        // SE AGREGARON: collection, addDoc, serverTimestamp
+        import { getFirestore, doc, updateDoc, getDoc, collection, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyCqROIzmp2guo2XLbdYrSW3ujlUBc7ngOc",
@@ -201,12 +202,23 @@
             if (pinConfirm !== maestro) { alert("PIN Maestro incorrecto."); return; }
             if (confirm(`¿Borrar permanentemente los datos de la placa ${id}?`)) {
                 try {
+                    // 1. Resetear la Placa
                     await updateDoc(doc(db, "placas", id), {
                         activa: false, vendida: false, mascota: "Nueva Mascota", foto: "", telefono: "", pin: "1234"
                     });
+
+                    // 2. DISPARADOR AL MONITOR (AQUÍ ESTÁ LA MAGIA ROJA)
+                    await addDoc(collection(db, "logs"), {
+                        placaId: id,
+                        evento: "RESET ADMIN",
+                        fecha: serverTimestamp(),
+                        usuario: "Admin",
+                        origen: "admin.html"
+                    });
+
                     alert("✅ Éxito: Placa liberada.");
                     cerrarModal('modal-reset');
-                } catch (e) { alert("Error al resetear."); }
+                } catch (e) { alert("Error al resetear."); console.error(e); }
             }
         };
 
