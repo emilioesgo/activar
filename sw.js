@@ -64,10 +64,59 @@ self.addEventListener('fetch', event => {
         // Si falla la red (está offline), buscamos en el caché
         return caches.match(event.request).then(res => {
           if (res) return res;
-          
-          // Opcional: Si es una página HTML y no está en caché, podrías retornar una página de error offline genérica
-          // return caches.match('/offline.html');
         });
       })
   );
+});
+
+/* --- MEJORAS DE NOTIFICACIONES PUSH Y APP BADGING --- */
+
+// Escuchar evento de notificación Push
+self.addEventListener('push', event => {
+    let data = { title: 'Huellitas Digitales', body: 'Nueva actualización de tu mascota.', url: '/' };
+    
+    try {
+        if (event.data) {
+            data = event.data.json();
+        }
+    } catch (e) {
+        data.body = event.data.text();
+    }
+
+    const options = {
+        body: data.body,
+        icon: '/assets/img/favicon.png',
+        badge: '/assets/img/favicon.png',
+        vibrate: [100, 50, 100],
+        data: { url: data.url }
+    };
+
+    // Actualizar el número en el icono si la API está disponible
+    if (navigator.setAppBadge && data.badgeCount) {
+        navigator.setAppBadge(data.badgeCount);
+    }
+
+    event.waitUntil(
+        self.registration.showNotification(data.title, options)
+    );
+});
+
+// Manejar el clic en la notificación para abrir la App
+self.addEventListener('notificationclick', event => {
+    event.notification.close();
+    event.waitUntil(
+        clients.matchAll({ type: 'window' }).then(windowClients => {
+            // Si la app ya está abierta, poner el foco en ella
+            for (var i = 0; i < windowClients.length; i++) {
+                var client = windowClients[i];
+                if (client.url === event.notification.data.url && 'focus' in client) {
+                    return client.focus();
+                }
+            }
+            // Si no está abierta, abrir una nueva pestaña
+            if (clients.openWindow) {
+                return clients.openWindow(event.notification.data.url);
+            }
+        })
+    );
 });
