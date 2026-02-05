@@ -51,39 +51,42 @@ self.addEventListener('fetch', event => {
   );
 });
 
+// ESCUCHADOR DE NOTIFICACIONES CORREGIDO
 self.addEventListener('push', event => {
-    let payload = {};
-    
+    let payload = {
+        title: 'Huellitas Digitales',
+        body: 'Nueva actualización',
+        url: './'
+    };
+
     if (event.data) {
         try {
-            payload = event.data.json();
+            const json = event.data.json();
+            // Firebase suele enviar la info dentro de 'notification' o directo en la raíz
+            payload.title = json.title || (json.notification ? json.notification.title : payload.title);
+            payload.body = json.body || (json.notification ? json.notification.body : payload.body);
+            payload.url = json.url || (json.data ? json.data.url : payload.url);
         } catch (e) {
-            payload = { body: event.data.text() };
+            payload.body = event.data.text();
         }
     }
 
-    // Mejora para evitar 'undefined' buscando en múltiples estructuras de Firebase
-    const notificationTitle = payload.title || (payload.notification ? payload.notification.title : 'Huellitas Digitales');
-    const notificationBody = payload.body || (payload.notification ? payload.notification.body : 'Nueva actualización de tu mascota');
-    const notificationUrl = payload.url || (payload.data ? payload.data.url : './');
-
     const options = {
-        body: notificationBody,
+        body: payload.body,
         icon: 'assets/img/favicon.png',
         badge: 'assets/img/favicon.png',
         vibrate: [100, 50, 100],
-        data: { url: notificationUrl }
+        data: { url: payload.url }
     };
 
-    // Soporte para App Badging
-    if (navigator.setAppBadge && payload.badgeCount) {
-        navigator.setAppBadge(payload.badgeCount);
-    }
-
-    event.waitUntil(self.registration.showNotification(notificationTitle, options));
+    event.waitUntil(
+        self.registration.showNotification(payload.title, options)
+    );
 });
 
 self.addEventListener('notificationclick', event => {
     event.notification.close();
-    event.waitUntil(clients.openWindow(event.notification.data.url || './'));
+    event.waitUntil(
+        clients.openWindow(event.notification.data.url || './')
+    );
 });
