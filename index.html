@@ -303,12 +303,10 @@
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
     import { getFirestore, doc, getDoc, updateDoc, collection, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
     import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-storage.js";
-    // IMPORTACIÓN NUEVA: Mensajería
     import { getMessaging, getToken } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-messaging.js";
 
     emailjs.init("TWeQlV3AV77UPCLZ6");
 
-    // --- FUNCIONES PARA MODALES LEGALES ---
     window.abrirModal = (id) => {
         document.getElementById(id).style.display = 'flex';
     }
@@ -316,7 +314,6 @@
         document.querySelectorAll('.modal-legal-overlay').forEach(el => el.style.display = 'none');
     }
 
-    // LÓGICA CAPTCHA
     let codigoCaptcha = "";
     window.generarCaptcha = () => {
         const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
@@ -353,13 +350,14 @@
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
     const storage = getStorage(app);
-    // INICIALIZAR MENSAJERÍA
     const messaging = getMessaging(app);
     
-    // 🔥 IMPORTANTE: PEGA AQUÍ TU LLAVE PÚBLICA DE FIREBASE (VAPID KEY)
+    // LLAVE VAPID PROPORCIONADA
     const VAPID_KEY = "BMECIKnZjzVIOc6UUZ1fIhA3AjxayIq0q0Wl3Tl4iMbxm5tdAsmd1w_AXqDI0NBCZTrdvjU51kqY4B47RpSXamc"; 
 
-    // Referencias UI
+    // VARIABLE URL_SHEETS (Google Sheets Script)
+    const URL_SHEETS = "https://script.google.com/macros/s/AKfycbzH1tsICupT_eLE1aNzsUMUx_0w3Wl6ZcAckHGmtuvXLmuOBKg2kBHf285e1DVGY6iVSA/exec";
+
     const loader = document.getElementById("loader");
     const registroContent = document.getElementById("registro-content");
     const mensajeBloqueo = document.getElementById("mensaje-bloqueo");
@@ -369,7 +367,6 @@
         const urlParams = new URLSearchParams(window.location.search);
         const idFromUrl = urlParams.get('id');
         
-        // Limpiar el Badge si el navegador lo soporta
         if ('clearAppBadge' in navigator) {
             navigator.clearAppBadge().catch((error) => console.error(error));
         }
@@ -489,15 +486,19 @@
                 }
 
                 // ----------------------------------------------------
-                // NUEVO: OBTENER TOKEN FCM ANTES DE GUARDAR
+                // LOGICA CORREGIDA PARA TOKEN DE NOTIFICACIONES
                 // ----------------------------------------------------
                 let fcmToken = "";
                 try {
                     if ("serviceWorker" in navigator && "Notification" in window) {
                         const permission = await Notification.requestPermission();
                         if (permission === "granted") {
-                            // Intentamos obtener el token usando la llave
-                            fcmToken = await getToken(messaging, { vapidKey: VAPID_KEY });
+                            // Esperamos a que el SW esté LISTO para evitar errores
+                            const swRegistration = await navigator.serviceWorker.ready;
+                            fcmToken = await getToken(messaging, { 
+                                vapidKey: VAPID_KEY,
+                                serviceWorkerRegistration: swRegistration
+                            });
                             console.log("Token obtenido:", fcmToken);
                         }
                     }
@@ -517,7 +518,7 @@
                     extraviado: false,
                     mensaje: "",
                     fechaActivacion: new Date().toISOString(),
-                    fcmToken: fcmToken // <--- GUARDAMOS EL TOKEN AQUÍ
+                    fcmToken: fcmToken // Guardar Token
                 });
 
                 try {
@@ -542,6 +543,7 @@
                     });
                 } catch (emailErr) { console.warn("Correo no enviado:", emailErr); }
 
+                // ENVÍO A GOOGLE SHEETS
                 fetch(URL_SHEETS, {
                     method: 'POST',
                     mode: 'no-cors',
@@ -568,7 +570,7 @@
         loader.style.display = "none";
     }
 
-    // REGISTRO DEL SERVICE WORKER PARA NOTIFICACIONES PUSH
+    // REGISTRO DEL SERVICE WORKER (RUTA RELATIVA CORREGIDA)
     if ('serviceWorker' in navigator) {
         window.addEventListener('load', () => {
             navigator.serviceWorker.register('./sw.js')
@@ -579,5 +581,3 @@
 </script>
 </body>
 </html>
-
-
