@@ -52,18 +52,38 @@ self.addEventListener('fetch', event => {
 });
 
 self.addEventListener('push', event => {
-    let data = { title: 'Huellitas', body: 'Alerta', url: './' };
-    try { if (event.data) data = event.data.json(); } catch (e) {}
+    let payload = {};
     
+    if (event.data) {
+        try {
+            payload = event.data.json();
+        } catch (e) {
+            payload = { body: event.data.text() };
+        }
+    }
+
+    // Mejora para evitar 'undefined' buscando en múltiples estructuras de Firebase
+    const notificationTitle = payload.title || (payload.notification ? payload.notification.title : 'Huellitas Digitales');
+    const notificationBody = payload.body || (payload.notification ? payload.notification.body : 'Nueva actualización de tu mascota');
+    const notificationUrl = payload.url || (payload.data ? payload.data.url : './');
+
     const options = {
-        body: data.body,
+        body: notificationBody,
         icon: 'assets/img/favicon.png',
-        data: { url: data.url }
+        badge: 'assets/img/favicon.png',
+        vibrate: [100, 50, 100],
+        data: { url: notificationUrl }
     };
-    event.waitUntil(self.registration.showNotification(data.title, options));
+
+    // Soporte para App Badging
+    if (navigator.setAppBadge && payload.badgeCount) {
+        navigator.setAppBadge(payload.badgeCount);
+    }
+
+    event.waitUntil(self.registration.showNotification(notificationTitle, options));
 });
 
 self.addEventListener('notificationclick', event => {
     event.notification.close();
-    event.waitUntil(clients.openWindow(event.notification.data.url));
+    event.waitUntil(clients.openWindow(event.notification.data.url || './'));
 });
