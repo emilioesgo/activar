@@ -1,4 +1,4 @@
-const CACHE_NAME = 'huellitas-app-v6';
+const CACHE_NAME = 'huellitas-app-v7'; // Subimos versión
 const ASSETS = [
   './',
   'index.html',
@@ -51,42 +51,54 @@ self.addEventListener('fetch', event => {
   );
 });
 
-// ESCUCHADOR DE NOTIFICACIONES CORREGIDO
+// --- LÓGICA DE NOTIFICACIONES ROBUSTA ---
 self.addEventListener('push', event => {
-    let payload = {
-        title: 'Huellitas Digitales',
-        body: 'Nueva actualización',
-        url: './'
-    };
-
-    if (event.data) {
-        try {
-            const json = event.data.json();
-            // Firebase suele enviar la info dentro de 'notification' o directo en la raíz
-            payload.title = json.title || (json.notification ? json.notification.title : payload.title);
-            payload.body = json.body || (json.notification ? json.notification.body : payload.body);
-            payload.url = json.url || (json.data ? json.data.url : payload.url);
-        } catch (e) {
-            payload.body = event.data.text();
-        }
-    }
-
-    const options = {
-        body: payload.body,
+    // 1. Valores por defecto (si todo falla, mostrará esto)
+    let title = 'Huellitas Digitales';
+    let options = {
+        body: 'Nueva notificación recibida.',
         icon: 'assets/img/favicon.png',
         badge: 'assets/img/favicon.png',
         vibrate: [100, 50, 100],
-        data: { url: payload.url }
+        data: { url: './' }
     };
 
+    // 2. Intentar leer los datos que envía Firebase
+    if (event.data) {
+        try {
+            const payload = event.data.json(); // Convertir a objeto
+            console.log("Notificación recibida:", payload); // Para depuración
+
+            // Firebase a veces envía los datos dentro de 'notification' y a veces en la raíz
+            if (payload.notification) {
+                title = payload.notification.title || title;
+                options.body = payload.notification.body || options.body;
+            } else {
+                title = payload.title || title;
+                options.body = payload.body || options.body;
+            }
+
+            // Si hay una URL personalizada
+            if (payload.data && payload.data.url) {
+                options.data.url = payload.data.url;
+            }
+            
+        } catch (error) {
+            console.error("Error leyendo notificación:", error);
+            // Si falla el JSON, usamos el texto plano como cuerpo
+            options.body = event.data.text(); 
+        }
+    }
+
+    // 3. Mostrar la notificación (ESTO ES LO QUE HACE QUE SUENE)
     event.waitUntil(
-        self.registration.showNotification(payload.title, options)
+        self.registration.showNotification(title, options)
     );
 });
 
 self.addEventListener('notificationclick', event => {
     event.notification.close();
     event.waitUntil(
-        clients.openWindow(event.notification.data.url || './')
+        clients.openWindow(event.notification.data.url)
     );
 });
