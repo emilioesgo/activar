@@ -363,6 +363,11 @@
         const urlParams = new URLSearchParams(window.location.search);
         const idFromUrl = urlParams.get('id');
         
+        // Limpiar el Badge si el navegador lo soporta
+        if ('clearAppBadge' in navigator) {
+            navigator.clearAppBadge().catch((error) => console.error(error));
+        }
+
         if (idFromUrl) {
             const idUpper = idFromUrl.toUpperCase();
             document.getElementById('placaId').value = idUpper;
@@ -490,6 +495,15 @@
                     fechaActivacion: new Date().toISOString()
                 });
 
+                // --- MEJORA: Solicitar permisos de notificación tras éxito ---
+                if ("Notification" in window) {
+                    Notification.requestPermission().then(permission => {
+                        if (permission === "granted") {
+                            console.log("Permisos de notificación concedidos.");
+                        }
+                    });
+                }
+
                 try {
                     await addDoc(collection(db, "logs"), {
                         placaId: id,
@@ -536,6 +550,15 @@
         msg.className = "err";
         msg.style.display = "block";
         loader.style.display = "none";
+    }
+
+    // REGISTRO DEL SERVICE WORKER PARA NOTIFICACIONES PUSH
+    if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+            navigator.serviceWorker.register('/sw.js')
+                .then(reg => console.log('Service Worker registrado:', reg.scope))
+                .catch(err => console.log('Error al registrar Service Worker:', err));
+        });
     }
 </script>
 </body>
