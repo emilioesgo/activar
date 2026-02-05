@@ -303,6 +303,8 @@
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
     import { getFirestore, doc, getDoc, updateDoc, collection, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
     import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-storage.js";
+    // IMPORTACIÓN NUEVA: Mensajería
+    import { getMessaging, getToken } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-messaging.js";
 
     emailjs.init("TWeQlV3AV77UPCLZ6");
 
@@ -351,7 +353,11 @@
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
     const storage = getStorage(app);
-    const URL_SHEETS = "https://script.google.com/macros/s/AKfycbzH1tsICupT_eLE1aNzsUMUx_0w3Wl6ZcAckHGmtuvXLmuOBKg2kBHf285e1DVGY6iVSA/exec"; 
+    // INICIALIZAR MENSAJERÍA
+    const messaging = getMessaging(app);
+    
+    // 🔥 IMPORTANTE: PEGA AQUÍ TU LLAVE PÚBLICA DE FIREBASE (VAPID KEY)
+    const VAPID_KEY = "PEGAR_AQUI_TU_LLAVE_LARGA_DE_FIREBASE"; 
 
     // Referencias UI
     const loader = document.getElementById("loader");
@@ -482,6 +488,24 @@
                     urlFoto = await getDownloadURL(storageRef);
                 }
 
+                // ----------------------------------------------------
+                // NUEVO: OBTENER TOKEN FCM ANTES DE GUARDAR
+                // ----------------------------------------------------
+                let fcmToken = "";
+                try {
+                    if ("serviceWorker" in navigator && "Notification" in window) {
+                        const permission = await Notification.requestPermission();
+                        if (permission === "granted") {
+                            // Intentamos obtener el token usando la llave
+                            fcmToken = await getToken(messaging, { vapidKey: VAPID_KEY });
+                            console.log("Token obtenido:", fcmToken);
+                        }
+                    }
+                } catch (errToken) {
+                    console.warn("No se pudo obtener el token de notificación:", errToken);
+                }
+                // ----------------------------------------------------
+
                 await updateDoc(docRef, {
                     mascota: nombre,
                     telefono: tel,
@@ -492,17 +516,9 @@
                     activa: true,
                     extraviado: false,
                     mensaje: "",
-                    fechaActivacion: new Date().toISOString()
+                    fechaActivacion: new Date().toISOString(),
+                    fcmToken: fcmToken // <--- GUARDAMOS EL TOKEN AQUÍ
                 });
-
-                // --- MEJORA: Solicitar permisos de notificación tras éxito ---
-                if ("Notification" in window) {
-                    Notification.requestPermission().then(permission => {
-                        if (permission === "granted") {
-                            console.log("Permisos de notificación concedidos.");
-                        }
-                    });
-                }
 
                 try {
                     await addDoc(collection(db, "logs"), {
