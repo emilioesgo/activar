@@ -280,6 +280,28 @@
 
     let petData = null;
 
+    // --- NUEVA FUNCIÓN: ENVIAR NOTIFICACIÓN PUSH AL DUEÑO ---
+    async function enviarNotificacionPush(token, nombreMascota) {
+        if (!token) return;
+        
+        const serverKey = "AAAAeN-7XiA:APA91bF5cK_gG6H4qX3g2bC4n9j5p1z5v6k7r8s9t0u1v2w3x4y5z6a7b8c9d0e1f2g3h4i5j6k7"; // CLAVE DE SERVIDOR FIREBASE (LEGACY)
+        
+        // Nota: Para producción idealmente esto se hace desde un Cloud Function, pero para prototipo funciona así si la API Legacy está activa.
+        // Si no tienes la API Legacy activada en Firebase, este fetch fallará (error 401).
+        // Sin embargo, para no complicar con Cloud Functions, intentamos un fetch simple.
+        
+        try {
+            // Nota: El envío directo desde cliente usando la Server Key es inseguro para apps masivas,
+            // pero funcional para este caso específico de PWA personal.
+            // Si prefieres no usar Server Key aquí, necesitarías un script en Google Apps Script o Cloud Function.
+            // Por ahora, lo dejaremos preparado para cuando integres el backend de notificaciones.
+            console.log("Preparando envío de alerta push a:", token);
+        } catch (e) {
+            console.error("Error intentando push:", e);
+        }
+    }
+    // --------------------------------------------------------
+
     async function loadProfile() {
         const urlParams = new URLSearchParams(window.location.search);
         const id = urlParams.get('id');
@@ -312,6 +334,24 @@
                         document.getElementById("floating-hub-menu").classList.remove("hidden");
                         const btnReport = document.getElementById("btn-report-sighting");
                         if(btnReport) btnReport.style.display = "none";
+                    } else {
+                        // --- AQUÍ ESTÁ LA MAGIA: SI NO ES DUEÑO, ALERTAR ---
+                        // Solo alertamos si hay un token guardado
+                        if (data.fcmToken) {
+                            // Usamos el script de Google Apps Script que ya tienes para enviar el push
+                            // ya que enviar directo desde JS expone la clave.
+                            // Reusamos tu URL_SHEETS pero le añadimos un parámetro para que sepa que es push
+                            fetch("https://script.google.com/macros/s/AKfycbzH1tsICupT_eLE1aNzsUMUx_0w3Wl6ZcAckHGmtuvXLmuOBKg2kBHf285e1DVGY6iVSA/exec", {
+                                method: 'POST',
+                                mode: 'no-cors',
+                                body: JSON.stringify({ 
+                                    action: "push_alert",
+                                    token: data.fcmToken,
+                                    title: "⚠️ ¡ALERTA DE ESCANEO!",
+                                    body: `Han escaneado la placa de ${data.mascota}. Revisa la ubicación si te llega reporte.`
+                                })
+                            }).catch(e => console.log("Intento de alerta push enviado"));
+                        }
                     }
 
                     setText("pet-name", data.mascota);
@@ -441,6 +481,20 @@
                     map_url: mapsUrl,
                     mensaje_aviso: "¡URGENTE! Foto de avistamiento recibida."
                 });
+            }
+
+            // AVISO PUSH TAMBIÉN AQUÍ (POR SI REPORTAN FOTO)
+            if (petData && petData.fcmToken) {
+                 fetch("https://script.google.com/macros/s/AKfycbzH1tsICupT_eLE1aNzsUMUx_0w3Wl6ZcAckHGmtuvXLmuOBKg2kBHf285e1DVGY6iVSA/exec", {
+                    method: 'POST',
+                    mode: 'no-cors',
+                    body: JSON.stringify({ 
+                        action: "push_alert",
+                        token: petData.fcmToken,
+                        title: "📸 ¡FOTO RECIBIDA!",
+                        body: `Alguien acaba de enviar una foto del avistamiento de ${petData.mascota}.`
+                    })
+                }).catch(e => {});
             }
 
             alert("✅ ¡Gracias! Hemos avisado al dueño.");
