@@ -350,6 +350,7 @@
         }
     };
 
+    // --- FUNCIÓN MEJORADA: CARGA DE AVISTAMIENTOS ---
     async function cargarAvistamientos(petsIds) {
         if (!petsIds.length) return;
         const q = query(collection(db, "avistamientos"), where("petId", "in", petsIds), limit(5));
@@ -358,17 +359,45 @@
         box.innerHTML = "";
 
         if (!snap.empty) {
-            let html = `<div class="section-title" style="color:#c0392b;">🚨 Avistamientos</div><div style="display:flex; gap:10px; overflow-x:auto; padding-bottom:10px;">`;
+            let html = `<div class="section-title" style="color:#c0392b;">🚨 Avistamientos</div><div style="display:flex; gap:10px; overflow-x:auto; padding-bottom:15px; scrollbar-width: none;">`;
+            
             snap.forEach(d => {
                 const data = d.data();
-                const mapa = data.lat ? `https://www.google.com/maps?q=${data.lat},${data.lon}` : "#";
+                
+                // 1. Formato de Fecha/Hora
+                let fechaTexto = "Reciente";
+                if (data.fecha && data.fecha.seconds) {
+                    const fechaObj = new Date(data.fecha.seconds * 1000);
+                    // Formato: DD/MM HH:MM (Ej: 05/02 14:30)
+                    fechaTexto = fechaObj.toLocaleDateString('es-ES', {day: '2-digit', month: '2-digit'}) + 
+                                 " " + 
+                                 fechaObj.toLocaleTimeString('es-ES', {hour: '2-digit', minute:'2-digit'});
+                }
+
+                // 2. Validación de Ubicación
+                const tieneUbicacion = data.lat && data.lon;
+                // Usamos la URL universal de Google Maps
+                const mapaUrl = tieneUbicacion 
+                    ? `https://www.google.com/maps?q=${data.lat},${data.lon}` 
+                    : "#";
+
                 html += `
-                    <div style="min-width:220px; background:white; border-radius:15px; border:2px solid #ff4757; overflow:hidden; position:relative;">
-                        <button onclick="eliminarAvistamiento('${d.id}')" style="position:absolute; top:5px; right:5px; border:none; background:white; border-radius:50%; width:25px; height:25px; cursor:pointer;">✕</button>
-                        <img src="${data.foto}" style="width:100%; height:120px; object-fit:cover;">
-                        <div style="padding:10px;">
-                            <b style="font-size:12px; color:#c0392b;">¡VISTO!</b>
-                            <a href="${mapa}" target="_blank" style="display:block; margin-top:8px; background:#ff4757; color:white; text-align:center; padding:5px; border-radius:8px; text-decoration:none; font-size:11px;">📍 MAPA</a>
+                    <div style="min-width:220px; background:white; border-radius:15px; border:2px solid #ff4757; overflow:hidden; position:relative; box-shadow: 0 4px 10px rgba(0,0,0,0.1);">
+                        <button onclick="eliminarAvistamiento('${d.id}')" style="position:absolute; top:8px; right:8px; border:none; background:rgba(255,255,255,0.9); border-radius:50%; width:28px; height:28px; cursor:pointer; color:#ff4757; font-weight:bold; z-index:10;">✕</button>
+                        <img src="${data.foto}" style="width:100%; height:130px; object-fit:cover;">
+                        <div style="padding:12px;">
+                            <b style="font-size:13px; color:#c0392b; display:block;">⚠️ ¡VISTO!</b>
+                            <span style="font-size:11px; color:#666; display:block; margin-bottom:8px;">📅 ${fechaTexto}</span>
+                            
+                            ${tieneUbicacion ? `
+                                <a href="${mapaUrl}" target="_blank" style="display:flex; align-items:center; justify-content:center; gap:5px; background:#ff4757; color:white; text-align:center; padding:8px; border-radius:10px; text-decoration:none; font-size:11px; font-weight:bold;">
+                                    <i class="fas fa-location-dot"></i> VER EN MAPS
+                                </a>
+                            ` : `
+                                <div style="display:flex; align-items:center; justify-content:center; gap:5px; background:#eee; color:#999; text-align:center; padding:8px; border-radius:10px; font-size:10px; font-weight:bold;">
+                                    <i class="fas fa-eye-slash"></i> SIN UBICACIÓN
+                                </div>
+                            `}
                         </div>
                     </div>`;
             });
