@@ -1,4 +1,4 @@
-const CACHE_NAME = 'huellitas-v9'; // Subí versión para asegurar cambios
+const CACHE_NAME = 'huellitas-v10'; // Subí versión para asegurar cambios
 const ASSETS = [
   './',
   'index.html',
