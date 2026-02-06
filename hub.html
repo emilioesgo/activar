@@ -359,38 +359,48 @@
         box.innerHTML = "";
 
         if (!snap.empty) {
-            let html = `<div class="section-title" style="color:#c0392b;">🚨 Avistamientos</div><div style="display:flex; gap:10px; overflow-x:auto; padding-bottom:15px; scrollbar-width: none;">`;
+            let html = `<div class="section-title" style="color:#c0392b;">🚨 Actividad Reciente</div><div style="display:flex; gap:10px; overflow-x:auto; padding-bottom:15px; scrollbar-width: none;">`;
             
             snap.forEach(d => {
                 const data = d.data();
                 
-                // 1. Formato de Fecha/Hora
+                // --- LÓGICA DE FOTO O LOGO ---
+                const tieneFoto = data.foto && data.foto !== "SIN_FOTO";
+                const fotoSrc = tieneFoto ? data.foto : "assets/img/logo.png";
+                const estiloFoto = tieneFoto 
+                    ? "object-fit:cover;" 
+                    : "object-fit:contain; padding:25px; opacity:0.3; filter:grayscale(1);";
+                
+                // Colores diferenciados: Rojo (Foto) / Azul (Escaneo)
+                const borderColor = tieneFoto ? '#ff4757' : '#3498db';
+                const titleColor = tieneFoto ? '#c0392b' : '#2980b9';
+                const titleText = tieneFoto ? '⚠️ FOTO RECIBIDA' : '🔎 PLACA ESCANEADA';
+
+                // --- FORMATO DE FECHA ---
                 let fechaTexto = "Reciente";
                 if (data.fecha && data.fecha.seconds) {
                     const fechaObj = new Date(data.fecha.seconds * 1000);
-                    // Formato: DD/MM HH:MM (Ej: 05/02 14:30)
                     fechaTexto = fechaObj.toLocaleDateString('es-ES', {day: '2-digit', month: '2-digit'}) + 
                                  " " + 
                                  fechaObj.toLocaleTimeString('es-ES', {hour: '2-digit', minute:'2-digit'});
                 }
 
-                // 2. Validación de Ubicación
+                // --- UBICACIÓN ---
                 const tieneUbicacion = data.lat && data.lon;
-                // Usamos la URL universal de Google Maps
-                const mapaUrl = tieneUbicacion 
-                    ? `https://www.google.com/maps?q=${data.lat},${data.lon}` 
-                    : "#";
+                const mapsLink = tieneUbicacion ? `https://maps.google.com/?q=${data.lat},${data.lon}` : "#";
 
                 html += `
-                    <div style="min-width:220px; background:white; border-radius:15px; border:2px solid #ff4757; overflow:hidden; position:relative; box-shadow: 0 4px 10px rgba(0,0,0,0.1);">
-                        <button onclick="eliminarAvistamiento('${d.id}')" style="position:absolute; top:8px; right:8px; border:none; background:rgba(255,255,255,0.9); border-radius:50%; width:28px; height:28px; cursor:pointer; color:#ff4757; font-weight:bold; z-index:10;">✕</button>
-                        <img src="${data.foto}" style="width:100%; height:130px; object-fit:cover;">
+                    <div style="min-width:220px; background:white; border-radius:15px; border:2px solid ${borderColor}; overflow:hidden; position:relative; box-shadow: 0 4px 10px rgba(0,0,0,0.1);">
+                        <button onclick="eliminarAvistamiento('${d.id}')" style="position:absolute; top:8px; right:8px; border:none; background:rgba(255,255,255,0.9); border-radius:50%; width:28px; height:28px; cursor:pointer; color:#ff4757; font-weight:bold; z-index:10; box-shadow: 0 2px 5px rgba(0,0,0,0.2);">✕</button>
+                        
+                        <img src="${fotoSrc}" style="width:100%; height:130px; ${estiloFoto}">
+                        
                         <div style="padding:12px;">
-                            <b style="font-size:13px; color:#c0392b; display:block;">⚠️ ¡VISTO!</b>
+                            <b style="font-size:13px; color:${titleColor}; display:block;">${titleText}</b>
                             <span style="font-size:11px; color:#666; display:block; margin-bottom:8px;">📅 ${fechaTexto}</span>
                             
                             ${tieneUbicacion ? `
-                                <a href="${mapaUrl}" target="_blank" style="display:flex; align-items:center; justify-content:center; gap:5px; background:#ff4757; color:white; text-align:center; padding:8px; border-radius:10px; text-decoration:none; font-size:11px; font-weight:bold;">
+                                <a href="${mapsLink}" target="_blank" style="display:flex; align-items:center; justify-content:center; gap:5px; background:${borderColor}; color:white; text-align:center; padding:8px; border-radius:10px; text-decoration:none; font-size:11px; font-weight:bold;">
                                     <i class="fas fa-location-dot"></i> VER EN MAPS
                                 </a>
                             ` : `
