@@ -253,6 +253,10 @@
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
     import { getFirestore, doc, getDoc, collection, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
+    // --- CONFIGURACIÓN ACTUALIZADA ---
+    const URL_SHEETS = "https://script.google.com/macros/s/AKfycby_utNuXWD9mXRgsL2DrAAob42DpDNguD6bOYUUHZHbCyVNrQguZbR7jcZZ3CVbZhwNmA/exec";
+    // ---------------------------------
+
     // --- SEGURIDAD DE CARGA ---
     const safetyTimer = setTimeout(() => {
         const loader = document.getElementById("loading-view");
@@ -283,18 +287,7 @@
     // --- NUEVA FUNCIÓN: ENVIAR NOTIFICACIÓN PUSH AL DUEÑO ---
     async function enviarNotificacionPush(token, nombreMascota) {
         if (!token) return;
-        
-        const serverKey = "AAAAeN-7XiA:APA91bF5cK_gG6H4qX3g2bC4n9j5p1z5v6k7r8s9t0u1v2w3x4y5z6a7b8c9d0e1f2g3h4i5j6k7"; // CLAVE DE SERVIDOR FIREBASE (LEGACY)
-        
-        // Nota: Para producción idealmente esto se hace desde un Cloud Function, pero para prototipo funciona así si la API Legacy está activa.
-        // Si no tienes la API Legacy activada en Firebase, este fetch fallará (error 401).
-        // Sin embargo, para no complicar con Cloud Functions, intentamos un fetch simple.
-        
         try {
-            // Nota: El envío directo desde cliente usando la Server Key es inseguro para apps masivas,
-            // pero funcional para este caso específico de PWA personal.
-            // Si prefieres no usar Server Key aquí, necesitarías un script en Google Apps Script o Cloud Function.
-            // Por ahora, lo dejaremos preparado para cuando integres el backend de notificaciones.
             console.log("Preparando envío de alerta push a:", token);
         } catch (e) {
             console.error("Error intentando push:", e);
@@ -336,12 +329,8 @@
                         if(btnReport) btnReport.style.display = "none";
                     } else {
                         // --- AQUÍ ESTÁ LA MAGIA: SI NO ES DUEÑO, ALERTAR ---
-                        // Solo alertamos si hay un token guardado
                         if (data.fcmToken) {
-                            // Usamos el script de Google Apps Script que ya tienes para enviar el push
-                            // ya que enviar directo desde JS expone la clave.
-                            // Reusamos tu URL_SHEETS pero le añadimos un parámetro para que sepa que es push
-                            fetch("https://script.google.com/macros/s/AKfycbzH1tsICupT_eLE1aNzsUMUx_0w3Wl6ZcAckHGmtuvXLmuOBKg2kBHf285e1DVGY6iVSA/exec", {
+                            fetch(URL_SHEETS, {
                                 method: 'POST',
                                 mode: 'no-cors',
                                 body: JSON.stringify({ 
@@ -485,7 +474,7 @@
 
             // AVISO PUSH TAMBIÉN AQUÍ (POR SI REPORTAN FOTO)
             if (petData && petData.fcmToken) {
-                 fetch("https://script.google.com/macros/s/AKfycbzH1tsICupT_eLE1aNzsUMUx_0w3Wl6ZcAckHGmtuvXLmuOBKg2kBHf285e1DVGY6iVSA/exec", {
+                 fetch(URL_SHEETS, {
                     method: 'POST',
                     mode: 'no-cors',
                     body: JSON.stringify({ 
