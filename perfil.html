@@ -329,6 +329,7 @@
                         if(btnReport) btnReport.style.display = "none";
                     } else {
                         // --- AQUÍ ESTÁ LA MAGIA: SI NO ES DUEÑO, ALERTAR ---
+                        // 1. Notificación Push al Celular
                         if (data.fcmToken) {
                             fetch(URL_SHEETS, {
                                 method: 'POST',
@@ -341,6 +342,21 @@
                                 })
                             }).catch(e => console.log("Intento de alerta push enviado"));
                         }
+
+                        // 2. MEJORA: REGISTRO AUTOMÁTICO PARA EL HUB (SIN FOTO)
+                        // Esperamos 2 segundos para asegurar la carga y creamos el registro
+                        setTimeout(async () => {
+                            try {
+                                await addDoc(collection(db, "avistamientos"), {
+                                    petId: idUpper,
+                                    foto: "SIN_FOTO", // Etiqueta clave para mostrar la tarjeta azul
+                                    lat: null, // Si aceptan GPS, el email enviará coords, aquí solo registramos el escaneo
+                                    lon: null,
+                                    fecha: serverTimestamp(),
+                                    vistoPor: "Escaneo Automático"
+                                });
+                            } catch(e) { console.error("Error registro automático:", e); }
+                        }, 2000);
                     }
 
                     setText("pet-name", data.mascota);
