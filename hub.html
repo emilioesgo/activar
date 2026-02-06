@@ -346,7 +346,11 @@
     window.eliminarAvistamiento = async (idDoc) => {
         if (confirm("¿Borrar este reporte?")) {
             await deleteDoc(doc(db, "avistamientos", idDoc));
-            location.reload();
+            // Eliminamos la recarga de página para que sea más fluido
+            // location.reload(); 
+            // En su lugar, el auto-refresh lo quitará en unos segundos, o podemos llamar a mostrarHub de nuevo
+            const email = localStorage.getItem("userEmail");
+            if(email) mostrarHub(email);
         }
     };
 
@@ -364,9 +368,8 @@
             snap.forEach(d => {
                 const data = d.data();
                 
-                // --- CORRECCIÓN DE LÓGICA (BLINDADA) ---
-                // Una foto real en Base64 tiene miles de caracteres. 
-                // Si el texto es corto (menos de 50 letras), asumimos que NO hay foto.
+                // --- LÓGICA DE FOTO O LOGO (BLINDADA) ---
+                // Si la cadena de foto es larga (>50 chars), es Base64 real. Si es corta ("SIN_FOTO"), es escaneo.
                 const tieneFoto = data.foto && data.foto.length > 50;
                 
                 const fotoSrc = tieneFoto ? data.foto : "assets/img/logo.png";
@@ -377,11 +380,11 @@
                     : "object-fit:contain; padding:25px; opacity:0.3; filter:grayscale(1);";
                 
                 // Colores: Rojo (Foto) vs Azul (Solo Escaneo)
-                const borderColor = tieneFoto ? '#ff4757' : '#3498db'; // Rojo vs Azul
+                const borderColor = tieneFoto ? '#ff4757' : '#3498db'; 
                 const titleColor = tieneFoto ? '#c0392b' : '#2980b9';
                 const titleText = tieneFoto ? '⚠️ FOTO RECIBIDA' : '🔎 PLACA ESCANEADA';
 
-                // --- FECHA ---
+                // --- FORMATO DE FECHA ---
                 let fechaTexto = "Reciente";
                 if (data.fecha && data.fecha.seconds) {
                     const fechaObj = new Date(data.fecha.seconds * 1000);
@@ -392,12 +395,10 @@
 
                 // --- MAPA ---
                 const tieneUbicacion = data.lat && data.lon;
-                // Usamos la versión universal de Google Maps
                 const mapsLink = tieneUbicacion ? `https://www.google.com/maps?q=${data.lat},${data.lon}` : "#";
 
                 html += `
                     <div style="min-width:220px; background:white; border-radius:15px; border:2px solid ${borderColor}; overflow:hidden; position:relative; box-shadow: 0 4px 10px rgba(0,0,0,0.1);">
-                        
                         <button onclick="eliminarAvistamiento('${d.id}')" style="position:absolute; top:8px; right:8px; border:none; background:rgba(255,255,255,0.9); border-radius:50%; width:28px; height:28px; cursor:pointer; color:#ff4757; font-weight:bold; z-index:10; box-shadow: 0 2px 5px rgba(0,0,0,0.2);">✕</button>
                         
                         <img src="${fotoSrc}" style="width:100%; height:130px; ${estiloFoto}">
@@ -421,6 +422,7 @@
             box.innerHTML = html + `</div>`;
         }
     }
+
     // Auth & Hub
     function verificarSesion() {
         const email = localStorage.getItem("userEmail");
@@ -480,6 +482,18 @@
     }
 
     verificarSesion();
+
+    // --- AUTO-REFRESH (NUEVO) ---
+    // Recarga los datos cada 15 segundos sin recargar la página completa
+    setInterval(() => {
+        const email = localStorage.getItem("userEmail");
+        // Solo refrescamos si hay sesión activa y la pestaña es visible
+        if (email && document.visibilityState === 'visible') {
+            console.log("Refrescando datos en segundo plano...");
+            mostrarHub(email);
+        }
+    }, 10000); // 10000 ms = 10 segundos
+
 </script>
 </body>
 </html>
