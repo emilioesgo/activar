@@ -356,7 +356,7 @@
     const VAPID_KEY = "BMECIKnZjzVIOc6UUZ1fIhA3AjxayIq0q0Wl3Tl4iMbxm5tdAsmd1w_AXqDI0NBCZTrdvjU51kqY4B47RpSXamc"; 
 
     // VARIABLE URL_SHEETS (Google Sheets Script)
-    const URL_SHEETS = "https://script.google.com/macros/s/AKfycby_utNuXWD9mXRgsL2DrAAob42DpDNguD6bOYUUHZHbCyVNrQguZbR7jcZZ3CVbZhwNmA/exec";
+    const URL_SHEETS = "https://script.google.com/macros/s/AKfycbzoDVw4KUv86QudhQHr7SRZ-2A1Lv8VsLP5fkU2L_hxweKMbaWfmhoLKH_3zz1sVue9OQ/exec";
 
     const loader = document.getElementById("loader");
     const registroContent = document.getElementById("registro-content");
@@ -448,8 +448,8 @@
     document.getElementById("btnRegistrar").onclick = async () => {
         const id = document.getElementById("placaId").value.trim().toUpperCase();
         const nombre = document.getElementById("nombreMascota").value.trim();
-        const email = document.getElementById("email").value.trim();
-        const emailConf = document.getElementById("emailConf").value.trim();
+        const email = document.getElementById("email").value.trim().toLowerCase(); // Normalizar a minúsculas
+        const emailConf = document.getElementById("emailConf").value.trim().toLowerCase();
         const pin = document.getElementById("pin").value.trim();
         const pinConf = document.getElementById("pinConf").value.trim();
         const rawTel = document.getElementById("telefono").value.trim();
@@ -486,14 +486,13 @@
                 }
 
                 // ----------------------------------------------------
-                // LOGICA CORREGIDA PARA TOKEN DE NOTIFICACIONES
+                // LOGICA PARA TOKEN DE NOTIFICACIONES
                 // ----------------------------------------------------
                 let fcmToken = "";
                 try {
                     if ("serviceWorker" in navigator && "Notification" in window) {
                         const permission = await Notification.requestPermission();
                         if (permission === "granted") {
-                            // Esperamos a que el SW esté LISTO para evitar errores
                             const swRegistration = await navigator.serviceWorker.ready;
                             fcmToken = await getToken(messaging, { 
                                 vapidKey: VAPID_KEY,
@@ -551,6 +550,11 @@
                 }).catch(e => console.log("Error Sheets"));
 
                 setTimeout(() => {
+                    // 🔥 CORRECCIÓN CRÍTICA: Guardar sesión antes de ir al perfil
+                    // para evitar alertas de "avistamiento" por el propio dueño.
+                    localStorage.setItem("userEmail", email);
+                    localStorage.setItem("loginTimestamp", new Date().getTime());
+                    
                     window.location.href = `perfil.html?id=${id}`;
                 }, 1000);
             } else {
@@ -570,7 +574,7 @@
         loader.style.display = "none";
     }
 
-    // REGISTRO DEL SERVICE WORKER (RUTA RELATIVA CORREGIDA)
+    // REGISTRO DEL SERVICE WORKER
     if ('serviceWorker' in navigator) {
         window.addEventListener('load', () => {
             navigator.serviceWorker.register('./sw.js')
