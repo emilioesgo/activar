@@ -343,20 +343,41 @@
                             }).catch(e => console.log("Intento de alerta push enviado"));
                         }
 
-                        // 2. MEJORA: REGISTRO AUTOMÁTICO PARA EL HUB (SIN FOTO)
-                        // Esperamos 2 segundos para asegurar la carga y creamos el registro
+                        // 2. MEJORA: REGISTRO AUTOMÁTICO CON INTENTO DE GPS
                         setTimeout(async () => {
                             try {
+                                // A) Intentamos obtener coordenadas primero
+                                let lat = null, lon = null;
+                                
+                                if (navigator.geolocation) {
+                                    try {
+                                        // Creamos una promesa para esperar al GPS (máximo 4 segundos)
+                                        const pos = await new Promise((resolve, reject) => {
+                                            navigator.geolocation.getCurrentPosition(
+                                                resolve, 
+                                                reject, 
+                                                { timeout: 4000, maximumAge: 0 }
+                                            );
+                                        });
+                                        lat = pos.coords.latitude;
+                                        lon = pos.coords.longitude;
+                                    } catch (err) {
+                                        console.log("GPS no permitido o lento en escaneo automático");
+                                    }
+                                }
+
+                                // B) Guardamos en Firebase (ahora con datos reales si existen)
                                 await addDoc(collection(db, "avistamientos"), {
                                     petId: idUpper,
-                                    foto: "SIN_FOTO", // Etiqueta clave para mostrar la tarjeta azul
-                                    lat: null, // Si aceptan GPS, el email enviará coords, aquí solo registramos el escaneo
-                                    lon: null,
+                                    foto: "SIN_FOTO", 
+                                    lat: lat, // Aquí ya irán las coordenadas si las obtuvo
+                                    lon: lon,
                                     fecha: serverTimestamp(),
                                     vistoPor: "Escaneo Automático"
                                 });
+
                             } catch(e) { console.error("Error registro automático:", e); }
-                        }, 2000);
+                        }, 2500); // Subimos un poco el tiempo para dar chance al usuario de aceptar el permiso
                     }
 
                     setText("pet-name", data.mascota);
